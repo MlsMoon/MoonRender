@@ -1,10 +1,9 @@
 #include "GameApp.h"
 
-
+///程序主入口
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
     _In_ LPSTR cmdLine, _In_ int showCmd)
 {
-    printf("111");
 
     // 这些参数不使用
     UNREFERENCED_PARAMETER(prevInstance);
