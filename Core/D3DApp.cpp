@@ -117,6 +117,7 @@ int D3DApp::Run()
 /// <returns></returns>
 bool D3DApp::Init()
 {
+    //第一步 初始化窗口
     if (!InitMainWindow())
         return false;
 

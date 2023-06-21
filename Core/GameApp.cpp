@@ -2,6 +2,7 @@
 #include "d3dUtil.h"
 #include "DXTrace.h"
 
+// GameµÄ²¿·Ö
 GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight)
     : D3DApp(hInstance, windowName, initWidth, initHeight)
 {
