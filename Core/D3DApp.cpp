@@ -2,8 +2,14 @@
 #include "D3DUtil.h"
 #include "DXTrace.h"
 #include <sstream>
+#include "../ImGui/imgui_impl_win32.h"
+#include "../ImGui/imgui_impl_dx11.h"
+#include "../ImGui/imgui.h"
+
 
 #pragma warning(disable: 6031)
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern "C"
 {
@@ -98,6 +104,12 @@ int D3DApp::Run()
             if (!m_AppPaused)
             {
                 CalculateFrameStats();
+
+                //UI绘制
+                ImGui_ImplDX11_NewFrame();
+                ImGui_ImplWin32_NewFrame();
+                ImGui::NewFrame();
+
                 UpdateScene(m_Timer.DeltaTime());
                 DrawScene();
             }
@@ -122,6 +134,9 @@ bool D3DApp::Init()
         return false;
 
     if (!InitDirect3D())
+        return false;
+
+    if (!InitImGui())
         return false;
 
     return true;
@@ -203,8 +218,19 @@ void D3DApp::OnResize()
     m_pd3dImmediateContext->RSSetViewports(1, &m_ScreenViewport);
 }
 
+/// <summary>
+/// 这是一个处理消息的函数
+/// </summary>
+/// <param name="hwnd"></param>
+/// <param name="msg"></param>
+/// <param name="wParam"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    if (ImGui_ImplWin32_WndProcHandler(m_hMainWnd, msg, wParam, lParam))
+        return true;
+
     switch (msg)
     {
         // WM_ACTIVATE is sent when the window is activated or deactivated.  
@@ -563,4 +589,22 @@ void D3DApp::CalculateFrameStats()
     }
 }
 
+bool D3DApp::InitImGui()
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // 允许键盘控制
+    io.ConfigWindowsMoveFromTitleBarOnly = true;              // 仅允许标题拖动
+
+    // 设置Dear ImGui风格
+    ImGui::StyleColorsDark();
+
+    // 设置平台/渲染器后端
+    ImGui_ImplWin32_Init(m_hMainWnd);
+    ImGui_ImplDX11_Init(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get());
+
+    return true;
+
+}
 

@@ -40,6 +40,8 @@ protected:
 
     void CalculateFrameStats(); // 计算每秒帧数并在窗口显示
 
+    bool InitImGui();
+
 protected:
 
     HINSTANCE m_hAppInst;        // 应用实例句柄
