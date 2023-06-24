@@ -373,6 +373,15 @@ bool D3DApp::InitMainWindow()
     return true;
 }
 
+
+/// <summary>
+/// 初始化D3D
+/// 初始化D3D包含以下内容：
+/// 创建 D3D device
+/// 创建 D3D Context （当你创建了 D3D Device时，同时也创建了D3D Context）
+/// 创建 D3D 交换链
+/// </summary>
+/// <returns></returns>
 bool D3DApp::InitDirect3D()
 {
     HRESULT hr = S_OK;
