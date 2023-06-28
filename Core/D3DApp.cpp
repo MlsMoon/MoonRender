@@ -105,11 +105,15 @@ int D3DApp::Run()
             {
                 CalculateFrameStats();
 
-                //UI绘制
+                //UI绘制 - 新的Frame
                 ImGui_ImplDX11_NewFrame();
                 ImGui_ImplWin32_NewFrame();
                 ImGui::NewFrame();
 
+                //绘制界面逻辑
+                DrawUI();
+
+                //更新场景 /绘制场景
                 UpdateScene(m_Timer.DeltaTime());
                 DrawScene();
             }
@@ -217,6 +221,8 @@ void D3DApp::OnResize()
 
     m_pd3dImmediateContext->RSSetViewports(1, &m_ScreenViewport);
 }
+
+
 
 /// <summary>
 /// 这是一个处理消息的函数
@@ -598,7 +604,8 @@ bool D3DApp::InitImGui()
     io.ConfigWindowsMoveFromTitleBarOnly = true;              // 仅允许标题拖动
 
     // 设置Dear ImGui风格
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsLight();
+    ImGui::GetIO().FontGlobalScale = 1.5;
 
     // 设置平台/渲染器后端
     ImGui_ImplWin32_Init(m_hMainWnd);
@@ -608,3 +615,6 @@ bool D3DApp::InitImGui()
 
 }
 
+void D3DApp::DrawUI()
+{
+}

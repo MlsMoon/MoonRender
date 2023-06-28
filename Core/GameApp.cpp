@@ -31,10 +31,7 @@ void GameApp::OnResize()
 
 void GameApp::UpdateScene(float dt)
 {
-    // ImGui内部示例窗口
-    ImGui::ShowAboutWindow();
-    ImGui::ShowDemoWindow();
-    ImGui::ShowUserGuide();
+
 }
 
 void GameApp::DrawScene()
@@ -51,4 +48,39 @@ void GameApp::DrawScene()
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
     HR(m_pSwapChain->Present(0, 0));
+}
+
+void GameApp::DrawUI()
+{
+    //ImGui::SetNextWindowSize(ImVec2(400, 600));
+    ImGui::BeginMainMenuBar();
+    if (ImGui::BeginMenu("File"))
+    {
+        if (ImGui::MenuItem("Open"))
+        {
+            // 处理 "Open" 被点击的逻辑
+        }
+
+        if (ImGui::MenuItem("Save"))
+        {
+            // 处理 "Save" 被点击的逻辑
+        }
+
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Windows"))
+    {
+        if (ImGui::MenuItem("Test"))
+        {
+            // 处理 "Open" 被点击的逻辑
+        }
+
+        //if (ImGui::MenuItem("Save"))
+        //{
+        //    // 处理 "Save" 被点击的逻辑
+        //}
+        ImGui::EndMenu();
+    }
+    ImGui::EndMainMenuBar();
+
 }
