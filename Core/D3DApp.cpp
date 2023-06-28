@@ -2,8 +2,15 @@
 #include "D3DUtil.h"
 #include "DXTrace.h"
 #include <sstream>
+#include <iostream>
+#include "../ImGui/imgui_impl_win32.h"
+#include "../ImGui/imgui_impl_dx11.h"
+#include "../ImGui/imgui.h"
+
 
 #pragma warning(disable: 6031)
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern "C"
 {
@@ -98,6 +105,16 @@ int D3DApp::Run()
             if (!m_AppPaused)
             {
                 CalculateFrameStats();
+
+                //UI绘制 - 新的Frame
+                ImGui_ImplDX11_NewFrame();
+                ImGui_ImplWin32_NewFrame();
+                ImGui::NewFrame();
+
+                //绘制界面逻辑
+                DrawUI();
+
+                //更新场景 /绘制场景
                 UpdateScene(m_Timer.DeltaTime());
                 DrawScene();
             }
@@ -124,9 +141,17 @@ bool D3DApp::Init()
     if (!InitDirect3D())
         return false;
 
+    if (!InitImGui())
+        return false;
+
     return true;
 }
 
+/// <summary>
+/// 每次在修改窗口大小的时候
+/// 都需要把资源释放掉
+/// 然后重新初始化一遍
+/// </summary>
 void D3DApp::OnResize()
 {
     assert(m_pd3dImmediateContext);
@@ -203,8 +228,21 @@ void D3DApp::OnResize()
     m_pd3dImmediateContext->RSSetViewports(1, &m_ScreenViewport);
 }
 
+
+
+/// <summary>
+/// 这是一个处理消息的函数
+/// </summary>
+/// <param name="hwnd"></param>
+/// <param name="msg"></param>
+/// <param name="wParam"></param>
+/// <param name="lParam"></param>
+/// <returns></returns>
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    if (ImGui_ImplWin32_WndProcHandler(m_hMainWnd, msg, wParam, lParam))
+        return true;
+
     switch (msg)
     {
         // WM_ACTIVATE is sent when the window is activated or deactivated.  
@@ -373,15 +411,6 @@ bool D3DApp::InitMainWindow()
     return true;
 }
 
-
-/// <summary>
-/// 初始化D3D
-/// 初始化D3D包含以下内容：
-/// 创建 D3D device
-/// 创建 D3D Context （当你创建了 D3D Device时，同时也创建了D3D Context）
-/// 创建 D3D 交换链
-/// </summary>
-/// <returns></returns>
 bool D3DApp::InitDirect3D()
 {
     HRESULT hr = S_OK;
@@ -392,6 +421,7 @@ bool D3DApp::InitDirect3D()
     createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
     // 驱动类型数组
+    //
     D3D_DRIVER_TYPE driverTypes[] =
     {
         D3D_DRIVER_TYPE_HARDWARE,
@@ -410,9 +440,53 @@ bool D3DApp::InitDirect3D()
 
     D3D_FEATURE_LEVEL featureLevel;
     D3D_DRIVER_TYPE d3dDriverType;
+
+    //查询当前机器有多少显卡
+    ComPtr<IDXGIFactory> dxgiFactory = nullptr;
+    void** dxgiFactoryPtr = reinterpret_cast<void**>(dxgiFactory.GetAddressOf());
+
+    // 创建DXGI工厂对象
+    hr = CreateDXGIFactory(__uuidof(IDXGIFactory), dxgiFactoryPtr);
+    if (SUCCEEDED(hr))
+    {
+        std::cout << "IDXGIFactory created successfully." << std::endl;
+
+        // 使用IDXGIFactory对象进行其他操作...
+        // 枚举显示适配器
+        IDXGIAdapter* dxgiAdapter = nullptr;
+        for (UINT i = 0; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; ++i)
+        {
+            DXGI_ADAPTER_DESC adapterDesc;
+            hr = dxgiAdapter->GetDesc(&adapterDesc);
+            if (SUCCEEDED(hr))
+            {
+                //
+            }
+            dxgiAdapter->Release();
+            dxgiAdapter = nullptr;
+        }
+    }
+    else
+    {
+        std::cout << "Failed to create IDXGIFactory: " << std::hex << hr << std::endl;
+    }
+
     for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
     {
         d3dDriverType = driverTypes[driverTypeIndex];
+        //Create Device函数 在这里创建了D3D设备
+        /*  参数说明：
+            IDXGIAdapter* pAdapter,             // [In_Opt]适配器
+            D3D_DRIVER_TYPE DriverType,         // [In]驱动类型
+            HMODULE Software,                   // [In_Opt]若上面为D3D_DRIVER_TYPE_SOFTWARE则这里需要提供程序模块
+            UINT Flags,                         // [In]使用D3D11_CREATE_DEVICE_FLAG枚举类型
+            D3D_FEATURE_LEVEL* pFeatureLevels,  // [In_Opt]若为nullptr则为默认特性等级，否则需要提供特性等级数组
+            UINT FeatureLevels,                 // [In]特性等级数组的元素数目
+            UINT SDKVersion,                    // [In]SDK版本，默认D3D11_SDK_VERSION
+            ID3D11Device** ppDevice,            // [Out_Opt]输出D3D设备
+            D3D_FEATURE_LEVEL* pFeatureLevel,   // [Out_Opt]输出当前应用D3D特性等级
+            ID3D11DeviceContext** ppImmediateContext ); //[Out_Opt]输出D3D设备上下文
+        */
         hr = D3D11CreateDevice(nullptr, d3dDriverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
             D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel, m_pd3dImmediateContext.GetAddressOf());
 
@@ -572,4 +646,26 @@ void D3DApp::CalculateFrameStats()
     }
 }
 
+bool D3DApp::InitImGui()
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // 允许键盘控制
+    io.ConfigWindowsMoveFromTitleBarOnly = true;              // 仅允许标题拖动
 
+    // 设置Dear ImGui风格
+    ImGui::StyleColorsLight();
+    ImGui::GetIO().FontGlobalScale = 1.5;
+
+    // 设置平台/渲染器后端
+    ImGui_ImplWin32_Init(m_hMainWnd);
+    ImGui_ImplDX11_Init(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get());
+
+    return true;
+
+}
+
+void D3DApp::DrawUI()
+{
+}
