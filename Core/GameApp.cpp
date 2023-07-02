@@ -1,9 +1,4 @@
 #include "GameApp.h"
-#include "d3dUtil.h"
-#include "DXTrace.h"
-#include "../ImGui/imgui_impl_win32.h"
-#include "../ImGui/imgui_impl_dx11.h"
-#include "../ImGui/imgui.h"
 
 
 // Game的部分
@@ -19,6 +14,9 @@ GameApp::~GameApp()
 bool GameApp::Init()
 {
     if (!D3DApp::Init())
+        return false;
+
+    if (!GameApp::InitResources())
         return false;
 
     return true;
@@ -83,4 +81,27 @@ void GameApp::DrawUI()
     }
     ImGui::EndMainMenuBar();
 
+}
+
+bool GameApp::InitResources()
+{
+    if (!InitShaders())
+        return false;
+
+
+    return true;
+}
+
+bool GameApp::InitShaders()
+{
+    ComPtr<ID3DBlob> blob;
+
+    // TODO: 载入编译器编译好的Shader文件
+    HR(m_pd3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));
+    // 创建并绑定顶点布局
+    HR(m_pd3dDevice->CreateInputLayout(VertexPosColor::inputLayout, ARRAYSIZE(VertexPosColor::inputLayout),
+        blob->GetBufferPointer(), blob->GetBufferSize(), m_pVertexLayout.GetAddressOf()));
+    HR(m_pd3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf()));
+
+    return true;
 }

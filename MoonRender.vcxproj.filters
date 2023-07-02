@@ -25,6 +25,15 @@
     <Filter Include="源文件\ImGui">
       <UniqueIdentifier>{5837cc94-98ea-439f-b0f7-a73aaf0c4d60}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{66f21edd-59e9-45d1-bb4e-15e50219f8ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Resources">
+      <UniqueIdentifier>{a30eea1f-aa49-44a4-be2e-09998f27534b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Resources">
+      <UniqueIdentifier>{95fe1b26-8228-4f3a-b67a-9c6932aea042}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\D3DApp.h">
@@ -69,6 +78,9 @@
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>头文件\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Resources\BufferStruct.h">
+      <Filter>头文件\Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\D3DApp.cpp">
@@ -110,5 +122,21 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>源文件\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Resources\BufferStruct.cpp">
+      <Filter>源文件\Resources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HLSL\Triangle.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HLSL\Triangle_VS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\Triangle_PS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
