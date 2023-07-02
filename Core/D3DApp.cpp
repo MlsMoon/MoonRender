@@ -171,9 +171,22 @@ void D3DApp::OnResize()
     m_pDepthStencilBuffer.Reset();
 
     // 重设交换链并且重新创建渲染目标视图
+    // 在D3D初始化的函数中，会创建一个DXGI交换链
+    // 创建的交换链自带了一个后背缓冲区，通过GetBuffer来获取
     ComPtr<ID3D11Texture2D> backBuffer;
     HR(m_pSwapChain->ResizeBuffers(1, m_ClientWidth, m_ClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+    //HRESULT IDXGISwapChain::GetBuffer(
+    //    UINT Buffer,        // [In]缓冲区索引号，从0到BufferCount - 1
+    //    REFIID riid,        // [In]缓冲区的接口类型ID
+    //    void** ppSurface);  // [Out]获取到的缓冲区
+    // ** 第二个参数，获取的是类型的UUID
     HR(m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf())));
+
+    //创建RenderTargetView，可以看到，创建的同时，我们将交换链中的后备缓冲区，绑定到RenderTargetView上（第一个参数）
+    //HRESULT ID3D11Device::CreateRenderTargetView(
+    //    ID3D11Resource * pResource,                      // [In]待绑定到渲染目标视图的资源
+    //    const D3D11_RENDER_TARGET_VIEW_DESC * pDesc,     // [In]忽略
+    //    ID3D11RenderTargetView * *ppRTView);             // [Out]获取渲染目标视图
     HR(m_pd3dDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, m_pRenderTargetView.GetAddressOf()));
 
     // 设置调试对象名
@@ -181,6 +194,24 @@ void D3DApp::OnResize()
 
     backBuffer.Reset();
 
+    //接下来创建 Depth / Stencil Buffer
+    //    和RTview 不一样，这次没有 现成的Texture2D 资源，需要手动创建一个 2d纹理资源
+    //    通过D3D设备可以新建一个2D纹理，但在此之前我们需要先描述该缓冲区的信息：
+
+    //有以下可以用来描述一个Texture2d的字段
+    //    typedef struct D3D11_TEXTURE2D_DESC
+    //{
+    //    UINT Width;         // 缓冲区宽度
+    //    UINT Height;        // 缓冲区高度
+    //    UINT MipLevels;     // Mip等级
+    //    UINT ArraySize;     // 纹理数组中的纹理数量，默认1
+    //    DXGI_FORMAT Format; // 缓冲区数据格式
+    //    DXGI_SAMPLE_DESC SampleDesc;    // MSAA采样描述
+    //    D3D11_USAGE Usage;  // 数据的CPU/GPU访问权限
+    //    UINT BindFlags;     // 使用D3D11_BIND_FLAG枚举来决定该数据的使用类型
+    //    UINT CPUAccessFlags;    // 使用D3D11_CPU_ACCESS_FLAG枚举来决定CPU访问权限
+    //    UINT MiscFlags;     // 使用D3D11_RESOURCE_MISC_FLAG枚举，这里默认0
+    //}
 
     D3D11_TEXTURE2D_DESC depthStencilDesc;
 
@@ -210,14 +241,41 @@ void D3DApp::OnResize()
     depthStencilDesc.MiscFlags = 0;
 
     // 创建深度缓冲区以及深度模板视图
+    //HRESULT ID3D11Device::CreateTexture2D(
+    //    const D3D11_TEXTURE2D_DESC * pDesc,          // [In] 2D纹理描述信息
+    //    const D3D11_SUBRESOURCE_DATA * pInitialData, // [In] 用于初始化的资源
+    //    ID3D11Texture2D * *ppTexture2D);             // [Out] 获取到的2D纹理
     HR(m_pd3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, m_pDepthStencilBuffer.GetAddressOf()));
+
+    //有了深度 / 模板缓冲区后，就可以通过ID3D11Device::CreateDepthStencilView方法将创建好的2D纹理绑定到新建的深度 / 模板视图：
+
+    //    HRESULT ID3D11Device::CreateDepthStencilView(
+    //        ID3D11Resource * pResource,                      // [In] 需要绑定的资源
+    //        const D3D11_DEPTH_STENCIL_VIEW_DESC * pDesc,     // [In] 深度缓冲区描述，这里忽略
+    //        ID3D11DepthStencilView * *ppDepthStencilView);   // [Out] 获取到的深度/模板视图
+    // 
     HR(m_pd3dDevice->CreateDepthStencilView(m_pDepthStencilBuffer.Get(), nullptr, m_pDepthStencilView.GetAddressOf()));
 
-
+    //此时我们资源都创建完毕了，需要将两个View绑定到管线去
     // 将渲染目标视图和深度/模板缓冲区结合到管线
+    //void ID3D11DeviceContext::OMSetRenderTargets(
+    //    UINT NumViews,                                      // [In] 视图数目
+    //    ID3D11RenderTargetView* const* ppRenderTargetViews, // [In] 渲染目标视图数组（多RT是很常见的）
+    //    ID3D11DepthStencilView * pDepthStencilView) = 0;     // [In] 深度/模板视图
     m_pd3dImmediateContext->OMSetRenderTargets(1, m_pRenderTargetView.GetAddressOf(), m_pDepthStencilView.Get());
 
     // 设置视口变换
+    //最终我们还需要决定将整个视图输出到窗口特定的范围。我们需要使用D3D11_VIEWPORT来设置视口
+
+    //    typedef struct D3D11_VIEWPORT
+    //{
+    //    FLOAT TopLeftX;     // 屏幕左上角起始位置X
+    //    FLOAT TopLeftY;     // 屏幕左上角起始位置Y
+    //    FLOAT Width;        // 宽度
+    //    FLOAT Height;       // 高度
+    //    FLOAT MinDepth;     // 最小深度，必须为0.0f
+    //    FLOAT MaxDepth;     // 最大深度，必须为1.0f
+    //}     D3D11_VIEWPORT;
     m_ScreenViewport.TopLeftX = 0;
     m_ScreenViewport.TopLeftY = 0;
     m_ScreenViewport.Width = static_cast<float>(m_ClientWidth);
@@ -471,6 +529,7 @@ bool D3DApp::InitDirect3D()
         std::cout << "Failed to create IDXGIFactory: " << std::hex << hr << std::endl;
     }
 
+    //这里遍历的是驱动类型
     for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
     {
         d3dDriverType = driverTypes[driverTypeIndex];
@@ -497,6 +556,7 @@ bool D3DApp::InitDirect3D()
                 D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel, m_pd3dImmediateContext.GetAddressOf());
         }
 
+        //如果这里成功创建了，就结束
         if (SUCCEEDED(hr))
             break;
     }
