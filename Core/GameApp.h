@@ -7,7 +7,7 @@
 #include "../ImGui/imgui_impl_win32.h"
 #include "../ImGui/imgui_impl_dx11.h"
 #include "../ImGui/imgui.h"
-#include "../Resources/BufferStruct.h"
+#include "../ResourcesProcess/public/BufferStruct.h"
 
 class GameApp : public D3DApp
 {
@@ -28,10 +28,10 @@ private:
 
 //private parameter
 private:
-    ComPtr<ID3D11InputLayout> m_pVertexLayout;	// ¶¥µãÊäÈë²¼¾Ö
-    ComPtr<ID3D11Buffer> m_pVertexBuffer;		// ¶¥µã»º³åÇø
-    ComPtr<ID3D11VertexShader> m_pVertexShader;	// ¶¥µã×ÅÉ«Æ÷
-    ComPtr<ID3D11PixelShader> m_pPixelShader;	// ÏñËØ×ÅÉ«Æ÷
+    ComPtr<ID3D11InputLayout> m_pVertexLayout;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë²¼ï¿½ï¿½
+    ComPtr<ID3D11Buffer> m_pVertexBuffer;		// ï¿½ï¿½ï¿½ã»ºï¿½ï¿½ï¿½ï¿½
+    ComPtr<ID3D11VertexShader> m_pVertexShader;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½
+    ComPtr<ID3D11PixelShader> m_pPixelShader;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½
 };
 
 

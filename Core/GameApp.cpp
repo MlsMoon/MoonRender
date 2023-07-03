@@ -96,12 +96,17 @@ bool GameApp::InitShaders()
 {
     ComPtr<ID3DBlob> blob;
 
-    // TODO: 载入编译器编译好的Shader文件
+    //载入编译好的Shader
+    HR(D3DReadFileToBlob(L"HLSL\\CSO\\Triangle_VS.cso", blob.GetAddressOf()));
+
+    //创建 顶点着色器
     HR(m_pd3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));
+    
     // 创建并绑定顶点布局
-    HR(m_pd3dDevice->CreateInputLayout(VertexPosColor::inputLayout, ARRAYSIZE(VertexPosColor::inputLayout),
+    HR(m_pd3dDevice->CreateInputLayout(BufferStruct::VertexPosColor::inputLayout, ARRAYSIZE(BufferStruct::VertexPosColor::inputLayout),
         blob->GetBufferPointer(), blob->GetBufferSize(), m_pVertexLayout.GetAddressOf()));
-    HR(m_pd3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf()));
+    
+    // HR(m_pd3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf()));
 
     return true;
 }
