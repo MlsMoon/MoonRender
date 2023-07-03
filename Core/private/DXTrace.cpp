@@ -1,4 +1,4 @@
-#include "DXTrace.h"
+#include "../public/DXTrace.h"
 #include <cstdio>
 
 HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRESULT hr,
@@ -24,8 +24,8 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
         OutputDebugStringW(strMsg);
         OutputDebugStringW(L" ");
     }
-    // Windows SDK 8.0ÆðDirectXµÄ´íÎóÐÅÏ¢ÒÑ¾­¼¯³É½ø´íÎóÂëÖÐ£¬¿ÉÒÔÍ¨¹ýFormatMessageW»ñÈ¡´íÎóÐÅÏ¢×Ö·û´®
-    // ²»ÐèÒª·ÖÅä×Ö·û´®ÄÚ´æ
+    // Windows SDK 8.0ï¿½ï¿½DirectXï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½É½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½FormatMessageWï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ö·ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½Ú´ï¿½
     FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         strBufferError, 256, nullptr);
@@ -33,12 +33,12 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
     WCHAR* errorStr = wcsrchr(strBufferError, L'\r');
     if (errorStr)
     {
-        errorStr[0] = L'\0';    // ²Á³ýFormatMessageW´øÀ´µÄ»»ÐÐ·û(°Ñ\r\nµÄ\rÖÃ»»Îª\0¼´¿É)
+        errorStr[0] = L'\0';    // ï¿½ï¿½ï¿½ï¿½FormatMessageWï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½Ð·ï¿½(ï¿½ï¿½\r\nï¿½ï¿½\rï¿½Ã»ï¿½Îª\0ï¿½ï¿½ï¿½ï¿½)
     }
 
     swprintf_s(strBufferHR, 40, L" (0x%0.8x)", hr);
     wcscat_s(strBufferError, strBufferHR);
-    swprintf_s(strBuffer, 3000, L"´íÎóÂëº¬Òå£º%ls", strBufferError);
+    swprintf_s(strBuffer, 3000, L"ï¿½ï¿½ï¿½ï¿½ï¿½ëº¬ï¿½å£º%ls", strBufferError);
     OutputDebugStringW(strBuffer);
 
     OutputDebugStringW(L"\n");
@@ -51,12 +51,12 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
 
         wcscpy_s(strBufferMsg, 1024, L"");
         if (nMsgLen > 0)
-            swprintf_s(strBufferMsg, 1024, L"µ±Ç°µ÷ÓÃ£º%ls\n", strMsg);
+            swprintf_s(strBufferMsg, 1024, L"ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ã£ï¿½%ls\n", strMsg);
 
-        swprintf_s(strBuffer, 3000, L"ÎÄ¼þÃû£º%ls\nÐÐºÅ£º%ls\n´íÎóÂëº¬Òå£º%ls\n%lsÄúÐèÒªµ÷ÊÔµ±Ç°Ó¦ÓÃ³ÌÐòÂð£¿",
+        swprintf_s(strBuffer, 3000, L"ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½%ls\nï¿½ÐºÅ£ï¿½%ls\nï¿½ï¿½ï¿½ï¿½ï¿½ëº¬ï¿½å£º%ls\n%lsï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Ôµï¿½Ç°Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½",
             strBufferFile, strBufferLine, strBufferError, strBufferMsg);
 
-        int nResult = MessageBoxW(GetForegroundWindow(), strBuffer, L"´íÎó", MB_YESNO | MB_ICONERROR);
+        int nResult = MessageBoxW(GetForegroundWindow(), strBuffer, L"ï¿½ï¿½ï¿½ï¿½", MB_YESNO | MB_ICONERROR);
         if (nResult == IDYES)
             DebugBreak();
     }

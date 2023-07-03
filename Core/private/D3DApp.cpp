@@ -1,11 +1,5 @@
-#include "D3DApp.h"
-#include "D3DUtil.h"
-#include "DXTrace.h"
-#include <sstream>
-#include <iostream>
-#include "../ImGui/imgui_impl_win32.h"
-#include "../ImGui/imgui_impl_dx11.h"
-#include "../ImGui/imgui.h"
+#include "../public/D3DApp.h"
+
 
 
 #pragma warning(disable: 6031)

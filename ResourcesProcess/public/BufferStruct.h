@@ -4,6 +4,8 @@
 #include <directxmath.h>
 #include <d3d11.h>
 
+//存储cpp中的顶点结构，和其对应的 输入布局描述，与HLSL中对应
+
 class BufferStruct
 {
 public:

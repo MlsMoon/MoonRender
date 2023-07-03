@@ -4,10 +4,10 @@
 #include "D3DApp.h"
 #include "d3dUtil.h"
 #include "DXTrace.h"
-#include "../ImGui/imgui_impl_win32.h"
-#include "../ImGui/imgui_impl_dx11.h"
-#include "../ImGui/imgui.h"
-#include "../ResourcesProcess/public/BufferStruct.h"
+#include "../../ImGui/imgui_impl_win32.h"
+#include "../../ImGui/imgui_impl_dx11.h"
+#include "../../ImGui/imgui.h"
+#include "../../ResourcesProcess/public/BufferStruct.h"
 
 class GameApp : public D3DApp
 {

@@ -1,4 +1,4 @@
-#include "GameApp.h"
+#include "../public/GameApp.h"
 
 
 // Game的部分
@@ -94,19 +94,31 @@ bool GameApp::InitResources()
 
 bool GameApp::InitShaders()
 {
-    ComPtr<ID3DBlob> blob;
-
+    ComPtr<ID3DBlob> blob_vertex;
+    ComPtr<ID3DBlob> blob_pixel;
+    
     //载入编译好的Shader
-    HR(D3DReadFileToBlob(L"HLSL\\CSO\\Triangle_VS.cso", blob.GetAddressOf()));
-
+    HR(D3DReadFileToBlob(L"HLSL\\CSO\\Triangle_VS.cso", blob_vertex.GetAddressOf()));
+    HR(D3DReadFileToBlob(L"HLSL\\CSO\\Triangle_PS.cso", blob_pixel.GetAddressOf()));
+    
     //创建 顶点着色器
-    HR(m_pd3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));
+    HR(m_pd3dDevice->CreateVertexShader(blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));
+    //创建像素着色器
+    HR(m_pd3dDevice->CreatePixelShader(blob_pixel->GetBufferPointer(), blob_pixel->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf()));
+
+    //
+    
+    // HRESULT ID3D11Device::CreateInputLayout( 
+    // const D3D11_INPUT_ELEMENT_DESC *pInputElementDescs, // [In]输入布局描述
+    // UINT NumElements,                                   // [In]上述数组元素个数
+    // const void *pShaderBytecodeWithInputSignature,      // [In]顶点着色器字节码
+    // SIZE_T BytecodeLength,                              // [In]顶点着色器字节码长度
+    // ID3D11InputLayout **ppInputLayout);                 // [Out]获取的输入布局
     
     // 创建并绑定顶点布局
+    // 顶点布局只需要传给顶点着色器
     HR(m_pd3dDevice->CreateInputLayout(BufferStruct::VertexPosColor::inputLayout, ARRAYSIZE(BufferStruct::VertexPosColor::inputLayout),
-        blob->GetBufferPointer(), blob->GetBufferSize(), m_pVertexLayout.GetAddressOf()));
-    
-    // HR(m_pd3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf()));
+        blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), m_pVertexLayout.GetAddressOf()));
 
     return true;
 }
