@@ -7,3 +7,5 @@ x64/
 imgui.ini
 /HLSL/*.cso
 *.cso
+MoonRender.vcxproj.filters
+/MoonRender.vcxproj.user

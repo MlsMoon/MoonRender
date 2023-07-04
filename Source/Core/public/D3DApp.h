@@ -18,9 +18,9 @@
 #include "../public/DXTrace.h"
 #include <sstream>
 #include <iostream>
-#include "../../ImGui/imgui_impl_win32.h"
-#include "../../ImGui/imgui_impl_dx11.h"
-#include "../../ImGui/imgui.h"
+#include "Source/ThirdParty/ImGui/imgui_impl_win32.h"
+#include "Source/ThirdParty/ImGui/imgui_impl_dx11.h"
+#include "Source/ThirdParty/ImGui/imgui.h"
 
 class D3DApp
 {
