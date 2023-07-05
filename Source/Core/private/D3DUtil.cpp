@@ -1,4 +1,5 @@
 #include "../public/D3DUtil.h"
+#include <string>
 
 // 安全COM组件释放宏
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = nullptr; } }
@@ -56,11 +57,41 @@ HRESULT CreateShaderFromFile(const WCHAR * csoFileNameInOut, const WCHAR * hlslF
 }
 
 
-HRESULT MoonCreateShaderFromFile(const WCHAR * csoFileNameInOut, const WCHAR * hlslFileName,
+HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,
     LPCSTR entryPoint, LPCSTR shaderModel, ID3DBlob ** ppBlobOut)
 {
-    // 封装了编译shader，方便后续优化
-    // 编译的
+    // 封装
+    const WCHAR* csoFile = L".cso";
+    const WCHAR* csoDir = L"HLSL\\cso\\";
+    const WCHAR* lastComponent = nullptr;
+    const WCHAR* current = hlslFileName;
+
     
-    return CreateShaderFromFile(csoFileNameInOut, hlslFileName,entryPoint, shaderModel, ppBlobOut);
+    while (*current != '\0') {
+        const WCHAR* next = wcschr(current, '\\');
+        if (next == nullptr)
+            next = wcschr(current, '/');
+    
+        if (next == nullptr)
+            lastComponent = current;
+        else if (*(next + 1) != '\0')
+            lastComponent = next + 1;
+    
+        current = next != nullptr ? next + 1 : current + wcslen(current);
+    }
+    // 计算目标缓冲区大小
+    size_t totalLength = wcslen(csoDir) + wcslen(lastComponent) + wcslen(csoFile) + 1;
+    // 创建目标缓冲区
+    WCHAR* result = new WCHAR[totalLength];
+    // 清空目标缓冲区
+    wcscpy_s(result, totalLength, L"");
+    // 拼接 csoDir
+    wcscat_s(result, totalLength, csoDir);
+    // 拼接 lastComponent
+    if (lastComponent != nullptr)
+        wcscat_s(result, totalLength, lastComponent);
+    // 拼接 csoFile
+    wcscat_s(result, totalLength, csoFile);
+    
+    return CreateShaderFromFile(result, hlslFileName,entryPoint,shaderModel, ppBlobOut);
 }

@@ -1,7 +1,7 @@
 #include "../public/GameApp.h"
 
 
-// GameµÄ²¿·Ö
+// Gameçš„éƒ¨åˆ†
 GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight)
     : D3DApp(hInstance, windowName, initWidth, initHeight)
 {
@@ -40,13 +40,13 @@ void GameApp::DrawScene()
     m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), blue);
     m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-    // »æÖÆÈı½ÇĞÎ
+    // ç»˜åˆ¶ä¸‰è§’å½¢
     m_pd3dImmediateContext->Draw(8, 0);
 
-    //»æÖÆUI
+    //ç»˜åˆ¶UI
     ImGui::Render();
-    // ÏÂÃæÕâ¾ä»°»á´¥·¢ImGuiÔÚDirect3DµÄ»æÖÆ
-    // Òò´ËĞèÒªÔÚ´ËÖ®Ç°½«ºó±¸»º³åÇø°ó¶¨µ½äÖÈ¾¹ÜÏßÉÏ
+    // ä¸‹é¢è¿™å¥è¯ä¼šè§¦å‘ImGuiåœ¨Direct3Dçš„ç»˜åˆ¶
+    // å› æ­¤éœ€è¦åœ¨æ­¤ä¹‹å‰å°†åå¤‡ç¼“å†²åŒºç»‘å®šåˆ°æ¸²æŸ“ç®¡çº¿ä¸Š
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
     HR(m_pSwapChain->Present(0, 0));
@@ -60,12 +60,12 @@ void GameApp::DrawUI()
     {
         if (ImGui::MenuItem("Open"))
         {
-            // ´¦Àí "Open" ±»µã»÷µÄÂß¼­
+            // å¤„ç† "Open" è¢«ç‚¹å‡»çš„é€»è¾‘
         }
 
         if (ImGui::MenuItem("Save"))
         {
-            // ´¦Àí "Save" ±»µã»÷µÄÂß¼­
+            // å¤„ç† "Save" è¢«ç‚¹å‡»çš„é€»è¾‘
         }
 
         ImGui::EndMenu();
@@ -74,12 +74,12 @@ void GameApp::DrawUI()
     {
         if (ImGui::MenuItem("Test"))
         {
-            // ´¦Àí "Open" ±»µã»÷µÄÂß¼­
+            // å¤„ç† "Open" è¢«ç‚¹å‡»çš„é€»è¾‘
         }
 
         //if (ImGui::MenuItem("Save"))
         //{
-        //    // ´¦Àí "Save" ±»µã»÷µÄÂß¼­
+        //    // å¤„ç† "Save" è¢«ç‚¹å‡»çš„é€»è¾‘
         //}
         ImGui::EndMenu();
     }
@@ -92,10 +92,10 @@ bool GameApp::InitResources()
     if (!InitShaders())
         return false;
 
-    //ÔØÈë¶¥µãÊı¾İ
-    //ÕâÀïÏÈÓÃÒ»¸öÈı½ÇĞÎ´úÌæ£¬ºóĞøĞèÒªÔØÈëÄ£ĞÍ»ñÈ¡¶¥µãÊı¾İ
+    //è½½å…¥é¡¶ç‚¹æ•°æ®
+    //è¿™é‡Œå…ˆç”¨ä¸€ä¸ªä¸‰è§’å½¢ä»£æ›¿ï¼Œåç»­éœ€è¦è½½å…¥æ¨¡å‹è·å–é¡¶ç‚¹æ•°æ®
 
-    // ÉèÖÃÈı½ÇĞÎ¶¥µã
+    // è®¾ç½®ä¸‰è§’å½¢é¡¶ç‚¹
     const BufferStruct::VertexPosColor vertices[] =
     {
         { DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
@@ -108,62 +108,62 @@ bool GameApp::InitResources()
         { DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) }
     };
 
-    // ¶¥µã»º³åÇøÃèÊö ½á¹¹ÈçÏÂ£º
+    // é¡¶ç‚¹ç¼“å†²åŒºæè¿° ç»“æ„å¦‚ä¸‹ï¼š
     // typedef struct D3D11_BUFFER_DESC
     // {
-    //     UINT ByteWidth;             // Êı¾İ×Ö½ÚÊı
-    //     D3D11_USAGE Usage;          // CPUºÍGPUµÄ¶ÁĞ´È¨ÏŞÏà¹Ø
-    //     UINT BindFlags;             // »º³åÇøÀàĞÍµÄ±êÖ¾
-    //     UINT CPUAccessFlags;        // CPU¶ÁĞ´È¨ÏŞµÄÖ¸¶¨
-    //     UINT MiscFlags;             // ºöÂÔ
-    //     UINT StructureByteStride;   // ºöÂÔ
+    //     UINT ByteWidth;             // æ•°æ®å­—èŠ‚æ•°
+    //     D3D11_USAGE Usage;          // CPUå’ŒGPUçš„è¯»å†™æƒé™ç›¸å…³
+    //     UINT BindFlags;             // ç¼“å†²åŒºç±»å‹çš„æ ‡å¿—
+    //     UINT CPUAccessFlags;        // CPUè¯»å†™æƒé™çš„æŒ‡å®š
+    //     UINT MiscFlags;             // å¿½ç•¥
+    //     UINT StructureByteStride;   // å¿½ç•¥
     // }     D3D11_BUFFER_DESC;
     
-    // ÉèÖÃBufferÃèÊö
+    // è®¾ç½®Bufferæè¿°
     D3D11_BUFFER_DESC vertex_buffer_desc;
-    // ÊÇÒ»¸ö³£¼ûµÄÓÃ·¨£¬ÓÃÓÚ½«ÄÚ´æ¿éµÄÄÚÈİÉèÖÃÎªÁã¡£
-    //ÔÚÕâ¸öÓï¾äÖĞ£¬ZeroMemory ÊÇÒ»¸öºê¶¨Òå£¬Ëü½ÓÊÜÁ½¸ö²ÎÊı£ºÒªÇåÁãµÄÄÚ´æ¿éµÄÆğÊ¼µØÖ·ºÍÄÚ´æ¿éµÄ´óĞ¡¡£
+    // æ˜¯ä¸€ä¸ªå¸¸è§çš„ç”¨æ³•ï¼Œç”¨äºå°†å†…å­˜å—çš„å†…å®¹è®¾ç½®ä¸ºé›¶ã€‚
+    //åœ¨è¿™ä¸ªè¯­å¥ä¸­ï¼ŒZeroMemory æ˜¯ä¸€ä¸ªå®å®šä¹‰ï¼Œå®ƒæ¥å—ä¸¤ä¸ªå‚æ•°ï¼šè¦æ¸…é›¶çš„å†…å­˜å—çš„èµ·å§‹åœ°å€å’Œå†…å­˜å—çš„å¤§å°ã€‚
     ZeroMemory(&vertex_buffer_desc, sizeof(vertex_buffer_desc));
-    vertex_buffer_desc.Usage = D3D11_USAGE_IMMUTABLE; // ÉèÖÃ cpuºÍgpu µÄ¶ÁĞ´È¨ÏŞ£¬²»Í¬È¨ÏŞµÄ¸üĞÂĞ§ÂÊ²»Ò»Ñù
+    vertex_buffer_desc.Usage = D3D11_USAGE_IMMUTABLE; // è®¾ç½® cpuå’Œgpu çš„è¯»å†™æƒé™ï¼Œä¸åŒæƒé™çš„æ›´æ–°æ•ˆç‡ä¸ä¸€æ ·
     vertex_buffer_desc.ByteWidth = sizeof vertices;
-    vertex_buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // ÉèÖÃbuffer ÀàĞÍ ÕâÀïÉèÖÃÎª vertex buffer
+    vertex_buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // è®¾ç½®buffer ç±»å‹ è¿™é‡Œè®¾ç½®ä¸º vertex buffer
     vertex_buffer_desc.CPUAccessFlags = 0;
 
-    // £¬Ğí¶à×ÊÔ´£¨ÈçÎÆÀí¡¢¶¥µã»º³åÇøµÈ£©ĞèÒªÔÚ´´½¨Ê±½øĞĞ³õÊ¼»¯£¬ÒÔÌá¹©³õÊ¼µÄÊı¾İ¡£
+    // ï¼Œè®¸å¤šèµ„æºï¼ˆå¦‚çº¹ç†ã€é¡¶ç‚¹ç¼“å†²åŒºç­‰ï¼‰éœ€è¦åœ¨åˆ›å»ºæ—¶è¿›è¡Œåˆå§‹åŒ–ï¼Œä»¥æä¾›åˆå§‹çš„æ•°æ®ã€‚
     // typedef struct D3D11_SUBRESOURCE_DATA {
-    //     const void* pSysMem;        // Ö¸Ïò³õÊ¼»¯Êı¾İµÄÖ¸Õë
-    //     UINT SysMemPitch;           // Êı¾İµÄĞĞ´óĞ¡£¨ÒÔ×Ö½ÚÎªµ¥Î»£©£¬¶ÔÓÚ¶şÎ¬ÎÆÀíÊı¾İÓĞĞ§
-    //     UINT SysMemSlicePitch;      // Êı¾İµÄÉî¶È´óĞ¡£¨ÒÔ×Ö½ÚÎªµ¥Î»£©£¬¶ÔÓÚÈıÎ¬ÎÆÀíÊı¾İÓĞĞ§
+    //     const void* pSysMem;        // æŒ‡å‘åˆå§‹åŒ–æ•°æ®çš„æŒ‡é’ˆ
+    //     UINT SysMemPitch;           // æ•°æ®çš„è¡Œå¤§å°ï¼ˆä»¥å­—èŠ‚ä¸ºå•ä½ï¼‰ï¼Œå¯¹äºäºŒç»´çº¹ç†æ•°æ®æœ‰æ•ˆ
+    //     UINT SysMemSlicePitch;      // æ•°æ®çš„æ·±åº¦å¤§å°ï¼ˆä»¥å­—èŠ‚ä¸ºå•ä½ï¼‰ï¼Œå¯¹äºä¸‰ç»´çº¹ç†æ•°æ®æœ‰æ•ˆ
     // } D3D11_SUBRESOURCE_DATA;
-    // ĞÂ½¨¶¥µã»º³åÇø
+    // æ–°å»ºé¡¶ç‚¹ç¼“å†²åŒº
     D3D11_SUBRESOURCE_DATA InitData;
     ZeroMemory(&InitData, sizeof(InitData));
     InitData.pSysMem = vertices;
     HR(m_pd3dDevice->CreateBuffer(&vertex_buffer_desc, &InitData, m_pVertexBuffer.GetAddressOf()));
 
     // ******************
-    // ¸øäÖÈ¾¹ÜÏß¸÷¸ö½×¶Î°ó¶¨ºÃËùĞè×ÊÔ´
+    // ç»™æ¸²æŸ“ç®¡çº¿å„ä¸ªé˜¶æ®µç»‘å®šå¥½æ‰€éœ€èµ„æº
     //
 
-    // ÊäÈë×°Åä½×¶ÎµÄ¶¥µã»º³åÇøÉèÖÃ
-    UINT stride = sizeof(BufferStruct::VertexPosColor);	// ¿çÔ½×Ö½ÚÊı
-    UINT offset = 0;						// ÆğÊ¼Æ«ÒÆÁ¿
+    // è¾“å…¥è£…é…é˜¶æ®µçš„é¡¶ç‚¹ç¼“å†²åŒºè®¾ç½®
+    UINT stride = sizeof(BufferStruct::VertexPosColor);	// è·¨è¶Šå­—èŠ‚æ•°
+    UINT offset = 0;						// èµ·å§‹åç§»é‡
 
     m_pd3dImmediateContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
     
-    // ÉèÖÃÍ¼ÔªÀàĞÍ
-    // Í¼ÔªÀàËÆ£º¶¨ÒåÁË¶¥µãÊı¾İÈçºÎÃèÊöÒ»¸ö¼¸ºÎĞÎ×´
+    // è®¾ç½®å›¾å…ƒç±»å‹
+    // å›¾å…ƒç±»ä¼¼ï¼šå®šä¹‰äº†é¡¶ç‚¹æ•°æ®å¦‚ä½•æè¿°ä¸€ä¸ªå‡ ä½•å½¢çŠ¶
     m_pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    //ÉèÖÃÊäÈë²¼¾Ö
+    //è®¾ç½®è¾“å…¥å¸ƒå±€
     m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout.Get());
     
-    // ½«×ÅÉ«Æ÷°ó¶¨µ½äÖÈ¾¹ÜÏß
+    // å°†ç€è‰²å™¨ç»‘å®šåˆ°æ¸²æŸ“ç®¡çº¿
     m_pd3dImmediateContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
     m_pd3dImmediateContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
 
     // ******************
-    // ÉèÖÃµ÷ÊÔ¶ÔÏóÃû
+    // è®¾ç½®è°ƒè¯•å¯¹è±¡å
     //
     D3D11SetDebugObjectName(m_pVertexLayout.Get(), "VertexPosColorLayout");
     D3D11SetDebugObjectName(m_pVertexBuffer.Get(), "VertexBuffer");
@@ -179,26 +179,26 @@ bool GameApp::InitShaders()
     ComPtr<ID3DBlob> blob_vertex;
     ComPtr<ID3DBlob> blob_pixel;
     
-    //ÔØÈë±àÒëºÃµÄShader
-    HR(D3DReadFileToBlob(L"HLSL\\CSO\\Triangle_VS.cso", blob_vertex.GetAddressOf()));
-    HR(D3DReadFileToBlob(L"HLSL\\CSO\\Triangle_PS.cso", blob_pixel.GetAddressOf()));
+    //ç¼–è¯‘Shader
+    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Triangle\\Triangle_VS.hlsl","VS","vs_5_0", blob_vertex.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Triangle\\Triangle_PS.hlsl","PS","ps_5_0", blob_pixel.GetAddressOf()));
     
-    //´´½¨ ¶¥µã×ÅÉ«Æ÷
+    //åˆ›å»º é¡¶ç‚¹ç€è‰²å™¨
     HR(m_pd3dDevice->CreateVertexShader(blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));
-    //´´½¨ÏñËØ×ÅÉ«Æ÷
+    //åˆ›å»ºåƒç´ ç€è‰²å™¨
     HR(m_pd3dDevice->CreatePixelShader(blob_pixel->GetBufferPointer(), blob_pixel->GetBufferSize(), nullptr, m_pPixelShader.GetAddressOf()));
 
     //
     
     // HRESULT ID3D11Device::CreateInputLayout( 
-    // const D3D11_INPUT_ELEMENT_DESC *pInputElementDescs, // [In]ÊäÈë²¼¾ÖÃèÊö
-    // UINT NumElements,                                   // [In]ÉÏÊöÊı×éÔªËØ¸öÊı
-    // const void *pShaderBytecodeWithInputSignature,      // [In]¶¥µã×ÅÉ«Æ÷×Ö½ÚÂë
-    // SIZE_T BytecodeLength,                              // [In]¶¥µã×ÅÉ«Æ÷×Ö½ÚÂë³¤¶È
-    // ID3D11InputLayout **ppInputLayout);                 // [Out]»ñÈ¡µÄÊäÈë²¼¾Ö
+    // const D3D11_INPUT_ELEMENT_DESC *pInputElementDescs, // [In]è¾“å…¥å¸ƒå±€æè¿°
+    // UINT NumElements,                                   // [In]ä¸Šè¿°æ•°ç»„å…ƒç´ ä¸ªæ•°
+    // const void *pShaderBytecodeWithInputSignature,      // [In]é¡¶ç‚¹ç€è‰²å™¨å­—èŠ‚ç 
+    // SIZE_T BytecodeLength,                              // [In]é¡¶ç‚¹ç€è‰²å™¨å­—èŠ‚ç é•¿åº¦
+    // ID3D11InputLayout **ppInputLayout);                 // [Out]è·å–çš„è¾“å…¥å¸ƒå±€
     
-    // ´´½¨²¢°ó¶¨¶¥µã²¼¾Ö
-    // ¶¥µã²¼¾ÖÖ»ĞèÒª´«¸ø¶¥µã×ÅÉ«Æ÷
+    // åˆ›å»ºå¹¶ç»‘å®šé¡¶ç‚¹å¸ƒå±€
+    // é¡¶ç‚¹å¸ƒå±€åªéœ€è¦ä¼ ç»™é¡¶ç‚¹ç€è‰²å™¨
     HR(m_pd3dDevice->CreateInputLayout(BufferStruct::VertexPosColor::inputLayout, ARRAYSIZE(BufferStruct::VertexPosColor::inputLayout),
         blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), m_pVertexLayout.GetAddressOf()));
 
