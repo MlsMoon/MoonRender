@@ -141,6 +141,42 @@ bool GameApp::InitResources()
     InitData.pSysMem = vertices;
     HR(m_pd3dDevice->CreateBuffer(&vertex_buffer_desc, &InitData, m_pVertexBuffer.GetAddressOf()));
 
+
+
+    // ******************
+    // 索引数组
+    //
+    DWORD indices[] = {
+        // 正面
+        0, 1, 2,
+        2, 3, 0,
+        // 左面
+        4, 5, 1,
+        1, 0, 4,
+        // 顶面
+        1, 5, 6,
+        6, 2, 1,
+        // 背面
+        7, 6, 5,
+        5, 4, 7,
+        // 右面
+        3, 2, 6,
+        6, 7, 3,
+        // 底面
+        4, 0, 3,
+        3, 7, 4
+    };
+    // 设置索引缓冲区描述
+    D3D11_BUFFER_DESC ibd;
+    ZeroMemory(&ibd, sizeof(ibd));
+    ibd.Usage = D3D11_USAGE_IMMUTABLE;
+    ibd.ByteWidth = sizeof indices;
+    ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    ibd.CPUAccessFlags = 0;
+    // 新建索引缓冲区
+    InitData.pSysMem = indices;
+    HR(m_pd3dDevice->CreateBuffer(&ibd, &InitData, m_pIndexBuffer.GetAddressOf()));
+
     // ******************
     // 给渲染管线各个阶段绑定好所需资源
     //

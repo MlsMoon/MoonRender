@@ -30,8 +30,10 @@ private:
 private:
     ComPtr<ID3D11InputLayout> m_pVertexLayout;	// �������벼��
     ComPtr<ID3D11Buffer> m_pVertexBuffer;		// ���㻺����
+    ComPtr<ID3D11Buffer> m_pIndexBuffer;
     ComPtr<ID3D11VertexShader> m_pVertexShader;	// ������ɫ��
     ComPtr<ID3D11PixelShader> m_pPixelShader;	// ������ɫ��
+
 };
 
 
