@@ -57,8 +57,7 @@ HRESULT CreateShaderFromFile(const WCHAR * csoFileNameInOut, const WCHAR * hlslF
 }
 
 
-HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,CompileShaderType shaderType,
-    LPCSTR entryPoint, LPCSTR shaderModel, ID3DBlob ** ppBlobOut)
+HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,CompileShaderType shaderType,ID3DBlob ** ppBlobOut)
 {
     // 封装
     const WCHAR* csoFile = L".cso";
@@ -92,6 +91,25 @@ HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,CompileShaderType sh
         wcscat_s(result, totalLength, lastComponent);
     // 拼接 csoFile
     wcscat_s(result, totalLength, csoFile);
+
+    LPCSTR entryPoint = nullptr;
+    LPCSTR shaderModel = nullptr;
     
+    
+    switch (shaderType) {
+        case VS:
+            entryPoint = "VS";
+            shaderModel = "vs_5_0";
+            break;
+        case PS:
+            entryPoint = "PS";
+            shaderModel = "ps_5_0";
+            break;
+        case CS:
+            entryPoint = "CS";
+            shaderModel = "cs_5_0";
+            break;
+    }
+
     return CreateShaderFromFile(result, hlslFileName,entryPoint,shaderModel, ppBlobOut);
 }

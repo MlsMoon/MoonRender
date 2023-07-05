@@ -193,8 +193,6 @@ HRESULT CreateShaderFromFile(
 HRESULT MoonCreateShaderFromFile(
     const WCHAR* hlslFileName,
     CompileShaderType shaderType,
-    LPCSTR entryPoint,
-    LPCSTR shaderModel,
     ID3DBlob** ppBlobOut);
 
 
