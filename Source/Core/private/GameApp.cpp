@@ -180,8 +180,8 @@ bool GameApp::InitShaders()
     ComPtr<ID3DBlob> blob_pixel;
     
     //编译Shader
-    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Triangle\\Triangle_VS.hlsl","VS","vs_5_0", blob_vertex.GetAddressOf()));
-    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Triangle\\Triangle_PS.hlsl","PS","ps_5_0", blob_pixel.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Triangle\\Triangle_VS.hlsl",CompileShaderType::VS,"VS","vs_5_0", blob_vertex.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Triangle\\Triangle_PS.hlsl",CompileShaderType::PS,"PS","ps_5_0", blob_pixel.GetAddressOf()));
     
     //创建 顶点着色器
     HR(m_pd3dDevice->CreateVertexShader(blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));

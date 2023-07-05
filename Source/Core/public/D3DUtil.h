@@ -168,6 +168,13 @@ inline void DXGISetDebugObjectName(_In_ IDXGIObject* object, _In_ std::nullptr_t
 // 着色器编译相关函数
 //
 
+enum CompileShaderType
+{
+    VS,
+    PS,
+    CS
+};
+
 // ------------------------------
 // CreateShaderFromFile函数
 // ------------------------------
@@ -185,6 +192,7 @@ HRESULT CreateShaderFromFile(
 
 HRESULT MoonCreateShaderFromFile(
     const WCHAR* hlslFileName,
+    CompileShaderType shaderType,
     LPCSTR entryPoint,
     LPCSTR shaderModel,
     ID3DBlob** ppBlobOut);

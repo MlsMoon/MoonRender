@@ -57,7 +57,7 @@ HRESULT CreateShaderFromFile(const WCHAR * csoFileNameInOut, const WCHAR * hlslF
 }
 
 
-HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,
+HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,CompileShaderType shaderType,
     LPCSTR entryPoint, LPCSTR shaderModel, ID3DBlob ** ppBlobOut)
 {
     // 封装
