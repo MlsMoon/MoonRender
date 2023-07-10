@@ -31,8 +31,11 @@ private:
     ComPtr<ID3D11InputLayout> m_pVertexLayout;	
     ComPtr<ID3D11Buffer> m_pVertexBuffer;		
     ComPtr<ID3D11Buffer> m_pIndexBuffer;
+    ComPtr<ID3D11Buffer> m_pConstantBuffer;
+    
     ComPtr<ID3D11VertexShader> m_pVertexShader;	
-    ComPtr<ID3D11PixelShader> m_pPixelShader;	
+    ComPtr<ID3D11PixelShader> m_pPixelShader;
+    BufferStruct::ConstantMVPBuffer m_CBuffer;
 };
 
 

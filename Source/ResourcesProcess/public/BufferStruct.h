@@ -18,6 +18,13 @@ public:
         DirectX::XMFLOAT4 color;
         static const D3D11_INPUT_ELEMENT_DESC inputLayout[2];
     };
+
+    struct ConstantMVPBuffer
+    {
+        DirectX::XMMATRIX world;
+        DirectX::XMMATRIX view;
+        DirectX::XMMATRIX proj;
+    };
     
 };
 
