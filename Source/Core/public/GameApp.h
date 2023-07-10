@@ -28,10 +28,14 @@ private:
 
 //private parameter
 private:
-    ComPtr<ID3D11InputLayout> m_pVertexLayout;	// �������벼��
-    ComPtr<ID3D11Buffer> m_pVertexBuffer;		// ���㻺����
-    ComPtr<ID3D11VertexShader> m_pVertexShader;	// ������ɫ��
-    ComPtr<ID3D11PixelShader> m_pPixelShader;	// ������ɫ��
+    ComPtr<ID3D11InputLayout> m_pVertexLayout;	
+    ComPtr<ID3D11Buffer> m_pVertexBuffer;		
+    ComPtr<ID3D11Buffer> m_pIndexBuffer;
+    ComPtr<ID3D11Buffer> m_pConstantBuffer;
+    
+    ComPtr<ID3D11VertexShader> m_pVertexShader;	
+    ComPtr<ID3D11PixelShader> m_pPixelShader;
+    BufferStruct::ConstantMVPBuffer m_CBuffer;
 };
 
 
