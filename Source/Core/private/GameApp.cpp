@@ -35,6 +35,7 @@ void GameApp::UpdateScene(float dt)
     // 更新常量缓冲区，让立方体转起来
     D3D11_MAPPED_SUBRESOURCE mappedData;
     HR(m_pd3dImmediateContext->Map(m_pConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+    //memcpy_s() 是 C/C++ 标准库中的一个函数,用于执行内存拷贝操作。它用于安全地将一个内存区域的数据复制到另一个内存区域。
     memcpy_s(mappedData.pData, sizeof(m_CBuffer), &m_CBuffer, sizeof(m_CBuffer));
     m_pd3dImmediateContext->Unmap(m_pConstantBuffer.Get(), 0);
 }
