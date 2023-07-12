@@ -1,4 +1,4 @@
-﻿#include "UI.h"
+﻿#include "UserInterface.h"
 
 
 bool UI::DrawMainInterfaceUI()
@@ -24,6 +24,10 @@ bool UI::DrawMainInterfaceUI()
         {
             // 处理 "Open" 被点击的逻辑
         }
+        if (ImGui::MenuItem("Camera"))
+        {
+            // 处理 "Camera" 被点击的逻辑
+        }
 
         //if (ImGui::MenuItem("Save"))
         //{
@@ -32,5 +36,18 @@ bool UI::DrawMainInterfaceUI()
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
+
+    
+    ImGui::Begin("Camera");
+    static float ui_camera_fov_value = 0;
+    if (ImGui::SliderFloat("Camera FOV", &ui_camera_fov_value, 0.0f, 1.0f))
+    {
+        
+    }
+    ImGui::End();
+
+
+
+    
     return true;
 }

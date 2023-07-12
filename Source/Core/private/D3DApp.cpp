@@ -706,6 +706,7 @@ bool D3DApp::InitImGui()
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // 允许键盘控制
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
     io.ConfigWindowsMoveFromTitleBarOnly = true;              // 仅允许标题拖动
 
     // 设置Dear ImGui风格

@@ -138,7 +138,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\UI\UI.h" />
+    <ClInclude Include="Source\Core\public\MoonRenderClass.h" />
+    <ClInclude Include="Source\EventSystem\EventCenter.h" />
+    <ClInclude Include="Source\GameObject\Camera.h" />
+    <ClInclude Include="Source\UI\UserInterface.h" />
     <None Include="HLSL\Example\Cube\Cube.hlsli" />
     <ClInclude Include="Source\Core\public\CpuTimer.h" />
     <ClInclude Include="Source\Core\public\D3DApp.h" />
@@ -157,7 +160,9 @@
     <ClInclude Include="Source\ThirdParty\ImGui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\UI\UI.cpp" />
+    <ClCompile Include="Source\EventSystem\EventCenter.cpp" />
+    <ClCompile Include="Source\GameObject\Camera.cpp" />
+    <ClCompile Include="Source\UI\UserInterface.cpp" />
     <None Include="HLSL\Example\Cube\Cube_PS.hlsl">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

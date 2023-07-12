@@ -8,7 +8,7 @@
 #include "Source/ThirdParty/ImGui/imgui_impl_dx11.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
-#include "Source/UI/UI.h"
+#include "Source/UI/UserInterface.h"
 
 class GameApp : public D3DApp
 {
@@ -21,11 +21,14 @@ public:
     void UpdateScene(float dt);
     void DrawScene();
     void DrawUI();
-
+    float GetCameraFOVValue();
+    void SetCameraFOVValue(float newCameraFOV);
+    
 //private function:
 private:
     bool InitResources();
     bool InitShaders();
+    float CameraFOVValue = 90.0f;
 
 //private parameter
 private:

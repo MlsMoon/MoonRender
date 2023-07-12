@@ -25,7 +25,7 @@ bool GameApp::Init()
 void GameApp::OnResize()
 {
     D3DApp::OnResize();
-    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(90.0f), AspectRatio(), 1.0f, 1000.0f));
+    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
 }
 
 void GameApp::UpdateScene(float dt)
@@ -177,7 +177,7 @@ bool GameApp::InitResources()
         DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
         DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
     ));
-    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(90.0f), AspectRatio(), 1.0f, 1000.0f));
+    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
 
     // ******************
     // 给渲染管线各个阶段绑定好所需资源
@@ -241,4 +241,14 @@ bool GameApp::InitShaders()
         blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), m_pVertexLayout.GetAddressOf()));
 
     return true;
+}
+
+float GameApp::GetCameraFOVValue()
+{
+    return CameraFOVValue;
+}
+
+void GameApp::SetCameraFOVValue(float newCameraFOV)
+{
+    CameraFOVValue = newCameraFOV;
 }
