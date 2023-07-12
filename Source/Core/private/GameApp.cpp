@@ -25,6 +25,7 @@ bool GameApp::Init()
 void GameApp::OnResize()
 {
     D3DApp::OnResize();
+    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, AspectRatio(), 1.0f, 1000.0f));
 }
 
 void GameApp::UpdateScene(float dt)
@@ -32,6 +33,7 @@ void GameApp::UpdateScene(float dt)
     static float phi = 0.0f, theta = 0.0f;
     phi += 0.3f * dt, theta += 0.37f * dt;
     m_CBuffer.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationX(phi) * DirectX::XMMatrixRotationY(theta));
+    // m_CBuffer.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationX(phi));
     // 更新常量缓冲区，让立方体转起来
     D3D11_MAPPED_SUBRESOURCE mappedData;
     HR(m_pd3dImmediateContext->Map(m_pConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
@@ -62,37 +64,7 @@ void GameApp::DrawScene()
 
 void GameApp::DrawUI()
 {
-    //ImGui::SetNextWindowSize(ImVec2(400, 600));
-    ImGui::BeginMainMenuBar();
-    if (ImGui::BeginMenu("File"))
-    {
-        if (ImGui::MenuItem("Open"))
-        {
-            // 处理 "Open" 被点击的逻辑
-        }
-
-        if (ImGui::MenuItem("Save"))
-        {
-            // 处理 "Save" 被点击的逻辑
-        }
-
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Windows"))
-    {
-        if (ImGui::MenuItem("Test"))
-        {
-            // 处理 "Open" 被点击的逻辑
-        }
-
-        //if (ImGui::MenuItem("Save"))
-        //{
-        //    // 处理 "Save" 被点击的逻辑
-        //}
-        ImGui::EndMenu();
-    }
-    ImGui::EndMainMenuBar();
-
+    UI::DrawMainInterfaceUI();
 }
 
 bool GameApp::InitResources()

@@ -8,6 +8,7 @@
 #include "Source/ThirdParty/ImGui/imgui_impl_dx11.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
+#include "Source/UI/UI.h"
 
 class GameApp : public D3DApp
 {

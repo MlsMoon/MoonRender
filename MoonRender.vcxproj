@@ -138,6 +138,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\UI\UI.h" />
     <None Include="HLSL\Example\Cube\Cube.hlsli" />
     <ClInclude Include="Source\Core\public\CpuTimer.h" />
     <ClInclude Include="Source\Core\public\D3DApp.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="Source\ThirdParty\ImGui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\UI\UI.cpp" />
     <None Include="HLSL\Example\Cube\Cube_PS.hlsl">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -342,9 +344,6 @@
       <EnableDebuggingInformation>true</EnableDebuggingInformation>
       <ShaderType>Vertex</ShaderType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Source\UI" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\Example\Triangle\Triangle.hlsli" />
