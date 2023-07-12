@@ -25,7 +25,7 @@ bool GameApp::Init()
 void GameApp::OnResize()
 {
     D3DApp::OnResize();
-    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, AspectRatio(), 1.0f, 1000.0f));
+    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(90.0f), AspectRatio(), 1.0f, 1000.0f));
 }
 
 void GameApp::UpdateScene(float dt)
@@ -170,13 +170,14 @@ bool GameApp::InitResources()
     HR(m_pd3dDevice->CreateBuffer(&constant_buffer_desc, nullptr, m_pConstantBuffer.GetAddressOf()));
 
     // 初始化常量缓冲区的值
+    //MVP
     m_CBuffer.world = DirectX::XMMatrixIdentity();	// 单位矩阵的转置是它本身
     m_CBuffer.view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(
         DirectX::XMVectorSet(0.0f, 0.0f, -5.0f, 0.0f),
         DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
         DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
     ));
-    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV2, AspectRatio(), 1.0f, 1000.0f));
+    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(90.0f), AspectRatio(), 1.0f, 1000.0f));
 
     // ******************
     // 给渲染管线各个阶段绑定好所需资源
