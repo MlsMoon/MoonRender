@@ -19,6 +19,10 @@ bool GameApp::Init()
     if (!GameApp::InitResources())
         return false;
 
+    EventCenter& instance_event_center = MoonRenderClass::Singleton<EventCenter>::GetInstance();
+    // void* funcPtr = reinterpret_cast<void*>(&GameApp::SetCameraFOVValue);
+    // instance_event_center.AddListener("SetCameraFOV", SetCameraFOVValue);
+
     return true;
 }
 

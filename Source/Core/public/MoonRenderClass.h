@@ -1,34 +1,31 @@
 #pragma once
+#include <vector>
+
 
 namespace MoonRenderClass
 {
-    class Singleton
-    {
+    template<typename T>
+    class Singleton {
     public:
-        static Singleton* GetInstance()
+        static T& GetInstance()
         {
-            if (m_pInstance == nullptr)
+            if (instance == nullptr)
             {
-                m_pInstance = new Singleton();
+                instance = new T();
             }
-            return m_pInstance;
+            return instance;
         }
+
+        Singleton(const Singleton&) = delete;
+        Singleton& operator=(const Singleton&) = delete;
 
     protected:
-        Singleton()
-        {
-            //Singleton created.
-        }
-        ~Singleton()
-        {
-            //"Singleton destroyed."
-            delete  m_pInstance;
-        }
-    private:
-        static Singleton *m_pInstance;
+        Singleton() = default;
+        ~Singleton() = default;
+        static T instance;
     };
 
-
+    std::vector<int> a ;
 }
 
 

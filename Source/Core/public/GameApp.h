@@ -9,6 +9,8 @@
 #include "Source/ThirdParty/ImGui/imgui.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
 #include "Source/UI/UserInterface.h"
+#include "Source/EventSystem/EventCenter.h"
+#include "Source/Core/public/MoonRenderClass.h"
 
 class GameApp : public D3DApp
 {
