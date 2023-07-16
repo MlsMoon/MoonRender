@@ -9,12 +9,19 @@
 #include "Source/ThirdParty/ImGui/imgui.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
 #include "Source/UI/UserInterface.h"
+#include "Source/EventSystem/EventCenter.h"
+#include "Source/Core/public/MoonRenderClass.h"
 
 class GameApp : public D3DApp
 {
 public:
     GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight);
     ~GameApp();
+
+    inline static GameApp* currentGameApp = nullptr;
+    bool flag_exist = false;
+    
+    MoonUI::UserInterface game_user_interface;
 
     bool Init();
     void OnResize();
@@ -23,12 +30,13 @@ public:
     void DrawUI();
     float GetCameraFOVValue();
     void SetCameraFOVValue(float newCameraFOV);
+    float CameraFOVValue = 90.0f;
     
 //private function:
 private:
     bool InitResources();
     bool InitShaders();
-    float CameraFOVValue = 90.0f;
+
 
 //private parameter
 private:

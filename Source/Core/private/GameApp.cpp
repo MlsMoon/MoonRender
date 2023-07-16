@@ -5,6 +5,10 @@
 GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight)
     : D3DApp(hInstance, windowName, initWidth, initHeight),m_CBuffer()
 {
+    if(GameApp::flag_exist == true)
+        return;
+    GameApp::flag_exist = true;
+    GameApp::currentGameApp = this;
 }
 
 GameApp::~GameApp()
@@ -18,6 +22,9 @@ bool GameApp::Init()
 
     if (!GameApp::InitResources())
         return false;
+    
+    const MoonFunctionPtr<float> function_ptr_set_camera_fov = [this](float value) { SetCameraFOVValue(value); };
+    EventCenter::AddListener("SetCameraFOVValue",function_ptr_set_camera_fov);
 
     return true;
 }
@@ -25,7 +32,6 @@ bool GameApp::Init()
 void GameApp::OnResize()
 {
     D3DApp::OnResize();
-    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
 }
 
 void GameApp::UpdateScene(float dt)
@@ -33,6 +39,7 @@ void GameApp::UpdateScene(float dt)
     static float phi = 0.0f, theta = 0.0f;
     phi += 0.3f * dt, theta += 0.37f * dt;
     m_CBuffer.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationX(phi) * DirectX::XMMatrixRotationY(theta));
+    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
     // m_CBuffer.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationX(phi));
     // 更新常量缓冲区，让立方体转起来
     D3D11_MAPPED_SUBRESOURCE mappedData;
@@ -64,7 +71,7 @@ void GameApp::DrawScene()
 
 void GameApp::DrawUI()
 {
-    UI::DrawMainInterfaceUI();
+    game_user_interface.DrawMainInterfaceUI();
 }
 
 bool GameApp::InitResources()
@@ -243,10 +250,6 @@ bool GameApp::InitShaders()
     return true;
 }
 
-float GameApp::GetCameraFOVValue()
-{
-    return CameraFOVValue;
-}
 
 void GameApp::SetCameraFOVValue(float newCameraFOV)
 {
