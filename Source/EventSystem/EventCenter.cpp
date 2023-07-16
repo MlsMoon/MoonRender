@@ -1,23 +1,31 @@
 #include "EventCenter.h"
 
-// 定义一个函数类型别名
-typedef void(*FunctionPointer)();
+#include <utility>
 
-// bool EventCenter::EventTrigger(std::string event_name)
-// {
-//     auto it = registered_events.find(event_name);
-//     if (it != registered_events.end()) {
-//         void* void_ptr = it->second;
-//         FunctionPointer func = reinterpret_cast<FunctionPointer>(void_ptr);
-//         func();
-//     }
-// }
-//
-// void EventCenter::AddListener(std::string event_name, void* event)
-// {
-//     registered_events.insert(std::make_pair(event_name,(void*)event));
-// }
+// 定义静态成员变量
+//instance
+EventCenter* MoonRenderClass::Singleton<EventCenter>::instance = nullptr;
+std::unordered_map<std::string, MoonFunctionPtr<float>> EventCenter::register_events_map_float;
 
+
+bool EventCenter::EventTrigger(const std::string& event_name, float param)
+{
+    if (instance==nullptr)
+        if(!EventCenter::CreateInstance<EventCenter>())
+            return false;
+    const auto func_ptr = EventCenter::register_events_map_float[event_name];
+    func_ptr(param);
+    return true;
+}
+
+bool EventCenter::AddListener(const std::string& event_name, MoonFunctionPtr<float> register_event)
+{
+    if (instance==nullptr)
+        if(!CreateInstance<EventCenter>())
+            return false;
+    EventCenter::register_events_map_float[event_name] = std::move(register_event);
+    return true;
+}
 
 EventCenter::EventCenter()
 {

@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 
 
 namespace MoonRenderClass
@@ -7,7 +6,7 @@ namespace MoonRenderClass
     template<typename T>
     class Singleton {
     public:
-        static T& GetInstance()
+        static T* GetInstance()
         {
             if (instance == nullptr)
             {
@@ -20,12 +19,26 @@ namespace MoonRenderClass
         Singleton& operator=(const Singleton&) = delete;
 
     protected:
+        template<typename C>
+        [[nodiscard]] static bool CreateInstance()
+        {
+            if (instance == nullptr)
+            {
+                instance = new C();
+            }
+            else
+            {
+                return false;
+            }
+            return true;
+        }
+
         Singleton() = default;
         ~Singleton() = default;
-        static T instance;
+        static T* instance;
     };
-
-    std::vector<int> a ;
 }
+
+
 
 

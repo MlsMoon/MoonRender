@@ -18,6 +18,11 @@ public:
     GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight);
     ~GameApp();
 
+    inline static GameApp* currentGameApp = nullptr;
+    bool flag_exist = false;
+    
+    MoonUI::UserInterface game_user_interface;
+
     bool Init();
     void OnResize();
     void UpdateScene(float dt);
@@ -25,12 +30,13 @@ public:
     void DrawUI();
     float GetCameraFOVValue();
     void SetCameraFOVValue(float newCameraFOV);
+    float CameraFOVValue = 90.0f;
     
 //private function:
 private:
     bool InitResources();
     bool InitShaders();
-    float CameraFOVValue = 90.0f;
+
 
 //private parameter
 private:

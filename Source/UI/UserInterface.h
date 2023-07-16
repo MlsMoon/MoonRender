@@ -1,12 +1,18 @@
 ﻿#pragma once
+
 #include "Source/ThirdParty/ImGui/imgui.h"
-#include "Source/Core/public/GameApp.h"
+#include "Source/EventSystem/EventCenter.h"
 
-class UI
+namespace MoonUI
 {
-public:
-    static bool DrawMainInterfaceUI();
+    class UserInterface
+    {
+    public:
+        bool DrawMainInterfaceUI();
+        UserInterface();
+        ~UserInterface();
 
-private:
-
-};
+    private:
+        float ui_camera_fov = 90.0f;
+    };
+}
