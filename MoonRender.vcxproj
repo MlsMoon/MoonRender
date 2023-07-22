@@ -151,7 +151,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Struct.hlsli" />
-    <ClInclude Include="Resources\Shaders\LightHelper.hlsli" />
+    <None Include="Resources\Shaders\LightHelper.hlsli" />
     <ClInclude Include="Source\AppWin\public\MoonRenderClass.h" />
     <ClInclude Include="Source\EventSystem\EventCenter.h" />
     <ClInclude Include="Source\EventSystem\LogSystem.h" />
@@ -179,8 +179,8 @@
     <ClInclude Include="Source\ThirdParty\ImGui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Resources\Shaders\Light_PS.hlsl" />
-    <ClCompile Include="Resources\Shaders\Light_VS.hlsl" />
+    <None Include="Resources\Shaders\Light_PS.hlsl" />
+    <None Include="Resources\Shaders\VertexCommon.hlsl" />
     <ClCompile Include="Source\EventSystem\EventCenter.cpp" />
     <ClCompile Include="Source\EventSystem\LogSystem.cpp" />
     <ClCompile Include="Source\GameObject\Camera.cpp" />

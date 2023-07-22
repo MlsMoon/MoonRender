@@ -14,15 +14,10 @@ namespace Render
         DirectionalLight(DirectionalLight&&) = default;
         DirectionalLight& operator=(DirectionalLight&&) = default;
 
-        DirectionalLight(const DirectX::XMFLOAT4& _ambient, const DirectX::XMFLOAT4& _diffuse, const DirectX::XMFLOAT4& _specular,
-            const DirectX::XMFLOAT3& _direction) :
-            ambient(_ambient), diffuse(_diffuse), specular(_specular), direction(_direction), pad() {}
+        DirectionalLight(const DirectX::XMFLOAT4& _direction_intensity) : direction_intensity(_direction_intensity) {}
+        
+        DirectX::XMFLOAT4 direction_intensity; // dir : x,y,z intensity: w
 
-        DirectX::XMFLOAT4 ambient;
-        DirectX::XMFLOAT4 diffuse;
-        DirectX::XMFLOAT4 specular;
-        DirectX::XMFLOAT3 direction;
-        float pad; // 最后用一个浮点数填充使得该结构体大小满足16的倍数，便于我们以后在HLSL设置数组
     };
 
     

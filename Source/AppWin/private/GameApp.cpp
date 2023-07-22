@@ -4,12 +4,19 @@
 
 // Game的部分
 GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight)
-    : D3DApp(hInstance, windowName, initWidth, initHeight),m_CBuffer()
+    : D3DApp(hInstance, windowName, initWidth, initHeight)
 {
     if(GameApp::flag_exist == true)
         return;
     GameApp::flag_exist = true;
     GameApp::currentGameApp = this;
+    
+    m_cBuffer_MVP = BufferStruct::ConstantMVPBuffer();
+    m_cBuffer_PS = BufferStruct::ConstantPSBuffer();
+    m_DirLight = Render::DirectionalLight();
+    m_PointLight = Render::PointLight();
+    m_SpotLight = Render::SpotLight();
+    m_IsWireframeMode = false;
 }
 
 GameApp::~GameApp()
@@ -39,17 +46,27 @@ void GameApp::OnResize()
 
 void GameApp::UpdateScene(float dt)
 {
+    
+    //一个转动MVP矩阵的效果
     static float phi = 0.0f, theta = 0.0f;
     phi += 0.3f * dt, theta += 0.37f * dt;
-    m_CBuffer.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationX(phi) * DirectX::XMMatrixRotationY(theta));
-    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
+    
+    DirectX::XMMATRIX W = DirectX::XMMatrixRotationX(phi) * DirectX::XMMatrixRotationY(theta);
+    m_cBuffer_MVP.world = XMMatrixTranspose(W);
+    m_cBuffer_MVP.worldInvTranspose = DirectX::XMMatrixTranspose(InverseTranspose(W));
+    m_cBuffer_MVP.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
     // m_CBuffer.world = DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationX(phi));
-    // 更新常量缓冲区，让立方体转起来
+    // 更新常量缓冲区
     D3D11_MAPPED_SUBRESOURCE mappedData;
-    HR(m_pd3dImmediateContext->Map(m_pConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
-    //memcpy_s() 是 C/C++ 标准库中的一个函数,用于执行内存拷贝操作。它用于安全地将一个内存区域的数据复制到另一个内存区域。
-    memcpy_s(mappedData.pData, sizeof(m_CBuffer), &m_CBuffer, sizeof(m_CBuffer));
-    m_pd3dImmediateContext->Unmap(m_pConstantBuffer.Get(), 0);
+    HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+    memcpy_s(mappedData.pData, sizeof(BufferStruct::ConstantMVPBuffer), &m_cBuffer_MVP, sizeof(BufferStruct::ConstantMVPBuffer));
+    m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
+
+    HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+    memcpy_s(mappedData.pData, sizeof(BufferStruct::ConstantPSBuffer), &m_cBuffer_PS, sizeof(BufferStruct::ConstantPSBuffer));
+    m_pd3dImmediateContext->Unmap(m_pConstantBuffers[1].Get(), 0);
+
+    
 }
 
 void GameApp::DrawScene()
@@ -87,12 +104,14 @@ bool GameApp::InitResources()
     //TODO:相对路径
     tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile("E:\\MoonRender\\Resources\\Models\\Cube_Tri.obj");
 
+    // 载入obj 模型：
+    //TODO:优化代码
     auto& attrib = reader.GetAttrib();
     auto& shapes = reader.GetShapes();
     auto& materials = reader.GetMaterials();
 
-    const size_t vertex_buffer_size = 36;
-    BufferStruct::VertexPosNormal vertices_cube_tri[vertex_buffer_size];
+    const size_t vertex_buffer_size = shapes[0].mesh.num_face_vertices.size() * 3;
+    BufferStruct::VertexPosNormal vertices_cube_tri[36];
 
     for (size_t s = 0; s < shapes.size(); s++)
     {
@@ -179,26 +198,6 @@ bool GameApp::InitResources()
     // ******************
     // 索引数组
     //
-    DWORD indices[] = {
-        // 正面
-        0, 1, 2,
-        2, 3, 0,
-        // 左面
-        4, 5, 1,
-        1, 0, 4,
-        // 顶面
-        1, 5, 6,
-        6, 2, 1,
-        // 背面
-        7, 6, 5,
-        5, 4, 7,
-        // 右面
-        3, 2, 6,
-        6, 7, 3,
-        // 底面
-        4, 0, 3,
-        3, 7, 4
-    };
     DWORD indices_cube[36];
     for (int i = 0 ; i < shapes[0].mesh.indices.size() ;i++)
     {
@@ -225,18 +224,45 @@ bool GameApp::InitResources()
     constant_buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     constant_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     // 新建常量缓冲区，不使用初始数据
-    HR(m_pd3dDevice->CreateBuffer(&constant_buffer_desc, nullptr, m_pConstantBuffer.GetAddressOf()));
+    HR(m_pd3dDevice->CreateBuffer(&constant_buffer_desc, nullptr, m_pConstantBuffers[0].GetAddressOf()));
+    constant_buffer_desc.ByteWidth = sizeof(BufferStruct::ConstantPSBuffer);
+    HR(m_pd3dDevice->CreateBuffer(&constant_buffer_desc, nullptr, m_pConstantBuffers[1].GetAddressOf()));
 
     // 初始化常量缓冲区的值
     //MVP
-    m_CBuffer.world = DirectX::XMMatrixIdentity();	// 单位矩阵的转置是它本身
-    m_CBuffer.view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(
+    //TODO:可移动
+    m_cBuffer_MVP.world = DirectX::XMMatrixIdentity();	// 单位矩阵的转置是它本身
+    m_cBuffer_MVP.view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(
         DirectX::XMVectorSet(0.0f, 0.0f, -5.0f, 0.0f),
         DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
         DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)
     ));
-    m_CBuffer.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
+    m_cBuffer_MVP.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(CameraFOVValue), AspectRatio(), 1.0f, 1000.0f));
 
+    // ******************
+    // 初始化默认光照
+    // 方向光
+    m_DirLight.direction_intensity = DirectX::XMFLOAT4(-0.577f, -0.577f, 0.577f,1.0f);
+
+    // 初始化用于PS的常量缓冲区的值
+    m_cBuffer_PS.material.ambient = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+    m_cBuffer_PS.material.diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_cBuffer_PS.material.specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 5.0f);
+    m_cBuffer_PS.dirLight = m_DirLight;
+    m_cBuffer_PS.eyePos = DirectX::XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
+    
+
+    // ******************
+    // 初始化光栅化状态
+    //
+    D3D11_RASTERIZER_DESC rasterizerDesc;
+    ZeroMemory(&rasterizerDesc, sizeof(rasterizerDesc));
+    rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+    rasterizerDesc.CullMode = D3D11_CULL_NONE;
+    rasterizerDesc.FrontCounterClockwise = false;
+    rasterizerDesc.DepthClipEnable = true;
+    HR(m_pd3dDevice->CreateRasterizerState(&rasterizerDesc, m_pRSWireframe.GetAddressOf()));
+    
     // ******************
     // 给渲染管线各个阶段绑定好所需资源
     //
@@ -248,7 +274,6 @@ bool GameApp::InitResources()
     m_pd3dImmediateContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
     m_pd3dImmediateContext->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
     // 设置图元类型
-    // 图元类似：定义了顶点数据如何描述一个几何形状
     m_pd3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     //设置输入布局
     m_pd3dImmediateContext->IASetInputLayout(m_pVertexLayout.Get());
@@ -256,17 +281,21 @@ bool GameApp::InitResources()
     // 将着色器绑定到渲染管线
     m_pd3dImmediateContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
     m_pd3dImmediateContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
-    m_pd3dImmediateContext->VSSetConstantBuffers(0, 1, m_pConstantBuffer.GetAddressOf());
+    m_pd3dImmediateContext->VSSetConstantBuffers(0, 1, m_pConstantBuffers[0].GetAddressOf());
+    m_pd3dImmediateContext->VSSetConstantBuffers(1, 1, m_pConstantBuffers[1].GetAddressOf());
 
 
 
     // ******************
     // 设置调试对象名
     //
+    D3D11SetDebugObjectName(m_pIndexBuffer.Get(), "IndexBuffer");
     D3D11SetDebugObjectName(m_pVertexLayout.Get(), "VertexPosColorLayout");
     D3D11SetDebugObjectName(m_pVertexBuffer.Get(), "VertexBuffer");
-    D3D11SetDebugObjectName(m_pVertexShader.Get(), "Trangle_VS");
-    D3D11SetDebugObjectName(m_pPixelShader.Get(), "Trangle_PS");
+    D3D11SetDebugObjectName(m_pConstantBuffers[0].Get(), "MVPConstantBuffer");
+    D3D11SetDebugObjectName(m_pConstantBuffers[1].Get(), "MaterialConstantBuffer");
+    D3D11SetDebugObjectName(m_pVertexShader.Get(), "Light_VS");
+    D3D11SetDebugObjectName(m_pPixelShader.Get(), "Light_PS");
     
 
     return true;
@@ -278,8 +307,10 @@ bool GameApp::InitShaders()
     ComPtr<ID3DBlob> blob_pixel;
     
     //编译Shader
-    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_VS.hlsl",CompileShaderType::VS, blob_vertex.GetAddressOf()));
-    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_PS.hlsl",CompileShaderType::PS, blob_pixel.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\VertexCommon.hlsl",CompileShaderType::VS, blob_vertex.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Light_PS.hlsl",CompileShaderType::PS, blob_pixel.GetAddressOf()));
+    // HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_VS.hlsl",CompileShaderType::VS, blob_vertex.GetAddressOf()));
+    // HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_PS.hlsl",CompileShaderType::PS, blob_pixel.GetAddressOf()));
     
     //创建 顶点着色器
     HR(m_pd3dDevice->CreateVertexShader(blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));
@@ -295,7 +326,7 @@ bool GameApp::InitShaders()
     
     // 创建并绑定顶点布局
     // 顶点布局只需要传给顶点着色器
-    HR(m_pd3dDevice->CreateInputLayout(BufferStruct::VertexPosColor::inputLayout, ARRAYSIZE(BufferStruct::VertexPosColor::inputLayout),
+    HR(m_pd3dDevice->CreateInputLayout(BufferStruct::VertexPosNormal::inputLayout, ARRAYSIZE(BufferStruct::VertexPosNormal::inputLayout),
         blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), m_pVertexLayout.GetAddressOf()));
 
     return true;

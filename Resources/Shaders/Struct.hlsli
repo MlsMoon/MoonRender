@@ -1,4 +1,4 @@
-﻿#include "LightHelper.hlsli"
+#include "LightHelper.hlsli"
 
 cbuffer VSConstantBuffer : register(b0)
 {
@@ -11,13 +11,10 @@ cbuffer VSConstantBuffer : register(b0)
 cbuffer PSConstantBuffer : register(b1)
 {
     DirectionalLight g_DirLight;
-    PointLight g_PointLight;
-    SpotLight g_SpotLight;
     Material g_Material;
     float3 g_EyePosW;
     float g_Pad;
 }
-
 
 
 struct VertexIn
@@ -29,7 +26,7 @@ struct VertexIn
 struct VertexOut
 {
     float4 posH : SV_POSITION;
-    float3 posW : POSITION;     // 在世界中的位置
-    float3 normalW : NORMAL;    // 法向量在世界中的方向
+    float3 posW : POSITION;     
+    float3 normalW : NORMAL;    
     float4 color : COLOR;
 };

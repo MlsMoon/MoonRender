@@ -3,8 +3,11 @@
 
 #include <directxmath.h>
 #include <d3d11.h>
+#include "Source/Render/LightType.h"
+#include "Source/Render/MaterialParam.h"
 
-//存储cpp中的顶点结构，和其对应的 输入布局描述，与HLSL中对应
+
+//存储cpp中的Buffer结构，与HLSL中对应
 
 class BufferStruct
 {
@@ -41,19 +44,21 @@ public:
         static const D3D11_INPUT_ELEMENT_DESC inputLayout[4];
     };
 
+    //-------------------------------------------
+    //Constant:
+
     struct ConstantMVPBuffer
     {
         DirectX::XMMATRIX world;
         DirectX::XMMATRIX view;
         DirectX::XMMATRIX proj;
+        DirectX::XMMATRIX worldInvTranspose;
     };
 
     struct ConstantPSBuffer
     {
-        DirectionalLight dirLight;
-        PointLight pointLight;
-        SpotLight spotLight;
-        Material material;
+        Render::DirectionalLight dirLight;
+        Render::MaterialParam material;
         DirectX::XMFLOAT4 eyePos;
     };
     

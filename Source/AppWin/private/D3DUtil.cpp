@@ -41,7 +41,11 @@ HRESULT CreateShaderFromFile(const WCHAR * csoFileNameInOut, const WCHAR * hlslF
         {
             if (errorBlob != nullptr)
             {
-                OutputDebugStringA(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
+                const char* error_msg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+                OutputDebugStringA(error_msg);
+                
+                //TODO:Shader编译出问题时需要Fallback
+                
             }
             SAFE_RELEASE(errorBlob);
             return hr;
@@ -63,7 +67,7 @@ HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,CompileShaderType sh
     //TODO:优化为直接获取根目录
     const std::filesystem::path currentFilePath(__FILE__);
     std::filesystem::path projectDir = currentFilePath.parent_path().parent_path().parent_path().parent_path().string();
-    std::filesystem::path csoPath = std::filesystem::path(projectDir) / "HLSL" / "CSO";
+    std::filesystem::path csoPath = std::filesystem::path(projectDir) / "Cache" / "CSO";
 
     // 检查路径是否存在，如果不存在则创建文件夹
     if (!std::filesystem::exists(csoPath)) {
@@ -72,7 +76,7 @@ HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,CompileShaderType sh
     
     // 封装
     const WCHAR* csoFile = L".cso";
-    const WCHAR* csoDir = L"HLSL\\cso\\";
+    const WCHAR* csoDir = L"Cache\\cso\\";
     const WCHAR* lastComponent = nullptr;
     const WCHAR* current = hlslFileName;
 

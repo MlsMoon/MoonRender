@@ -1,6 +1,5 @@
 #include "Struct.hlsli"
 
-// 顶点着色器
 VertexOut VS(VertexIn vIn)
 {
     VertexOut vOut;
@@ -10,6 +9,6 @@ VertexOut VS(VertexIn vIn)
     vOut.posH = mul(posW, viewProj);
     vOut.posW = posW.xyz;
     vOut.normalW = mul(vIn.normalL, (float3x3) g_WorldInvTranspose);
-    vOut.color = float4(1.0f,1.0f,1.0f,1.0f); // 这里alpha通道的值默认为1.0
+    vOut.color = float4(1.0f,1.0f,1.0f,1.0f); 
     return vOut;
 }
