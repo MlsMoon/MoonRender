@@ -33,8 +33,8 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 D3DApp::D3DApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight)
     : m_hAppInst(hInstance),
     m_MainWndCaption(windowName),
-    m_ClientWidth(initWidth),
-    m_ClientHeight(initHeight),
+    ClientWidth(initWidth),
+    ClientHeight(initHeight),
     m_hMainWnd(nullptr),
     m_AppPaused(false),
     m_Minimized(false),
@@ -76,7 +76,7 @@ HWND D3DApp::MainWnd()const
 
 float D3DApp::AspectRatio()const
 {
-    return static_cast<float>(m_ClientWidth) / m_ClientHeight;
+    return static_cast<float>(ClientWidth) / ClientHeight;
 }
 
 int D3DApp::Run()
@@ -168,7 +168,7 @@ void D3DApp::OnResize()
     // 在D3D初始化的函数中，会创建一个DXGI交换链
     // 创建的交换链自带了一个后背缓冲区，通过GetBuffer来获取
     ComPtr<ID3D11Texture2D> backBuffer;
-    HR(m_pSwapChain->ResizeBuffers(1, m_ClientWidth, m_ClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+    HR(m_pSwapChain->ResizeBuffers(1, ClientWidth, ClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
     //HRESULT IDXGISwapChain::GetBuffer(
     //    UINT Buffer,        // [In]缓冲区索引号，从0到BufferCount - 1
     //    REFIID riid,        // [In]缓冲区的接口类型ID
@@ -209,8 +209,8 @@ void D3DApp::OnResize()
 
     D3D11_TEXTURE2D_DESC depthStencilDesc;
 
-    depthStencilDesc.Width = m_ClientWidth;
-    depthStencilDesc.Height = m_ClientHeight;
+    depthStencilDesc.Width = ClientWidth;
+    depthStencilDesc.Height = ClientHeight;
     depthStencilDesc.MipLevels = 1;
     depthStencilDesc.ArraySize = 1;
     depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -272,8 +272,8 @@ void D3DApp::OnResize()
     //}     D3D11_VIEWPORT;
     m_ScreenViewport.TopLeftX = 0;
     m_ScreenViewport.TopLeftY = 0;
-    m_ScreenViewport.Width = static_cast<float>(m_ClientWidth);
-    m_ScreenViewport.Height = static_cast<float>(m_ClientHeight);
+    m_ScreenViewport.Width = static_cast<float>(ClientWidth);
+    m_ScreenViewport.Height = static_cast<float>(ClientHeight);
     m_ScreenViewport.MinDepth = 0.0f;
     m_ScreenViewport.MaxDepth = 1.0f;
 
@@ -316,8 +316,8 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         // WM_SIZE is sent when the user resizes the window.  
     case WM_SIZE:
         // Save the new client area dimensions.
-        m_ClientWidth = LOWORD(lParam);
-        m_ClientHeight = HIWORD(lParam);
+        ClientWidth = LOWORD(lParam);
+        ClientHeight = HIWORD(lParam);
         if (m_pd3dDevice)
         {
             if (wParam == SIZE_MINIMIZED)
@@ -444,7 +444,7 @@ bool D3DApp::InitMainWindow()
     }
 
     // Compute window rectangle dimensions based on requested client area dimensions.
-    RECT R = { 0, 0, m_ClientWidth, m_ClientHeight };
+    RECT R = { 0, 0, ClientWidth, ClientHeight };
     AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
     int width = R.right - R.left;
     int height = R.bottom - R.top;
@@ -597,8 +597,8 @@ bool D3DApp::InitDirect3D()
         // 填充各种结构体用以描述交换链
         DXGI_SWAP_CHAIN_DESC1 sd;
         ZeroMemory(&sd, sizeof(sd));
-        sd.Width = m_ClientWidth;
-        sd.Height = m_ClientHeight;
+        sd.Width = ClientWidth;
+        sd.Height = ClientHeight;
         sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         // 是否开启4倍多重采样？
         if (m_Enable4xMsaa)
@@ -631,8 +631,8 @@ bool D3DApp::InitDirect3D()
         // 填充DXGI_SWAP_CHAIN_DESC用以描述交换链
         DXGI_SWAP_CHAIN_DESC sd;
         ZeroMemory(&sd, sizeof(sd));
-        sd.BufferDesc.Width = m_ClientWidth;
-        sd.BufferDesc.Height = m_ClientHeight;
+        sd.BufferDesc.Width = ClientWidth;
+        sd.BufferDesc.Height = ClientHeight;
         sd.BufferDesc.RefreshRate.Numerator = 60;
         sd.BufferDesc.RefreshRate.Denominator = 1;
         sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -711,11 +711,15 @@ bool D3DApp::InitImGui()
 
     // 设置Dear ImGui风格
     ImGui::StyleColorsLight();
-    ImGui::GetIO().FontGlobalScale = 1.5;
+    ImGui::GetIO().FontGlobalScale = 1.0;
 
     // 设置平台/渲染器后端
     ImGui_ImplWin32_Init(m_hMainWnd);
     ImGui_ImplDX11_Init(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get());
+
+    //设置字体
+    ImFont* font = io.Fonts->AddFontFromFileTTF("Resources/Fonts/hanyiyingsong45jian.ttf", 16.0f);
+    io.FontDefault = font;
 
     return true;
 

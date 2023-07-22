@@ -1,4 +1,5 @@
 #include "../public/GameApp.h"
+#include "Source/ThirdParty/tinyobjloader/tiny_obj_loader.h"
 
 
 // Game的部分
@@ -17,6 +18,8 @@ GameApp::~GameApp()
 
 bool GameApp::Init()
 {
+    EventSystem::LogSystem::Print("Hello");
+    EventSystem::LogSystem::Print("Start Init");
     if (!D3DApp::Init())
         return false;
 
@@ -80,21 +83,64 @@ bool GameApp::InitResources()
         return false;
 
     //载入顶点数据
-    //这里先用一个三角形代替，后续需要载入模型获取顶点数据
 
-    // 设置三角形顶点
-    const BufferStruct::VertexPosColor vertices[] =
+    //TODO:相对路径
+    tinyobj::ObjReader reader = MoonObjLoader::LoadObjFile("E:\\MoonRender\\Resources\\Models\\Cube_Tri.obj");
+
+    auto& attrib = reader.GetAttrib();
+    auto& shapes = reader.GetShapes();
+    auto& materials = reader.GetMaterials();
+
+    const size_t vertex_buffer_size = 36;
+    BufferStruct::VertexPosNormal vertices_cube_tri[vertex_buffer_size];
+
+    for (size_t s = 0; s < shapes.size(); s++)
     {
-        { DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
-        { DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
-        { DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
-        { DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
-        { DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
-        { DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
-        { DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
-        { DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f), DirectX::XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) }
-    };
+        // Loop over faces(polygon)
+        size_t index_offset = 0;
+        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)//[Cube-tri]Size : 12 (face num)
+        {
+            size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
 
+            // Loop over vertices in the face.
+            for (size_t v = 0; v < fv; v++)//三角面就是3个
+            {
+                // access to vertex
+                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+                tinyobj::real_t vx = attrib.vertices[3*size_t(idx.vertex_index)+0];
+                tinyobj::real_t vy = attrib.vertices[3*size_t(idx.vertex_index)+1];
+                tinyobj::real_t vz = attrib.vertices[3*size_t(idx.vertex_index)+2];
+
+                vertices_cube_tri[index_offset + v].pos = DirectX::XMFLOAT3(vx,vy,vz);
+
+                // Check if `normal_index` is zero or positive. negative = no normal data
+                if (idx.normal_index >= 0) {
+                    tinyobj::real_t nx = attrib.normals[3*size_t(idx.normal_index)+0];
+                    tinyobj::real_t ny = attrib.normals[3*size_t(idx.normal_index)+1];
+                    tinyobj::real_t nz = attrib.normals[3*size_t(idx.normal_index)+2];
+
+                    vertices_cube_tri[index_offset + v].normal = DirectX::XMFLOAT3(nx,ny,nz);
+                }
+
+                // Check if `texcoord_index` is zero or positive. negative = no texcoord data
+                if (idx.texcoord_index >= 0) {
+                    tinyobj::real_t tx = attrib.texcoords[2*size_t(idx.texcoord_index)+0];
+                    tinyobj::real_t ty = attrib.texcoords[2*size_t(idx.texcoord_index)+1];
+                }
+
+                // Optional: vertex colors
+                // tinyobj::real_t red   = attrib.colors[3*size_t(idx.vertex_index)+0];
+                // tinyobj::real_t green = attrib.colors[3*size_t(idx.vertex_index)+1];
+                // tinyobj::real_t blue  = attrib.colors[3*size_t(idx.vertex_index)+2];
+            }
+            index_offset += fv;
+
+            // per-face material
+            shapes[s].mesh.material_ids[f];
+        }
+    }
+
+    
     // 顶点缓冲区描述 结构如下：
     // typedef struct D3D11_BUFFER_DESC
     // {
@@ -112,7 +158,7 @@ bool GameApp::InitResources()
     //在这个语句中，ZeroMemory 是一个宏定义，它接受两个参数：要清零的内存块的起始地址和内存块的大小。
     ZeroMemory(&vertex_buffer_desc, sizeof(vertex_buffer_desc));
     vertex_buffer_desc.Usage = D3D11_USAGE_IMMUTABLE; // 设置 cpu和gpu 的读写权限，不同权限的更新效率不一样
-    vertex_buffer_desc.ByteWidth = sizeof vertices;
+    vertex_buffer_desc.ByteWidth = sizeof vertices_cube_tri;
     vertex_buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // 设置buffer 类型 这里设置为 vertex buffer
     vertex_buffer_desc.CPUAccessFlags = 0;
 
@@ -125,7 +171,7 @@ bool GameApp::InitResources()
     // 新建顶点缓冲区
     D3D11_SUBRESOURCE_DATA InitData;
     ZeroMemory(&InitData, sizeof(InitData));
-    InitData.pSysMem = vertices;
+    InitData.pSysMem = &vertices_cube_tri;
     HR(m_pd3dDevice->CreateBuffer(&vertex_buffer_desc, &InitData, m_pVertexBuffer.GetAddressOf()));
 
 
@@ -153,15 +199,20 @@ bool GameApp::InitResources()
         4, 0, 3,
         3, 7, 4
     };
+    DWORD indices_cube[36];
+    for (int i = 0 ; i < shapes[0].mesh.indices.size() ;i++)
+    {
+        indices_cube[i] = i;
+    }
     // 设置索引缓冲区描述
     D3D11_BUFFER_DESC ibd;
     ZeroMemory(&ibd, sizeof(ibd));
     ibd.Usage = D3D11_USAGE_IMMUTABLE;
-    ibd.ByteWidth = sizeof indices;
+    ibd.ByteWidth = sizeof indices_cube;
     ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     ibd.CPUAccessFlags = 0;
     // 新建索引缓冲区
-    InitData.pSysMem = indices;
+    InitData.pSysMem = indices_cube;
     HR(m_pd3dDevice->CreateBuffer(&ibd, &InitData, m_pIndexBuffer.GetAddressOf()));
 
     // ******************
@@ -191,7 +242,7 @@ bool GameApp::InitResources()
     //
 
     // 输入装配阶段的顶点缓冲区设置
-    UINT stride = sizeof(BufferStruct::VertexPosColor);	// 跨越字节数
+    UINT stride = sizeof(BufferStruct::VertexPosNormal);	// 跨越字节数
     UINT offset = 0;						// 起始偏移量
 
     m_pd3dImmediateContext->IASetVertexBuffers(0, 1, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
@@ -227,8 +278,8 @@ bool GameApp::InitShaders()
     ComPtr<ID3DBlob> blob_pixel;
     
     //编译Shader
-    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Cube\\Cube_VS.hlsl",CompileShaderType::VS, blob_vertex.GetAddressOf()));
-    HR(MoonCreateShaderFromFile(L"HLSL\\Example\\Cube\\Cube_PS.hlsl",CompileShaderType::PS, blob_pixel.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_VS.hlsl",CompileShaderType::VS, blob_vertex.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_PS.hlsl",CompileShaderType::PS, blob_pixel.GetAddressOf()));
     
     //创建 顶点着色器
     HR(m_pd3dDevice->CreateVertexShader(blob_vertex->GetBufferPointer(), blob_vertex->GetBufferSize(), nullptr, m_pVertexShader.GetAddressOf()));

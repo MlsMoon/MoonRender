@@ -24,8 +24,8 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
         OutputDebugStringW(strMsg);
         OutputDebugStringW(L" ");
     }
-    // Windows SDK 8.0��DirectX�Ĵ�����Ϣ�Ѿ����ɽ��������У�����ͨ��FormatMessageW��ȡ������Ϣ�ַ���
-    // ����Ҫ�����ַ����ڴ�
+    // Windows SDK 8.0起DirectX的错误信息已经集成进错误码中，可以通过FormatMessageW获取错误信息字符串
+    // 不需要分配字符串内存
     FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         strBufferError, 256, nullptr);
@@ -33,12 +33,12 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
     WCHAR* errorStr = wcsrchr(strBufferError, L'\r');
     if (errorStr)
     {
-        errorStr[0] = L'\0';    // ����FormatMessageW�����Ļ��з�(��\r\n��\r�û�Ϊ\0����)
+        errorStr[0] = L'\0';    // 擦除FormatMessageW带来的换行符(把\r\n的\r置换为\0即可)
     }
 
     swprintf_s(strBufferHR, 40, L" (0x%0.8x)", hr);
     wcscat_s(strBufferError, strBufferHR);
-    swprintf_s(strBuffer, 3000, L"�����뺬�壺%ls", strBufferError);
+    swprintf_s(strBuffer, 3000, L"ErrorCodeMeaning：%ls", strBufferError);
     OutputDebugStringW(strBuffer);
 
     OutputDebugStringW(L"\n");
@@ -51,12 +51,12 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
 
         wcscpy_s(strBufferMsg, 1024, L"");
         if (nMsgLen > 0)
-            swprintf_s(strBufferMsg, 1024, L"��ǰ���ã�%ls\n", strMsg);
+            swprintf_s(strBufferMsg, 1024, L"NowInvoking:%ls\n", strMsg);
 
-        swprintf_s(strBuffer, 3000, L"�ļ�����%ls\n�кţ�%ls\n�����뺬�壺%ls\n%ls����Ҫ���Ե�ǰӦ�ó�����",
+        swprintf_s(strBuffer, 3000,L"FileName:%ls\nLineNum:%ls\nErrorMeaning:%ls\n%ls\nNeedDebug?",
             strBufferFile, strBufferLine, strBufferError, strBufferMsg);
 
-        int nResult = MessageBoxW(GetForegroundWindow(), strBuffer, L"����", MB_YESNO | MB_ICONERROR);
+        int nResult = MessageBoxW(GetForegroundWindow(), strBuffer, L"Error", MB_YESNO | MB_ICONERROR);
         if (nResult == IDYES)
             DebugBreak();
     }

@@ -9,14 +9,36 @@
 class BufferStruct
 {
 public:
-    
-    // VertexPosColor
-    // 一种顶点的储存结构
-    struct VertexPosColor
+    struct BaseVertex
     {
         DirectX::XMFLOAT3 pos;
+    };
+    
+    struct VertexPosColor:BaseVertex
+    {
         DirectX::XMFLOAT4 color;
         static const D3D11_INPUT_ELEMENT_DESC inputLayout[2];
+    };
+
+    struct VertexPosNormalColor:BaseVertex
+    {
+        DirectX::XMFLOAT3 normal;
+        DirectX::XMFLOAT4 color;
+        static const D3D11_INPUT_ELEMENT_DESC inputLayout[3];
+    };
+
+    struct VertexPosNormal:BaseVertex
+    {
+        DirectX::XMFLOAT3 normal;
+        static const D3D11_INPUT_ELEMENT_DESC inputLayout[2];
+    };
+
+    struct VertexPosNormalColorUV:BaseVertex
+    {
+        DirectX::XMFLOAT3 normal;
+        DirectX::XMFLOAT4 color;
+        DirectX::XMFLOAT2 uv;
+        static const D3D11_INPUT_ELEMENT_DESC inputLayout[4];
     };
 
     struct ConstantMVPBuffer

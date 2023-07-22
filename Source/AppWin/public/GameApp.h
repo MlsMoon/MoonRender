@@ -10,7 +10,9 @@
 #include "Source/ResourcesProcess/public/BufferStruct.h"
 #include "Source/UI/UserInterface.h"
 #include "Source/EventSystem/EventCenter.h"
-#include "Source/Core/public/MoonRenderClass.h"
+#include "Source/AppWin//public/MoonRenderClass.h"
+#include "Source/EventSystem/LogSystem.h"
+#include "Source/ResourcesProcess/public/MoonObjLoader.h"
 
 class GameApp : public D3DApp
 {
@@ -22,6 +24,7 @@ public:
     bool flag_exist = false;
     
     MoonUI::UserInterface game_user_interface;
+    EventSystem::LogSystem log_system;
 
     bool Init();
     void OnResize();

@@ -1,5 +1,6 @@
 #include "../public/D3DUtil.h"
 #include <string>
+#include <filesystem>
 
 // 安全COM组件释放宏
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = nullptr; } }
@@ -59,6 +60,16 @@ HRESULT CreateShaderFromFile(const WCHAR * csoFileNameInOut, const WCHAR * hlslF
 
 HRESULT MoonCreateShaderFromFile(const WCHAR * hlslFileName,CompileShaderType shaderType,ID3DBlob ** ppBlobOut)
 {
+    //TODO:优化为直接获取根目录
+    const std::filesystem::path currentFilePath(__FILE__);
+    std::filesystem::path projectDir = currentFilePath.parent_path().parent_path().parent_path().parent_path().string();
+    std::filesystem::path csoPath = std::filesystem::path(projectDir) / "HLSL" / "CSO";
+
+    // 检查路径是否存在，如果不存在则创建文件夹
+    if (!std::filesystem::exists(csoPath)) {
+        std::filesystem::create_directories(csoPath);
+    }
+    
     // 封装
     const WCHAR* csoFile = L".cso";
     const WCHAR* csoDir = L"HLSL\\cso\\";
