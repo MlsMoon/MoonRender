@@ -47,6 +47,16 @@ public:
         DirectX::XMMATRIX view;
         DirectX::XMMATRIX proj;
     };
+
+    struct ConstantPSBuffer
+    {
+        DirectionalLight dirLight;
+        PointLight pointLight;
+        SpotLight spotLight;
+        Material material;
+        DirectX::XMFLOAT4 eyePos;
+    };
+    
     
 };
 

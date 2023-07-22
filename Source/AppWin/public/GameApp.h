@@ -12,7 +12,7 @@
 #include "Source/EventSystem/EventCenter.h"
 #include "Source/AppWin//public/MoonRenderClass.h"
 #include "Source/EventSystem/LogSystem.h"
-#include "Source/ResourcesProcess/public/MoonObjLoader.h"
+#include "Source/ResourcesProcess/public/MoonMeshLoader.h"
 
 class GameApp : public D3DApp
 {
@@ -46,7 +46,7 @@ private:
     ComPtr<ID3D11InputLayout> m_pVertexLayout;	
     ComPtr<ID3D11Buffer> m_pVertexBuffer;		
     ComPtr<ID3D11Buffer> m_pIndexBuffer;
-    ComPtr<ID3D11Buffer> m_pConstantBuffer;
+    ComPtr<ID3D11Buffer> m_pConstantBuffer[2];
     
     ComPtr<ID3D11VertexShader> m_pVertexShader;	
     ComPtr<ID3D11PixelShader> m_pPixelShader;

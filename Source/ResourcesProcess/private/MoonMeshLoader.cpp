@@ -1,8 +1,8 @@
-﻿#include "../public/MoonObjLoader.h"
+﻿#include "../public/MoonMeshLoader.h"
 
 
 
-tinyobj::ObjReader MoonObjLoader::LoadObjFile(std::string inputFilePath)
+tinyobj::ObjReader MoonMeshLoader::LoadObjFile(std::string inputFilePath)
 {
     tinyobj::ObjReaderConfig reader_config;
     reader_config.mtl_search_path = "\\"; // Path to material files

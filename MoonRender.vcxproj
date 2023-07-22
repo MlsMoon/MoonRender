@@ -150,12 +150,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="Resources\Shaders\Struct.hlsli" />
+    <ClInclude Include="Resources\Shaders\LightHelper.hlsli" />
     <ClInclude Include="Source\AppWin\public\MoonRenderClass.h" />
     <ClInclude Include="Source\EventSystem\EventCenter.h" />
     <ClInclude Include="Source\EventSystem\LogSystem.h" />
     <ClInclude Include="Source\GameObject\Camera.h" />
+    <ClInclude Include="Source\Render\LightType.h" />
+    <ClInclude Include="Source\Render\MaterialParam.h" />
     <ClInclude Include="Source\ResourcesProcess\public\Mesh.h" />
-    <ClInclude Include="Source\ResourcesProcess\public\MoonObjLoader.h" />
+    <ClInclude Include="Source\ResourcesProcess\public\MoonMeshLoader.h" />
     <ClInclude Include="Source\ThirdParty\tinyobjloader\tiny_obj_loader.h" />
     <ClInclude Include="Source\UI\UserInterface.h" />
     <ClInclude Include="Source\AppWin\public\CpuTimer.h" />
@@ -175,6 +179,8 @@
     <ClInclude Include="Source\ThirdParty\ImGui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Resources\Shaders\Light_PS.hlsl" />
+    <ClCompile Include="Resources\Shaders\Light_VS.hlsl" />
     <ClCompile Include="Source\EventSystem\EventCenter.cpp" />
     <ClCompile Include="Source\EventSystem\LogSystem.cpp" />
     <ClCompile Include="Source\GameObject\Camera.cpp" />
@@ -251,7 +257,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Source\ResourcesProcess\private\MoonObjLoader.cpp">
+    <ClCompile Include="Source\ResourcesProcess\private\MoonMeshLoader.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>

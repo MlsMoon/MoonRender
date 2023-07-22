@@ -85,7 +85,7 @@ bool GameApp::InitResources()
     //载入顶点数据
 
     //TODO:相对路径
-    tinyobj::ObjReader reader = MoonObjLoader::LoadObjFile("E:\\MoonRender\\Resources\\Models\\Cube_Tri.obj");
+    tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile("E:\\MoonRender\\Resources\\Models\\Cube_Tri.obj");
 
     auto& attrib = reader.GetAttrib();
     auto& shapes = reader.GetShapes();

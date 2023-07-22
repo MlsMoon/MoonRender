@@ -6,7 +6,7 @@
 #include "Source/ThirdParty/tinyobjloader/tiny_obj_loader.h"
 #include "BufferStruct.h"
 
-class MoonObjLoader
+class MoonMeshLoader
 {
 public:
     static tinyobj::ObjReader LoadObjFile(std::string inputFilePath);
