@@ -13,6 +13,7 @@
 #include "Source/AppWin//public/MoonRenderClass.h"
 #include "Source/EventSystem/LogSystem.h"
 #include "Source/ResourcesProcess/public/MoonMeshLoader.h"
+#include "Source/ThirdParty/tinyobjloader/tiny_obj_loader.h"
 
 class GameApp : public D3DApp
 {

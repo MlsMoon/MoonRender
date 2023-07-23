@@ -1,5 +1,5 @@
 #include "../public/GameApp.h"
-#include "Source/ThirdParty/tinyobjloader/tiny_obj_loader.h"
+
 
 
 // Game的部分
