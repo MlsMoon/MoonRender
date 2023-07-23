@@ -59,11 +59,11 @@ void GameApp::UpdateScene(float dt)
     // 更新常量缓冲区
     D3D11_MAPPED_SUBRESOURCE mappedData;
     HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[0].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
-    memcpy_s(mappedData.pData, sizeof(BufferStruct::ConstantMVPBuffer), &m_cBuffer_MVP, sizeof(BufferStruct::ConstantMVPBuffer));
+    memcpy_s(mappedData.pData, sizeof(BufferStruct::ConstantMVPBuffer), &m_cBuffer_MVP, sizeof(m_cBuffer_MVP));
     m_pd3dImmediateContext->Unmap(m_pConstantBuffers[0].Get(), 0);
 
     HR(m_pd3dImmediateContext->Map(m_pConstantBuffers[1].Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
-    memcpy_s(mappedData.pData, sizeof(BufferStruct::ConstantPSBuffer), &m_cBuffer_PS, sizeof(BufferStruct::ConstantPSBuffer));
+    memcpy_s(mappedData.pData, sizeof(BufferStruct::ConstantPSBuffer), &m_cBuffer_PS, sizeof(m_cBuffer_PS));
     m_pd3dImmediateContext->Unmap(m_pConstantBuffers[1].Get(), 0);
 
     
@@ -102,7 +102,7 @@ bool GameApp::InitResources()
     //载入顶点数据
 
     //TODO:相对路径
-    tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile("E:\\MoonRender\\Resources\\Models\\Cube_Tri.obj");
+    tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile("D:\\GameDevLib\\ProjectsLib\\GraphicProj\\MoonRender\\Resources\\Models\\Cube_Tri.obj");
 
     // 载入obj 模型：
     //TODO:优化代码
@@ -112,6 +112,11 @@ bool GameApp::InitResources()
 
     const size_t vertex_buffer_size = shapes[0].mesh.num_face_vertices.size() * 3;
     BufferStruct::VertexPosNormal vertices_cube_tri[36];
+
+    if (shapes.size() == 0)
+    {
+        return false;
+    }
 
     for (size_t s = 0; s < shapes.size(); s++)
     {
@@ -223,7 +228,7 @@ bool GameApp::InitResources()
     constant_buffer_desc.ByteWidth = sizeof(BufferStruct::ConstantMVPBuffer);
     constant_buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     constant_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    // 新建常量缓冲区，不使用初始数据
+    // 新建常量缓冲区
     HR(m_pd3dDevice->CreateBuffer(&constant_buffer_desc, nullptr, m_pConstantBuffers[0].GetAddressOf()));
     constant_buffer_desc.ByteWidth = sizeof(BufferStruct::ConstantPSBuffer);
     HR(m_pd3dDevice->CreateBuffer(&constant_buffer_desc, nullptr, m_pConstantBuffers[1].GetAddressOf()));
@@ -241,15 +246,9 @@ bool GameApp::InitResources()
 
     // ******************
     // 初始化默认光照
-    // 方向光
-    m_DirLight.direction_intensity = DirectX::XMFLOAT4(-0.577f, -0.577f, 0.577f,1.0f);
 
     // 初始化用于PS的常量缓冲区的值
-    m_cBuffer_PS.material.ambient = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-    m_cBuffer_PS.material.diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-    m_cBuffer_PS.material.specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 5.0f);
-    m_cBuffer_PS.dirLight = m_DirLight;
-    m_cBuffer_PS.eyePos = DirectX::XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
+    m_cBuffer_PS.directionalLightDirW =  DirectX::XMFLOAT4(-0.577f, -0.577f, 0.577f,1.0f);
     
 
     // ******************
@@ -282,7 +281,7 @@ bool GameApp::InitResources()
     m_pd3dImmediateContext->VSSetShader(m_pVertexShader.Get(), nullptr, 0);
     m_pd3dImmediateContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
     m_pd3dImmediateContext->VSSetConstantBuffers(0, 1, m_pConstantBuffers[0].GetAddressOf());
-    m_pd3dImmediateContext->VSSetConstantBuffers(1, 1, m_pConstantBuffers[1].GetAddressOf());
+    m_pd3dImmediateContext->PSSetConstantBuffers(1, 1, m_pConstantBuffers[1].GetAddressOf());
 
 
 
@@ -293,7 +292,7 @@ bool GameApp::InitResources()
     D3D11SetDebugObjectName(m_pVertexLayout.Get(), "VertexPosColorLayout");
     D3D11SetDebugObjectName(m_pVertexBuffer.Get(), "VertexBuffer");
     D3D11SetDebugObjectName(m_pConstantBuffers[0].Get(), "MVPConstantBuffer");
-    D3D11SetDebugObjectName(m_pConstantBuffers[1].Get(), "MaterialConstantBuffer");
+    D3D11SetDebugObjectName(m_pConstantBuffers[1].Get(), "PSConstantBuffer");
     D3D11SetDebugObjectName(m_pVertexShader.Get(), "Light_VS");
     D3D11SetDebugObjectName(m_pPixelShader.Get(), "Light_PS");
     

@@ -57,9 +57,7 @@ public:
 
     struct ConstantPSBuffer
     {
-        Render::DirectionalLight dirLight;
-        Render::MaterialParam material;
-        DirectX::XMFLOAT4 eyePos;
+        DirectX::XMFLOAT4 directionalLightDirW;
     };
     
     

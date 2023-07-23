@@ -8,12 +8,17 @@ cbuffer VSConstantBuffer : register(b0)
     matrix g_WorldInvTranspose;
 }
 
+// cbuffer PSConstantBuffer : register(b1)
+// {
+//     DirectionalLight g_DirLight;
+//     Material g_Material;
+//     float3 g_EyePosW;
+//     float g_Pad;
+// }
+
 cbuffer PSConstantBuffer : register(b1)
 {
-    DirectionalLight g_DirLight;
-    Material g_Material;
-    float3 g_EyePosW;
-    float g_Pad;
+    float4 g_DirectionalLightDirW;
 }
 
 
