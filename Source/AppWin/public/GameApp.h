@@ -61,6 +61,8 @@ private:
     
     ComPtr<ID3D11RasterizerState> m_pRSWireframe;	// 光栅化状态: 线框模式
     bool m_IsWireframeMode;							// 当前是否为线框模式
+
+    std::string project_root_path;
 };
 
 

@@ -1,6 +1,8 @@
 #ifndef D3DAPP_H
 #define D3DAPP_H
 
+#define PROJECT_ROOT_PATH(str) (str.substr(0, str.find("MoonRender")+ 11))
+
 //链接静态库
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")

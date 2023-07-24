@@ -17,6 +17,9 @@ GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWi
     m_PointLight = Render::PointLight();
     m_SpotLight = Render::SpotLight();
     m_IsWireframeMode = false;
+
+    std::string currentFilePath = __FILE__;
+    project_root_path = PROJECT_ROOT_PATH(currentFilePath);
 }
 
 GameApp::~GameApp()
@@ -102,7 +105,7 @@ bool GameApp::InitResources()
     //载入顶点数据
 
     //TODO:相对路径
-    tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile("D:\\GameDevLib\\ProjectsLib\\GraphicProj\\MoonRender\\Resources\\Models\\Cube_Tri.obj");
+    tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile(project_root_path + "Resources\\Models\\Cube_Tri.obj");
 
     // 载入obj 模型：
     //TODO:优化代码
