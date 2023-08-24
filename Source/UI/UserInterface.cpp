@@ -78,7 +78,7 @@ namespace MoonUI
 
     }
 
-    bool UserInterface::BindLogSystem(const EventSystem::LogSystem* log_system)
+    bool UserInterface::BindLogSystem(const Logging::LogSystem* log_system)
     {
         return true;
     }

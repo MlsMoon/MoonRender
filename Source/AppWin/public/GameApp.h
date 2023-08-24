@@ -11,9 +11,10 @@
 #include "Source/UI/UserInterface.h"
 #include "Source/EventSystem/EventCenter.h"
 #include "Source/AppWin//public/MoonRenderClass.h"
-#include "Source/EventSystem/LogSystem.h"
 #include "Source/ResourcesProcess/public/MoonMeshLoader.h"
 #include "Source/ThirdParty/tinyobjloader/tiny_obj_loader.h"
+#include "Source/ResourcesProcess/public/Mesh.h"
+
 
 class GameApp : public D3DApp
 {
@@ -25,7 +26,7 @@ public:
     bool flag_exist = false;
     
     MoonUI::UserInterface game_user_interface;
-    EventSystem::LogSystem log_system;
+    Logging::LogSystem log_system;
 
     bool Init();
     void OnResize();
@@ -44,6 +45,8 @@ private:
 
 //private parameter
 private:
+    ResourcesProcess::Mesh* default_mesh;
+    
     ComPtr<ID3D11InputLayout> m_pVertexLayout;	
     ComPtr<ID3D11Buffer> m_pVertexBuffer;		
     ComPtr<ID3D11Buffer> m_pIndexBuffer;

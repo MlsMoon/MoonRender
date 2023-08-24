@@ -1,6 +1,6 @@
 #include "../public/GameApp.h"
 
-
+#include "Source/Logging/public/LogSystem.h"
 
 // Game的部分
 GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight)
@@ -24,12 +24,13 @@ GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWi
 
 GameApp::~GameApp()
 {
+    delete default_mesh;
 }
 
 bool GameApp::Init()
 {
-    EventSystem::LogSystem::Print("Hello");
-    EventSystem::LogSystem::Print("Start Init");
+    MOON_LOG("Hello");
+    MOON_LOG("Start Init");
     if (!D3DApp::Init())
         return false;
 
@@ -102,71 +103,10 @@ bool GameApp::InitResources()
     if (!InitShaders())
         return false;
 
-    //载入顶点数据
-
-    //TODO:相对路径
-    tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile(project_root_path + "Resources\\Models\\Cube_Tri.obj");
-
-    // 载入obj 模型：
-    //TODO:优化代码
-    auto& attrib = reader.GetAttrib();
-    auto& shapes = reader.GetShapes();
-    auto& materials = reader.GetMaterials();
-
-    const size_t vertex_buffer_size = shapes[0].mesh.num_face_vertices.size() * 3;
-    BufferStruct::VertexPosNormal vertices_cube_tri[36];
-
-    if (shapes.size() == 0)
-    {
-        return false;
-    }
-
-    for (size_t s = 0; s < shapes.size(); s++)
-    {
-        // Loop over faces(polygon)
-        size_t index_offset = 0;
-        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)//[Cube-tri]Size : 12 (face num)
-        {
-            size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
-
-            // Loop over vertices in the face.
-            for (size_t v = 0; v < fv; v++)//三角面就是3个
-            {
-                // access to vertex
-                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-                tinyobj::real_t vx = attrib.vertices[3*size_t(idx.vertex_index)+0];
-                tinyobj::real_t vy = attrib.vertices[3*size_t(idx.vertex_index)+1];
-                tinyobj::real_t vz = attrib.vertices[3*size_t(idx.vertex_index)+2];
-
-                vertices_cube_tri[index_offset + v].pos = DirectX::XMFLOAT3(vx,vy,vz);
-
-                // Check if `normal_index` is zero or positive. negative = no normal data
-                if (idx.normal_index >= 0) {
-                    tinyobj::real_t nx = attrib.normals[3*size_t(idx.normal_index)+0];
-                    tinyobj::real_t ny = attrib.normals[3*size_t(idx.normal_index)+1];
-                    tinyobj::real_t nz = attrib.normals[3*size_t(idx.normal_index)+2];
-
-                    vertices_cube_tri[index_offset + v].normal = DirectX::XMFLOAT3(nx,ny,nz);
-                }
-
-                // Check if `texcoord_index` is zero or positive. negative = no texcoord data
-                if (idx.texcoord_index >= 0) {
-                    tinyobj::real_t tx = attrib.texcoords[2*size_t(idx.texcoord_index)+0];
-                    tinyobj::real_t ty = attrib.texcoords[2*size_t(idx.texcoord_index)+1];
-                }
-
-                // Optional: vertex colors
-                // tinyobj::real_t red   = attrib.colors[3*size_t(idx.vertex_index)+0];
-                // tinyobj::real_t green = attrib.colors[3*size_t(idx.vertex_index)+1];
-                // tinyobj::real_t blue  = attrib.colors[3*size_t(idx.vertex_index)+2];
-            }
-            index_offset += fv;
-
-            // per-face material
-            shapes[s].mesh.material_ids[f];
-        }
-    }
-
+    //通过obj文件，载入顶点数据
+    
+    const std::string mesh_file_path = project_root_path + "Resources\\Models\\Cube_Tri.obj";
+    default_mesh = new ResourcesProcess::Mesh(mesh_file_path,ResourcesProcess::OBJ);
     
     // 顶点缓冲区描述 结构如下：
     // typedef struct D3D11_BUFFER_DESC
@@ -185,10 +125,10 @@ bool GameApp::InitResources()
     //在这个语句中，ZeroMemory 是一个宏定义，它接受两个参数：要清零的内存块的起始地址和内存块的大小。
     ZeroMemory(&vertex_buffer_desc, sizeof(vertex_buffer_desc));
     vertex_buffer_desc.Usage = D3D11_USAGE_IMMUTABLE; // 设置 cpu和gpu 的读写权限，不同权限的更新效率不一样
-    vertex_buffer_desc.ByteWidth = sizeof vertices_cube_tri;
+    vertex_buffer_desc.ByteWidth = default_mesh->ByteWidth;
     vertex_buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // 设置buffer 类型 这里设置为 vertex buffer
     vertex_buffer_desc.CPUAccessFlags = 0;
-
+    
     // ，许多资源（如纹理、顶点缓冲区等）需要在创建时进行初始化，以提供初始的数据。
     // typedef struct D3D11_SUBRESOURCE_DATA {
     //     const void* pSysMem;        // 指向初始化数据的指针
@@ -198,7 +138,7 @@ bool GameApp::InitResources()
     // 新建顶点缓冲区
     D3D11_SUBRESOURCE_DATA InitData;
     ZeroMemory(&InitData, sizeof(InitData));
-    InitData.pSysMem = &vertices_cube_tri;
+    InitData.pSysMem = default_mesh->get_sys_mem();
     HR(m_pd3dDevice->CreateBuffer(&vertex_buffer_desc, &InitData, m_pVertexBuffer.GetAddressOf()));
 
 
@@ -206,20 +146,21 @@ bool GameApp::InitResources()
     // ******************
     // 索引数组
     //
-    DWORD indices_cube[36];
-    for (int i = 0 ; i < shapes[0].mesh.indices.size() ;i++)
+    std::vector<DWORD> indices_mesh;
+    indices_mesh.resize(default_mesh->VertexNum);
+    for (int i = 0 ; i < default_mesh->VertexNum;i++)
     {
-        indices_cube[i] = i;
+        indices_mesh[i] = i;
     }
     // 设置索引缓冲区描述
     D3D11_BUFFER_DESC ibd;
     ZeroMemory(&ibd, sizeof(ibd));
     ibd.Usage = D3D11_USAGE_IMMUTABLE;
-    ibd.ByteWidth = sizeof indices_cube;
+    ibd.ByteWidth = default_mesh->ByteWidth;
     ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     ibd.CPUAccessFlags = 0;
     // 新建索引缓冲区
-    InitData.pSysMem = indices_cube;
+    InitData.pSysMem = indices_mesh.data();
     HR(m_pd3dDevice->CreateBuffer(&ibd, &InitData, m_pIndexBuffer.GetAddressOf()));
 
     // ******************

@@ -2,7 +2,6 @@
 
 #pragma once
 #include <string>
-#include "Source/EventSystem/LogSystem.h"
 #include "Source/ThirdParty/tinyobjloader/tiny_obj_loader.h"
 #include "BufferStruct.h"
 
