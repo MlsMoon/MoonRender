@@ -1,6 +1,6 @@
-﻿#include "LogSystem.h"
+﻿#include "../public/LogSystem.h"
 
-namespace EventSystem
+namespace Logging
 {
     LogSystem::LogSystem()
     {

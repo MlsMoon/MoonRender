@@ -2,7 +2,9 @@
 #include <string>
 #include <directxmath.h>
 
-namespace EventSystem
+#define MOON_LOG(content) Logging::LogSystem::Print(content)
+
+namespace Logging
 {
     class LogSystem
     {
