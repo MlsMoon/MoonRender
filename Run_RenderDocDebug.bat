@@ -15,4 +15,6 @@ set "destination_folder=%cd%"
 
 xcopy /y "%source_folder%\%file_name%" "%destination_folder%"
 
-"D:\Program Files (x86)\DevTool\RenderDoc\qrenderdoc.exe" capture MoonRender.exe
+set PATH_RD="D:\Program Files (x86)\DevTool\RenderDoc\qrenderdoc.exe"
+
+%PATH_RD% capture MoonRender.exe
