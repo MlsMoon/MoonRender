@@ -77,16 +77,16 @@ void GameApp::DrawScene()
 {
     assert(m_pd3dImmediateContext);
     assert(m_pSwapChain);
-    static float blue[4] = { 0.1f, 0.1f, 0.1f, 1.0f };  // RGBA = (0,0,255,255)
+    static float blue[4] = { 0.1f, 0.1f, 0.1f, 1.0f };  
     m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), blue);
     m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
     // 绘制
-    m_pd3dImmediateContext->DrawIndexed(36, 0, 0);
+    m_pd3dImmediateContext->DrawIndexed(static_cast<UINT>(default_mesh->VertexNum), 0, 0);
 
     //绘制UI
     ImGui::Render();
-    // 下面这句话会触发ImGui在Direct3D的绘制
+    // 触发ImGui在Direct3D的绘制
     // 因此需要在此之前将后备缓冲区绑定到渲染管线上
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
@@ -105,7 +105,7 @@ bool GameApp::InitResources()
 
     //通过obj文件，载入顶点数据
     
-    const std::string mesh_file_path = project_root_path + "Resources\\Models\\Cube_Tri.obj";
+    const std::string mesh_file_path = project_root_path + "Resources\\Models\\Sphere.obj";
     default_mesh = new ResourcesProcess::Mesh(mesh_file_path,ResourcesProcess::OBJ);
     
     // 顶点缓冲区描述 结构如下：
@@ -156,7 +156,7 @@ bool GameApp::InitResources()
     D3D11_BUFFER_DESC ibd;
     ZeroMemory(&ibd, sizeof(ibd));
     ibd.Usage = D3D11_USAGE_IMMUTABLE;
-    ibd.ByteWidth = default_mesh->ByteWidth;
+    ibd.ByteWidth = indices_mesh.size() * 4;
     ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     ibd.CPUAccessFlags = 0;
     // 新建索引缓冲区
