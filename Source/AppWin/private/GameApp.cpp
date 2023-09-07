@@ -192,7 +192,7 @@ bool GameApp::InitResources()
     // 初始化默认光照
 
     // 初始化用于PS的常量缓冲区的值
-    m_cBuffer_PS.directionalLightDirW =  DirectX::XMFLOAT4(-0.577f, -0.577f, 0.577f,1.0f);
+    m_cBuffer_PS.directionalLightDirW =  DirectX::XMFLOAT4(0.577f, 0.577f, -0.577f,1.0f);
     
 
     // ******************
