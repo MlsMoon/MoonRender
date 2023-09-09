@@ -5,6 +5,16 @@
 
 namespace MoonUI
 {
+    UserInterface::UserInterface(MoonScene* scene)
+    {
+        
+    }
+
+    UserInterface::~UserInterface()
+    {
+        
+    }
+    
     bool UserInterface::DrawMainInterfaceUI()
     {
 
@@ -39,6 +49,8 @@ namespace MoonUI
         if (ImGui::BeginMenu("Windows"))
         {
             ImGui::MenuItem("Camera",nullptr,&showCameraWindow);
+            ImGui::MenuItem("ObjectDetail",nullptr,&showObjectDetailWindow);
+            ImGui::MenuItem("SceneContent",nullptr,&showSceneContent);
             ImGui::MenuItem("OutputLog",nullptr,&showOutputWindow);
             ImGui::EndMenu();
         }
@@ -54,8 +66,7 @@ namespace MoonUI
             }
             ImGui::End();
         }
-
-
+        
         if (showOutputWindow)
         {
             if (log_system == nullptr)
@@ -73,23 +84,12 @@ namespace MoonUI
             ImGui::End();
         }
 
+        if (showSceneContent)
+        {
+            
+        }
         
         return true;
-
     }
-
-    bool UserInterface::BindLogSystem(const Logging::LogSystem* log_system)
-    {
-        return true;
-    }
-
-    UserInterface::UserInterface()
-    {
-    }
-
-    UserInterface::~UserInterface()
-    {
-    }
-
 }
 

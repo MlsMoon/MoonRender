@@ -1,23 +1,25 @@
 ﻿#pragma once
 
-#include "Source/ThirdParty/ImGui/imgui.h"
-#include "Source/EventSystem/EventCenter.h"
 #include "Source/Logging/public/LogSystem.h"
+#include "Source/Scene/Public/MoonScene.h"
 
 namespace MoonUI
 {
     class UserInterface
     {
     public:
-        UserInterface();
+        UserInterface(MoonScene* scene);
         ~UserInterface();
         bool DrawMainInterfaceUI();
-        bool BindLogSystem(const Logging::LogSystem* log_system);
 
     private:
         //Window Disable
         bool showCameraWindow = true;
+        bool showObjectDetailWindow = false;
         bool showOutputWindow = false;
+        bool showSceneContent = false;
+        
+        MoonScene* moon_scene;
         
         //Camera value
         float ui_camera_fov = 90.0f;

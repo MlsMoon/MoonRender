@@ -18,12 +18,17 @@ GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWi
     m_SpotLight = Render::SpotLight();
     m_IsWireframeMode = false;
 
+    game_main_scene = new MoonScene();
+    game_user_interface = new MoonUI::UserInterface(game_main_scene);
+
     std::string currentFilePath = __FILE__;
     project_root_path = PROJECT_ROOT_PATH(currentFilePath);
 }
 
 GameApp::~GameApp()
 {
+    delete game_main_scene;
+    delete game_user_interface;
     delete default_mesh;
 }
 
@@ -95,7 +100,7 @@ void GameApp::DrawScene()
 
 void GameApp::DrawUI()
 {
-    game_user_interface.DrawMainInterfaceUI();
+    game_user_interface->DrawMainInterfaceUI();
 }
 
 bool GameApp::InitResources()

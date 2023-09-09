@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace MoonRenderClass
+namespace MoonRenderBaseClass
 {
     template<typename T>
     class Singleton {

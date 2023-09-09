@@ -3,5 +3,6 @@
 class MoonObject
 {
 public:
-    
+    MoonObject();
+    ~MoonObject();
 };

@@ -10,8 +10,11 @@ public:
     ~MoonScene();
 
 private:
-    std::vector<MoonObject> moon_objects;
+    std::vector<MoonObject*> moon_objects;
+    MoonObject* selected_obj;
 
 public:
-    std::vector<MoonObject> GetAllObjects();
+    std::vector<MoonObject*> GetAllObjects();
+
+    bool AddObject(MoonObject* object);
 };

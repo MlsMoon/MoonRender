@@ -9,7 +9,7 @@
 #include "Source/ThirdParty/ImGui/imgui.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
 #include "Source/UI/UserInterface.h"
-#include "Source/EventSystem/EventCenter.h"
+#include "Source/EventSystem/public/EventCenter.h"
 #include "Source/AppWin//public/MoonRenderClass.h"
 #include "Source/ResourcesProcess/public/MoonMeshLoader.h"
 #include "Source/ThirdParty/tinyobjloader/tiny_obj_loader.h"
@@ -25,7 +25,8 @@ public:
     inline static GameApp* currentGameApp = nullptr;
     bool flag_exist = false;
     
-    MoonUI::UserInterface game_user_interface;
+    MoonUI::UserInterface* game_user_interface = nullptr;
+    MoonScene* game_main_scene = nullptr;
     Logging::LogSystem log_system;
 
     bool Init();

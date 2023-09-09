@@ -1,10 +1,11 @@
-#include "EventCenter.h"
+#include "../public/EventCenter.h"
 
 #include <utility>
 
 // 定义静态成员变量
 //instance
-EventCenter* MoonRenderClass::Singleton<EventCenter>::instance = nullptr;
+EventCenter* MoonRenderBaseClass::Singleton<EventCenter>::instance = nullptr;
+MemberAccessor* MoonRenderBaseClass::Singleton<MemberAccessor>::instance = nullptr;
 std::unordered_map<std::string, MoonFunctionPtr<float>> EventCenter::register_events_map_float;
 
 
