@@ -63,4 +63,7 @@ Builds/CMakeOutput/
 ## References
 
 - [MKXJun/DirectX11-With-Windows-SDK](https://github.com/MKXJun/DirectX11-With-Windows-SDK)
+- [microsoft/DirectX-Graphics-Samples](https://github.com/microsoft/DirectX-Graphics-Samples)
+- [ocornut/imgui example_win32_directx12](https://github.com/ocornut/imgui/tree/master/examples/example_win32_directx12)
+- [d3dcoder/d3d12book](https://github.com/d3dcoder/d3d12book)
 - *Introduction to 3D Game Programming with DirectX 11*

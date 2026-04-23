@@ -9,8 +9,9 @@
     {
       "name": "vs-debug-x64",
       "displayName": "VS 2026 Debug x64",
-      "generator": "Visual Studio 18 2026",
+      "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/Builds/CMake/vs-debug-x64",
+      "toolset": "v145",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -22,8 +23,9 @@
     {
       "name": "vs-release-x64",
       "displayName": "VS 2026 Release x64",
-      "generator": "Visual Studio 18 2026",
+      "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/Builds/CMake/vs-release-x64",
+      "toolset": "v145",
       "architecture": {
         "value": "x64",
         "strategy": "external"

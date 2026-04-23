@@ -92,7 +92,7 @@ void ResourcesProcess::Mesh::init_obj_mesh(std::string FilePath)
              index_offset += fv;
 
              // per-face material
-             shapes[s].mesh.material_ids[f];
+             (void)shapes[s].mesh.material_ids[f];
              }
      }
     ByteWidth=VertexNum * sizeof(BufferStruct::VertexPosNormal);

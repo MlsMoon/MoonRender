@@ -1,21 +1,49 @@
 #include "../public/BufferStruct.h"
 
-//顶点输入布局描述：
+#include <iterator>
 
-const D3D11_INPUT_ELEMENT_DESC BufferStruct::VertexPosColor::inputLayout[2] = {
-    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
-};
-
-const D3D11_INPUT_ELEMENT_DESC BufferStruct::VertexPosNormalColor::inputLayout[3]=
+namespace
 {
-    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-    { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0}
-};
+    constexpr VertexAttributeDesc kVertexPosColorLayout[] = {
+        { "POSITION", 0, GraphicsFormat::R32G32B32_FLOAT, 0 },
+        { "COLOR", 0, GraphicsFormat::R32G32B32A32_FLOAT, 12 }
+    };
 
-const D3D11_INPUT_ELEMENT_DESC BufferStruct::VertexPosNormal::inputLayout[2]=
+    constexpr VertexAttributeDesc kVertexPosNormalColorLayout[] = {
+        { "POSITION", 0, GraphicsFormat::R32G32B32_FLOAT, 0 },
+        { "NORMAL", 0, GraphicsFormat::R32G32B32_FLOAT, 12 },
+        { "COLOR", 0, GraphicsFormat::R32G32B32A32_FLOAT, 24 }
+    };
+
+    constexpr VertexAttributeDesc kVertexPosNormalLayout[] = {
+        { "POSITION", 0, GraphicsFormat::R32G32B32_FLOAT, 0 },
+        { "NORMAL", 0, GraphicsFormat::R32G32B32_FLOAT, 12 }
+    };
+
+    constexpr VertexAttributeDesc kVertexPosNormalColorUvLayout[] = {
+        { "POSITION", 0, GraphicsFormat::R32G32B32_FLOAT, 0 },
+        { "NORMAL", 0, GraphicsFormat::R32G32B32_FLOAT, 12 },
+        { "COLOR", 0, GraphicsFormat::R32G32B32A32_FLOAT, 24 },
+        { "TEXCOORD", 0, GraphicsFormat::R32G32_FLOAT, 40 }
+    };
+}
+
+VertexLayoutDesc BufferStruct::VertexPosColor::GetVertexLayout()
 {
-    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
-};
+    return { kVertexPosColorLayout, static_cast<std::uint32_t>(std::size(kVertexPosColorLayout)) };
+}
+
+VertexLayoutDesc BufferStruct::VertexPosNormalColor::GetVertexLayout()
+{
+    return { kVertexPosNormalColorLayout, static_cast<std::uint32_t>(std::size(kVertexPosNormalColorLayout)) };
+}
+
+VertexLayoutDesc BufferStruct::VertexPosNormal::GetVertexLayout()
+{
+    return { kVertexPosNormalLayout, static_cast<std::uint32_t>(std::size(kVertexPosNormalLayout)) };
+}
+
+VertexLayoutDesc BufferStruct::VertexPosNormalColorUV::GetVertexLayout()
+{
+    return { kVertexPosNormalColorUvLayout, static_cast<std::uint32_t>(std::size(kVertexPosNormalColorUvLayout)) };
+}

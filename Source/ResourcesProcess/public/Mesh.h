@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -18,7 +19,7 @@ namespace ResourcesProcess
     {
     public:
         size_t VertexNum;
-        UINT ByteWidth;
+        std::uint32_t ByteWidth;
         //TODO:支持VertexColor
         std::vector<BufferStruct::VertexPosNormal> VertexBufferData;
         

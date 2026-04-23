@@ -2,12 +2,10 @@
 #define BUFFERSTUCT_H
 
 #include <directxmath.h>
-#include <d3d11.h>
+
+#include "Source/Graphics/public/GraphicsTypes.h"
 #include "Source/Render/LightType.h"
 #include "Source/Render/MaterialParam.h"
-
-
-//存储cpp中的Buffer结构，与HLSL中对应
 
 class BufferStruct
 {
@@ -16,36 +14,33 @@ public:
     {
         DirectX::XMFLOAT3 pos;
     };
-    
-    struct VertexPosColor:BaseVertex
+
+    struct VertexPosColor : BaseVertex
     {
         DirectX::XMFLOAT4 color;
-        static const D3D11_INPUT_ELEMENT_DESC inputLayout[2];
+        static VertexLayoutDesc GetVertexLayout();
     };
 
-    struct VertexPosNormalColor:BaseVertex
+    struct VertexPosNormalColor : BaseVertex
     {
         DirectX::XMFLOAT3 normal;
         DirectX::XMFLOAT4 color;
-        static const D3D11_INPUT_ELEMENT_DESC inputLayout[3];
+        static VertexLayoutDesc GetVertexLayout();
     };
 
-    struct VertexPosNormal:BaseVertex
+    struct VertexPosNormal : BaseVertex
     {
         DirectX::XMFLOAT3 normal;
-        static const D3D11_INPUT_ELEMENT_DESC inputLayout[2];
+        static VertexLayoutDesc GetVertexLayout();
     };
 
-    struct VertexPosNormalColorUV:BaseVertex
+    struct VertexPosNormalColorUV : BaseVertex
     {
         DirectX::XMFLOAT3 normal;
         DirectX::XMFLOAT4 color;
         DirectX::XMFLOAT2 uv;
-        static const D3D11_INPUT_ELEMENT_DESC inputLayout[4];
+        static VertexLayoutDesc GetVertexLayout();
     };
-
-    //-------------------------------------------
-    //Constant:
 
     struct ConstantMVPBuffer
     {
@@ -59,11 +54,6 @@ public:
     {
         DirectX::XMFLOAT4 directionalLightDirW;
     };
-    
-    
 };
 
-
-
-#endif // !1
-
+#endif

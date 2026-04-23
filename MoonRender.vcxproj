@@ -175,6 +175,9 @@
     <ClInclude Include="Source\AppWin\public\DXTrace.h" />
     <ClInclude Include="Source\AppWin\public\GameApp.h" />
     <ClInclude Include="Source\AppWin\public\WinMin.h" />
+    <ClInclude Include="Source\Graphics\public\GraphicsBackend.h" />
+    <ClInclude Include="Source\Graphics\public\GraphicsBackendFactory.h" />
+    <ClInclude Include="Source\Graphics\public\GraphicsTypes.h" />
     <ClInclude Include="Source\ResourcesProcess\public\BufferStruct.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imconfig.h" />
     <ClInclude Include="Source\ThirdParty\ImGui\imgui.h" />
@@ -417,7 +420,10 @@
     <ClCompile Include="Source\AppWin\private\D3DUtil.cpp" />
     <ClCompile Include="Source\AppWin\private\DXTrace.cpp" />
     <ClCompile Include="Source\AppWin\private\GameApp.cpp" />
-    <ClCompile Include="Source\AppWin\private\Main.cpp" />
+    <ClCompile Include="Source\AppWin\private\MainEntry.cpp" />
+    <ClCompile Include="Source\Graphics\private\Dx11Backend.cpp" />
+    <ClCompile Include="Source\Graphics\private\Dx12Backend.cpp" />
+    <ClCompile Include="Source\Graphics\private\GraphicsBackendFactory.cpp" />
     <ClCompile Include="Source\ResourcesProcess\private\BufferStruct.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp" />
     <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp" />

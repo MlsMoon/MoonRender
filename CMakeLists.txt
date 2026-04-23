@@ -34,6 +34,9 @@ set(MOONRENDER_IMGUI_SOURCES
 set(MOONRENDER_SOURCES
     Source/EventSystem/EventCenter.cpp
     Source/GameObject/Camera.cpp
+    Source/Graphics/private/Dx11Backend.cpp
+    Source/Graphics/private/Dx12Backend.cpp
+    Source/Graphics/private/GraphicsBackendFactory.cpp
     Source/Logging/private/LogSystem.cpp
     Source/ResourcesProcess/private/Mesh.cpp
     Source/ResourcesProcess/private/MoonMeshLoader.cpp
@@ -44,7 +47,7 @@ set(MOONRENDER_SOURCES
     Source/AppWin/private/D3DUtil.cpp
     Source/AppWin/private/DXTrace.cpp
     Source/AppWin/private/GameApp.cpp
-    Source/AppWin/private/Main.cpp
+    Source/AppWin/private/MainEntry.cpp
     Source/ResourcesProcess/private/BufferStruct.cpp
 )
 
@@ -65,6 +68,9 @@ set(MOONRENDER_HEADERS
     Source/AppWin/public/DXTrace.h
     Source/AppWin/public/GameApp.h
     Source/AppWin/public/WinMin.h
+    Source/Graphics/public/GraphicsBackend.h
+    Source/Graphics/public/GraphicsBackendFactory.h
+    Source/Graphics/public/GraphicsTypes.h
     Source/ResourcesProcess/public/BufferStruct.h
     Source/ThirdParty/ImGui/imconfig.h
     Source/ThirdParty/ImGui/imgui.h
@@ -98,6 +104,7 @@ target_compile_definitions(MoonRender PRIVATE
 target_link_libraries(MoonRender PRIVATE
     imgui
     d3d11
+    d3d12
     dxgi
     dxguid
     d3dcompiler
