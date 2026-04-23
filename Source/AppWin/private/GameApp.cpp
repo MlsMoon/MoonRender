@@ -17,9 +17,6 @@ GameApp::GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWi
     m_PointLight = Render::PointLight();
     m_SpotLight = Render::SpotLight();
     m_IsWireframeMode = false;
-
-    std::string currentFilePath = __FILE__;
-    project_root_path = PROJECT_ROOT_PATH(currentFilePath);
 }
 
 GameApp::~GameApp()
@@ -105,7 +102,7 @@ bool GameApp::InitResources()
 
     //通过obj文件，载入顶点数据
     
-    const std::string mesh_file_path = project_root_path + "Resources\\Models\\Sphere.obj";
+    const std::string mesh_file_path = MoonGetAssetPath("Resources/Models/sphere.obj");
     default_mesh = new ResourcesProcess::Mesh(mesh_file_path,ResourcesProcess::OBJ);
     
     // 顶点缓冲区描述 结构如下：
@@ -250,8 +247,11 @@ bool GameApp::InitShaders()
     ComPtr<ID3DBlob> blob_pixel;
     
     //编译Shader
-    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\VertexCommon.hlsl",CompileShaderType::VS, blob_vertex.GetAddressOf()));
-    HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Light_PS.hlsl",CompileShaderType::PS, blob_pixel.GetAddressOf()));
+    const std::wstring vertex_shader_path = MoonGetAssetPathW(L"Resources/Shaders/VertexCommon.hlsl");
+    const std::wstring pixel_shader_path = MoonGetAssetPathW(L"Resources/Shaders/Light_PS.hlsl");
+
+    HR(MoonCreateShaderFromFile(vertex_shader_path.c_str(),CompileShaderType::VS, blob_vertex.GetAddressOf()));
+    HR(MoonCreateShaderFromFile(pixel_shader_path.c_str(),CompileShaderType::PS, blob_pixel.GetAddressOf()));
     // HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_VS.hlsl",CompileShaderType::VS, blob_vertex.GetAddressOf()));
     // HR(MoonCreateShaderFromFile(L"Resources\\Shaders\\Example\\Cube\\Cube_PS.hlsl",CompileShaderType::PS, blob_pixel.GetAddressOf()));
     

@@ -195,6 +195,12 @@ HRESULT MoonCreateShaderFromFile(
     CompileShaderType shaderType,
     ID3DBlob** ppBlobOut);
 
+std::string MoonGetProjectRootPath();
+
+std::string MoonGetAssetPath(const std::string& relativePath);
+
+std::wstring MoonGetAssetPathW(const std::wstring& relativePath);
+
 
 
 

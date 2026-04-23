@@ -718,7 +718,8 @@ bool D3DApp::InitImGui()
     ImGui_ImplDX11_Init(m_pd3dDevice.Get(), m_pd3dImmediateContext.Get());
 
     //设置字体
-    ImFont* font = io.Fonts->AddFontFromFileTTF("Resources/Fonts/hanyiyingsong45jian.ttf", 16.0f);
+    const std::string fontPath = MoonGetAssetPath("Resources/Fonts/hanyiyingsong45jian.ttf");
+    ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 16.0f);
     io.FontDefault = font;
 
     return true;
