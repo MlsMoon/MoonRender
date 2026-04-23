@@ -1,6 +1,9 @@
 .vs/
 .vs/MoonRender/v17/Browse.VC.db
 x64/
+/Builds/
+/Cache/
+/MoonRender/
 .idea/.idea.MoonRender/.idea/vcs.xml
 .idea/.idea.MoonRender/.idea/indexLayout.xml
 .idea/.idea.MoonRender/.idea/encodings.xml

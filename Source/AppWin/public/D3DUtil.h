@@ -201,6 +201,8 @@ std::string MoonGetAssetPath(const std::string& relativePath);
 
 std::wstring MoonGetAssetPathW(const std::wstring& relativePath);
 
+bool MoonEnsureDirectory(const std::string& relativePath);
+
 
 
 

@@ -472,6 +472,7 @@ bool D3DApp::InitDirect3D()
 #if defined(DEBUG) || defined(_DEBUG)  
     createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
+    const UINT baseCreateDeviceFlags = createDeviceFlags;
     // 驱动类型数组
     //
     D3D_DRIVER_TYPE driverTypes[] =
@@ -526,6 +527,7 @@ bool D3DApp::InitDirect3D()
     //这里遍历的是驱动类型
     for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
     {
+        createDeviceFlags = baseCreateDeviceFlags;
         d3dDriverType = driverTypes[driverTypeIndex];
         //Create Device函数 在这里创建了D3D设备
         /*  参数说明：
@@ -551,6 +553,21 @@ bool D3DApp::InitDirect3D()
         }
 
         //如果这里成功创建了，就结束
+        #if defined(DEBUG) || defined(_DEBUG)
+        if (FAILED(hr) && (createDeviceFlags & D3D11_CREATE_DEVICE_DEBUG))
+        {
+            createDeviceFlags &= ~D3D11_CREATE_DEVICE_DEBUG;
+            hr = D3D11CreateDevice(nullptr, d3dDriverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
+                D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel, m_pd3dImmediateContext.GetAddressOf());
+
+            if (hr == E_INVALIDARG)
+            {
+                hr = D3D11CreateDevice(nullptr, d3dDriverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1,
+                    D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel, m_pd3dImmediateContext.GetAddressOf());
+            }
+        }
+        #endif
+
         if (SUCCEEDED(hr))
             break;
     }
@@ -712,6 +729,9 @@ bool D3DApp::InitImGui()
     // 设置Dear ImGui风格
     ImGui::StyleColorsLight();
     ImGui::GetIO().FontGlobalScale = 1.0;
+    MoonEnsureDirectory("Builds/Runtime");
+    static std::string imguiIniPath = MoonGetAssetPath("Builds/Runtime/imgui.ini");
+    io.IniFilename = imguiIniPath.c_str();
 
     // 设置平台/渲染器后端
     ImGui_ImplWin32_Init(m_hMainWnd);

@@ -72,7 +72,7 @@ HRESULT CreateShaderFromFile(
 HRESULT MoonCreateShaderFromFile(const WCHAR* hlslFileName, CompileShaderType shaderType, ID3DBlob** ppBlobOut)
 {
     const std::filesystem::path projectDir = GetProjectRoot();
-    const std::filesystem::path csoPath = projectDir / "Cache" / "CSO";
+    const std::filesystem::path csoPath = projectDir / "Builds" / "Cache" / "CSO";
 
     if (!std::filesystem::exists(csoPath))
     {
@@ -151,4 +151,10 @@ std::string MoonGetAssetPath(const std::string& relativePath)
 std::wstring MoonGetAssetPathW(const std::wstring& relativePath)
 {
     return (GetProjectRoot() / relativePath).wstring();
+}
+
+bool MoonEnsureDirectory(const std::string& relativePath)
+{
+    return std::filesystem::create_directories(GetProjectRoot() / relativePath) ||
+        std::filesystem::exists(GetProjectRoot() / relativePath);
 }

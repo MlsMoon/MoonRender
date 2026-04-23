@@ -19,6 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(MOONRENDER_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+set(MOONRENDER_OUTPUT_ROOT "${MOONRENDER_ROOT}/Builds/CMakeOutput")
 
 set(MOONRENDER_IMGUI_SOURCES
     Source/ThirdParty/ImGui/imgui.cpp
@@ -113,5 +114,18 @@ target_link_options(MoonRender PRIVATE /SUBSYSTEM:WINDOWS)
 set_target_properties(MoonRender PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "${MOONRENDER_ROOT}"
 )
+
+foreach(config Debug Release RelWithDebInfo MinSizeRel)
+    string(TOUPPER "${config}" config_upper)
+    set_target_properties(imgui PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY_${config_upper} "${MOONRENDER_OUTPUT_ROOT}/Lib/${config}"
+        PDB_OUTPUT_DIRECTORY_${config_upper} "${MOONRENDER_OUTPUT_ROOT}/Lib/${config}"
+    )
+    set_target_properties(MoonRender PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${MOONRENDER_OUTPUT_ROOT}/Bin/${config}"
+        ARCHIVE_OUTPUT_DIRECTORY_${config_upper} "${MOONRENDER_OUTPUT_ROOT}/Lib/${config}"
+        PDB_OUTPUT_DIRECTORY_${config_upper} "${MOONRENDER_OUTPUT_ROOT}/Bin/${config}"
+    )
+endforeach()
 
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT MoonRender)

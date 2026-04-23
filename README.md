@@ -5,33 +5,60 @@ MoonRender is a Windows Direct3D 11 sample project with Dear ImGui integration.
 ## Requirements
 
 - Windows 10 or newer
-- CMake 3.21+
-- MSVC toolchain from Visual Studio 2022 Build Tools or Visual Studio 2022
-- Windows SDK with Direct3D 11 headers and libraries
+- Visual Studio Build Tools with MSVC and Windows SDK
+- CMake 3.21+ for the CMake workflow
 
-This repository is now built with CMake. Visual Studio solution files are kept only as legacy project files.
+## Repository Layout
+
+- `Source/` and `Resources/`: source code and runtime assets
+- `Scripts/`: shortcut batch files for common tasks
+- `Builds/`: unified location for build outputs, caches, and generated CMake build trees
 
 ## Build
 
-### Ninja + MSVC
+### Rider / MSBuild / Solution
 
-Open a Developer Command Prompt for VS 2022 or any shell where the MSVC environment is already loaded, then run:
-
-```powershell
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
-```
-
-### Visual Studio Generator
+The legacy solution is still supported for Rider and other MSBuild-based workflows.
 
 ```powershell
-cmake -S . -B build-vs -G "Visual Studio 17 2022" -A x64
-cmake --build build-vs --config Debug
+Scripts\Build_MSBuild_Debug_x64.bat
 ```
 
-## Run
+MSBuild outputs are written to:
 
-The executable loads fonts, models, shaders, and shader cache paths from the repository root, so it can be launched from either generator layout without copying `Resources`.
+```text
+Builds/MSBuild/x64/Debug/
+Builds/Intermediate/MSBuild/x64/Debug/
+```
+
+### CMake
+
+The repository includes `CMakePresets.json` so CMake build trees also stay under `Builds/`.
+
+```powershell
+Scripts\Build_CMake_VS_Debug_x64.bat
+```
+
+CMake outputs are written under:
+
+```text
+Builds/CMake/
+Builds/CMakeOutput/
+```
+
+## Utility Scripts
+
+- `Scripts\Build_MSBuild_Debug_x64.bat`: build the legacy solution with MSBuild
+- `Scripts\Build_CMake_VS_Debug_x64.bat`: configure and build the CMake Visual Studio preset
+- `Scripts\Clean_ShaderCache.bat`: remove generated shader cache from `Builds/Cache/CSO`
+- `Scripts\Clean_LegacyRootOutputs.bat`: remove old root-level build folders after closing Rider/MSBuild
+- `Scripts\Run_RenderDoc_Debug.bat`: launch the MSBuild debug executable through RenderDoc
+
+## Notes
+
+- Dear ImGui layout state is now stored in `Builds/Runtime/imgui.ini`
+- Shader cache is now stored in `Builds/Cache/CSO`
+- Runtime assets are still loaded from the repository root via absolute project-root-based paths
 
 ## References
 
