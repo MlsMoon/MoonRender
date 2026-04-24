@@ -3,7 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include "Source/EventSystem/EventCenter.h"
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
@@ -30,15 +29,13 @@ namespace MoonUI
         void DrawOutlineView(
             const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
             Object::MoonObject*& selectedObject);
-        void DrawCameraView();
+        void DrawInspectorView(Object::MoonObject* selectedObject);
         void DrawOutputLog();
 
     private:
         bool showOutlineWindow = true;
-        bool showCameraWindow = true;
+        bool showInspectorWindow = true;
         bool showOutputWindow = false;
-
-        float ui_camera_fov = 90.0f;
 
         Logging::LogSystem* log_system = nullptr;
     };

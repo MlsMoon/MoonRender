@@ -20,7 +20,70 @@ namespace Object
         }
 
         ComponentType GetType() const override { return ComponentType::Mesh; }
+        const char* GetDisplayName() const override { return "Mesh"; }
         ComponentConflictGroup GetConflictGroup() const override { return ComponentConflictGroup::Renderable; }
+        std::vector<ComponentProperty> GetProperties() override
+        {
+            return {
+                {
+                    "Source Path",
+                    ComponentPropertyType::Text,
+                    true,
+                    false,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    "%s",
+                    [this]() { return m_sourceFilePath; },
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {}
+                },
+                {
+                    "Vertex Count",
+                    ComponentPropertyType::Text,
+                    true,
+                    false,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    "%s",
+                    [this]()
+                    {
+                        return m_mesh != nullptr ? std::to_string(m_mesh->VertexNum) : "0";
+                    },
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {}
+                },
+                {
+                    "Byte Width",
+                    ComponentPropertyType::Text,
+                    true,
+                    false,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    "%s",
+                    [this]()
+                    {
+                        return m_mesh != nullptr ? std::to_string(m_mesh->ByteWidth) : "0";
+                    },
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                    {}
+                }
+            };
+        }
 
         ResourcesProcess::Mesh* GetMesh() { return m_mesh.get(); }
         const ResourcesProcess::Mesh* GetMesh() const { return m_mesh.get(); }

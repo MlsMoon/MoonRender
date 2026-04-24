@@ -90,9 +90,10 @@ void App::UpdateScene(float dt)
     if (m_mainCameraObject != nullptr)
     {
         const auto* cameraTransform = m_mainCameraObject->GetComponent<Object::TransformComponent>();
-        const auto* cameraComponent = m_mainCameraObject->GetComponent<Object::CameraComponent>();
+        auto* cameraComponent = m_mainCameraObject->GetComponent<Object::CameraComponent>();
         if (cameraTransform != nullptr && cameraComponent != nullptr)
         {
+            cameraComponent->Normalize();
             const DirectX::XMMATRIX cameraRotation =
                 DirectX::XMMatrixRotationX(cameraTransform->rotationRadians.x) *
                 DirectX::XMMatrixRotationY(cameraTransform->rotationRadians.y) *
@@ -184,6 +185,7 @@ void App::CreateDefaultScene()
         cameraComponent->fovRadians = DirectX::XMConvertToRadians(90.0f);
         cameraComponent->nearPlane = 1.0f;
         cameraComponent->farPlane = 1000.0f;
+        cameraComponent->Normalize();
     }
     m_sceneObjects.push_back(std::move(cameraObject));
 
@@ -315,12 +317,13 @@ float App::GetCameraFOVValue()
         return 90.0f;
     }
 
-    const auto* cameraComponent = cameraObject->GetComponent<Object::CameraComponent>();
+    auto* cameraComponent = cameraObject->GetComponent<Object::CameraComponent>();
     if (cameraComponent == nullptr)
     {
         return 90.0f;
     }
 
+    cameraComponent->Normalize();
     return DirectX::XMConvertToDegrees(cameraComponent->fovRadians);
 }
 
@@ -336,6 +339,7 @@ void App::SetCameraFOVValue(float newCameraFOV)
     if (cameraComponent != nullptr)
     {
         cameraComponent->fovRadians = DirectX::XMConvertToRadians(newCameraFOV);
+        cameraComponent->Normalize();
     }
 }
 
