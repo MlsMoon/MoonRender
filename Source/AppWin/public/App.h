@@ -2,15 +2,15 @@
 #define APP_H
 
 #include <memory>
+#include <vector>
 
 #include "D3DApp.h"
 #include "Source/AppWin/public/D3DUtil.h"
 #include "Source/AppWin/public/DXTrace.h"
 #include "Source/EventSystem/EventCenter.h"
 #include "Source/Logging/public/LogSystem.h"
-#include "Source/Object/LightType.h"
+#include "Source/Object/MoonObject.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
-#include "Source/ResourcesProcess/public/Mesh.h"
 #include "Source/UI/UserInterface.h"
 
 class App : public D3DApp
@@ -38,14 +38,23 @@ public:
     float GetCameraFOVValue();
     void SetCameraFOVValue(float newCameraFOV);
 
-    float CameraFOVValue = 90.0f;
+    const std::vector<std::unique_ptr<Object::MoonObject>>& GetSceneObjects() const { return m_sceneObjects; }
+    Object::MoonObject*& GetSelectedObject() { return m_selectedObject; }
 
 private:
+    void CreateDefaultScene();
     bool InitResources();
     bool InitShaders();
+    Object::MoonObject* FindFirstRenderableObject();
+    Object::MoonObject* FindMainCameraObject();
+    Object::MoonObject* FindDirectionalLightObject();
 
 private:
-    std::unique_ptr<ResourcesProcess::Mesh> default_mesh;
+    std::vector<std::unique_ptr<Object::MoonObject>> m_sceneObjects;
+    Object::MoonObject* m_selectedObject = nullptr;
+    Object::MoonObject* m_renderObject = nullptr;
+    Object::MoonObject* m_mainCameraObject = nullptr;
+    Object::MoonObject* m_directionalLightObject = nullptr;
 
     std::shared_ptr<IGraphicsInputLayout> m_VertexLayout;
     std::shared_ptr<IGraphicsBuffer> m_VertexBuffer;
@@ -57,10 +66,6 @@ private:
     BufferStruct::ConstantPSBuffer m_cBuffer_PS;
     std::shared_ptr<IGraphicsVertexShader> m_VertexShader;
     std::shared_ptr<IGraphicsPixelShader> m_PixelShader;
-
-    Object::DirectionalLight m_DirLight;
-    Object::PointLight m_PointLight;
-    Object::SpotLight m_SpotLight;
 
     std::shared_ptr<IGraphicsRasterizerState> m_WireframeRasterizerState;
     bool m_IsWireframeMode;

@@ -18,8 +18,8 @@ namespace ResourcesProcess
     class Mesh
     {
     public:
-        size_t VertexNum;
-        std::uint32_t ByteWidth;
+        size_t VertexNum = 0;
+        std::uint32_t ByteWidth = 0;
         //TODO:支持VertexColor
         std::vector<BufferStruct::VertexPosNormal> VertexBufferData;
         

@@ -1,95 +1,101 @@
-﻿#include "UserInterface.h"
+#include "UserInterface.h"
 
-#include "Source/AppWin/public/App.h"
+#include <string>
 
+#include "Source/Object/MoonObject.h"
+#include "Source/Object/TransformComponent.h"
 
 namespace MoonUI
 {
-    bool UserInterface::DrawMainInterfaceUI()
+    bool UserInterface::DrawMainInterfaceUI(
+        const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
+        Object::MoonObject*& selectedObject)
     {
-
-        
-        // ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // 设置alpha分量为0.5，表示半透明
-        // ImGui::SetNextWindowSize(ImVec2(App::currentApp->ClientWidth +1 , App::currentApp->ClientHeight -25));
-        // ImGui::SetNextWindowPos(ImVec2(-1,25));
-        // const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoFocusOnAppearing;
-        // ImGui::Begin("MoonRenderer",nullptr,window_flags);
-        // {
-        //     // 恢复窗口背景颜色
-        //     ImGui::PopStyleColor();
-        // }
-        // ImGui::End();
-
-
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File"))
         {
             if (ImGui::MenuItem("Open"))
             {
-                // 处理 "Open" 被点击的逻辑
             }
 
             if (ImGui::MenuItem("Save"))
             {
-                // 处理 "Save" 被点击的逻辑
             }
 
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Windows"))
         {
-            ImGui::MenuItem("Camera",nullptr,&showCameraWindow);
-            ImGui::MenuItem("OutputLog",nullptr,&showOutputWindow);
+            ImGui::MenuItem("OutlineView", nullptr, &showOutlineWindow);
+            ImGui::MenuItem("Camera", nullptr, &showCameraWindow);
+            ImGui::MenuItem("OutputLog", nullptr, &showOutputWindow);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
-        
-        //独立窗口
+
+        if (showOutlineWindow)
+        {
+            DrawOutlineView(sceneObjects, selectedObject);
+        }
+
         if (showCameraWindow)
         {
-            ImGui::Begin("Camera",&showCameraWindow);
+            ImGui::Begin("Camera", &showCameraWindow);
             if (ImGui::SliderFloat("Camera FOV", &ui_camera_fov, 10.0f, 120.0f))
             {
-                EventCenter::EventTrigger("SetCameraFOVValue",ui_camera_fov);
+                EventCenter::EventTrigger("SetCameraFOVValue", ui_camera_fov);
             }
             ImGui::End();
         }
-
 
         if (showOutputWindow)
         {
+            ImGui::Begin("OutputLog", &showOutputWindow);
             if (log_system == nullptr)
             {
-                log_system = &App::currentApp->log_system;
+                ImGui::Text("No log system bound.");
             }
-            ImGui::Begin("OutputLog",&showOutputWindow);
-            // 创建子窗口，设置滚动条
-            ImGui::BeginChild("Text Output", ImVec2(0,0), true);
-
-            ImGui::Text(log_system->GetLogContent().c_str());
-
-            // 结束子窗口
-            ImGui::EndChild();
+            else
+            {
+                ImGui::BeginChild("Text Output", ImVec2(0, 0), true);
+                const std::string logContent = log_system->GetLogContent();
+                ImGui::TextUnformatted(logContent.c_str());
+                ImGui::EndChild();
+            }
             ImGui::End();
         }
 
-        
-        return true;
-
-    }
-
-    bool UserInterface::BindLogSystem(const Logging::LogSystem* log_system)
-    {
         return true;
     }
 
-    UserInterface::UserInterface()
+    void UserInterface::DrawOutlineView(
+        const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
+        Object::MoonObject*& selectedObject)
     {
+        ImGui::Begin("OutlineView", &showOutlineWindow);
+        for (const auto& object : sceneObjects)
+        {
+            if (!object->HasComponent<Object::TransformComponent>())
+            {
+                continue;
+            }
+
+            const bool isSelected = selectedObject == object.get();
+            if (ImGui::Selectable(object->GetName().c_str(), isSelected))
+            {
+                selectedObject = object.get();
+            }
+        }
+        ImGui::End();
     }
 
-    UserInterface::~UserInterface()
+    bool UserInterface::BindLogSystem(Logging::LogSystem* log_system)
     {
+        this->log_system = log_system;
+        return true;
     }
 
+    UserInterface::UserInterface() = default;
+
+    UserInterface::~UserInterface() = default;
 }
-

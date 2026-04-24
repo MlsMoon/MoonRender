@@ -3,6 +3,10 @@
 #include <vector>
 
 #include "Source/Logging/public/LogSystem.h"
+#include "Source/Object/CameraComponent.h"
+#include "Source/Object/LightComponent.h"
+#include "Source/Object/MeshComponent.h"
+#include "Source/Object/TransformComponent.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
 App::App(
@@ -23,9 +27,6 @@ App::App(
 
     m_cBuffer_MVP = BufferStruct::ConstantMVPBuffer();
     m_cBuffer_PS = BufferStruct::ConstantPSBuffer();
-    m_DirLight = Object::DirectionalLight();
-    m_PointLight = Object::PointLight();
-    m_SpotLight = Object::SpotLight();
     m_IsWireframeMode = false;
 }
 
@@ -35,6 +36,7 @@ bool App::Init()
 {
     MOON_LOG("Hello");
     MOON_LOG("Start Init");
+    user_interface.BindLogSystem(&log_system);
     if (!D3DApp::Init())
     {
         return false;
@@ -62,18 +64,77 @@ void App::UpdateScene(float dt)
     phi += 0.3f * dt;
     theta += 0.37f * dt;
 
-    DirectX::XMMATRIX world = DirectX::XMMatrixRotationX(phi) * DirectX::XMMatrixRotationY(theta);
+    Object::TransformComponent* renderTransform = nullptr;
+    if (m_renderObject != nullptr)
+    {
+        renderTransform = m_renderObject->GetComponent<Object::TransformComponent>();
+        if (renderTransform != nullptr)
+        {
+            renderTransform->rotationRadians.x = phi;
+            renderTransform->rotationRadians.y = theta;
+        }
+    }
+
+    const DirectX::XMMATRIX world = renderTransform != nullptr
+        ? renderTransform->GetWorldMatrix()
+        : DirectX::XMMatrixIdentity();
+
+    DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(
+        DirectX::XMVectorSet(0.0f, 0.0f, -5.0f, 0.0f),
+        DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
+        DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+
+    float cameraFovRadians = DirectX::XMConvertToRadians(90.0f);
+    float cameraNearPlane = 1.0f;
+    float cameraFarPlane = 1000.0f;
+    if (m_mainCameraObject != nullptr)
+    {
+        const auto* cameraTransform = m_mainCameraObject->GetComponent<Object::TransformComponent>();
+        const auto* cameraComponent = m_mainCameraObject->GetComponent<Object::CameraComponent>();
+        if (cameraTransform != nullptr && cameraComponent != nullptr)
+        {
+            const DirectX::XMMATRIX cameraRotation =
+                DirectX::XMMatrixRotationX(cameraTransform->rotationRadians.x) *
+                DirectX::XMMatrixRotationY(cameraTransform->rotationRadians.y) *
+                DirectX::XMMatrixRotationZ(cameraTransform->rotationRadians.z);
+            const DirectX::XMVECTOR cameraPosition = DirectX::XMLoadFloat3(&cameraTransform->position);
+            const DirectX::XMVECTOR forward = DirectX::XMVector3TransformNormal(
+                DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+                cameraRotation);
+            const DirectX::XMVECTOR up = DirectX::XMVector3TransformNormal(
+                DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
+                cameraRotation);
+            view = DirectX::XMMatrixLookAtLH(cameraPosition, DirectX::XMVectorAdd(cameraPosition, forward), up);
+            cameraFovRadians = cameraComponent->fovRadians;
+            cameraNearPlane = cameraComponent->nearPlane;
+            cameraFarPlane = cameraComponent->farPlane;
+        }
+    }
+
+    if (m_directionalLightObject != nullptr)
+    {
+        const auto* lightComponent = m_directionalLightObject->GetComponent<Object::LightComponent>();
+        if (lightComponent != nullptr && lightComponent->GetLightKind() == Object::LightKind::Directional)
+        {
+            m_cBuffer_PS.directionalLightDirW = lightComponent->directionalLight.direction_intensity;
+        }
+    }
+
     m_cBuffer_MVP.world = DirectX::XMMatrixTranspose(world);
     m_cBuffer_MVP.worldInvTranspose = DirectX::XMMatrixTranspose(InverseTranspose(world));
+    m_cBuffer_MVP.view = DirectX::XMMatrixTranspose(view);
     m_cBuffer_MVP.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(
-        DirectX::XMConvertToRadians(CameraFOVValue),
+        cameraFovRadians,
         AspectRatio(),
-        1.0f,
-        1000.0f));
+        cameraNearPlane,
+        cameraFarPlane));
 
     IGraphicsBackend& graphics = Graphics();
-    graphics.UpdateBuffer(*m_ConstantBuffers[0], &m_cBuffer_MVP, sizeof(m_cBuffer_MVP));
-    graphics.UpdateBuffer(*m_ConstantBuffers[1], &m_cBuffer_PS, sizeof(m_cBuffer_PS));
+    if (m_ConstantBuffers[0] && m_ConstantBuffers[1])
+    {
+        graphics.UpdateBuffer(*m_ConstantBuffers[0], &m_cBuffer_MVP, sizeof(m_cBuffer_MVP));
+        graphics.UpdateBuffer(*m_ConstantBuffers[1], &m_cBuffer_PS, sizeof(m_cBuffer_PS));
+    }
 }
 
 void App::DrawScene()
@@ -82,7 +143,10 @@ void App::DrawScene()
 
     IGraphicsBackend& graphics = Graphics();
     graphics.Clear(clearColor, 1.0f, 0);
-    graphics.DrawIndexed(m_IndexCount, 0, 0);
+    if (m_IndexCount > 0)
+    {
+        graphics.DrawIndexed(m_IndexCount, 0, 0);
+    }
 
     ImGui::Render();
     graphics.RenderImGuiDrawData();
@@ -91,7 +155,46 @@ void App::DrawScene()
 
 void App::DrawUI()
 {
-    user_interface.DrawMainInterfaceUI();
+    user_interface.DrawMainInterfaceUI(m_sceneObjects, m_selectedObject);
+}
+
+void App::CreateDefaultScene()
+{
+    m_sceneObjects.clear();
+    m_selectedObject = nullptr;
+    m_renderObject = nullptr;
+    m_mainCameraObject = nullptr;
+    m_directionalLightObject = nullptr;
+
+    auto sphereObject = std::make_unique<Object::MoonObject>("Sphere");
+    sphereObject->AddComponent<Object::TransformComponent>();
+    sphereObject->AddComponent<Object::MeshComponent>(MoonGetAssetPath("Resources/Models/sphere.obj"), ResourcesProcess::OBJ);
+    m_selectedObject = sphereObject.get();
+    m_sceneObjects.push_back(std::move(sphereObject));
+
+    auto cameraObject = std::make_unique<Object::MoonObject>("Main Camera");
+    Object::TransformComponent* cameraTransform = cameraObject->AddComponent<Object::TransformComponent>();
+    if (cameraTransform != nullptr)
+    {
+        cameraTransform->position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
+    }
+    Object::CameraComponent* cameraComponent = cameraObject->AddComponent<Object::CameraComponent>();
+    if (cameraComponent != nullptr)
+    {
+        cameraComponent->fovRadians = DirectX::XMConvertToRadians(90.0f);
+        cameraComponent->nearPlane = 1.0f;
+        cameraComponent->farPlane = 1000.0f;
+    }
+    m_sceneObjects.push_back(std::move(cameraObject));
+
+    auto lightObject = std::make_unique<Object::MoonObject>("Directional Light");
+    lightObject->AddComponent<Object::TransformComponent>();
+    lightObject->AddComponent<Object::LightComponent>(Object::LightKind::Directional);
+    m_sceneObjects.push_back(std::move(lightObject));
+
+    m_renderObject = FindFirstRenderableObject();
+    m_mainCameraObject = FindMainCameraObject();
+    m_directionalLightObject = FindDirectionalLightObject();
 }
 
 bool App::InitResources()
@@ -101,20 +204,31 @@ bool App::InitResources()
         return false;
     }
 
-    const std::string meshFilePath = MoonGetAssetPath("Resources/Models/sphere.obj");
-    default_mesh = std::make_unique<ResourcesProcess::Mesh>(meshFilePath, ResourcesProcess::OBJ);
+    CreateDefaultScene();
+    if (m_renderObject == nullptr)
+    {
+        return false;
+    }
+
+    Object::MeshComponent* meshComponent = m_renderObject->GetComponent<Object::MeshComponent>();
+    if (meshComponent == nullptr || meshComponent->GetMesh() == nullptr || meshComponent->GetMesh()->VertexNum == 0)
+    {
+        return false;
+    }
+
+    ResourcesProcess::Mesh* defaultMesh = meshComponent->GetMesh();
 
     IGraphicsBackend& graphics = Graphics();
 
     GraphicsBufferDesc vertexBufferDesc = {};
-    vertexBufferDesc.byteWidth = default_mesh->ByteWidth;
+    vertexBufferDesc.byteWidth = defaultMesh->ByteWidth;
     vertexBufferDesc.usage = GraphicsBufferUsage::Immutable;
     vertexBufferDesc.bindFlags = GraphicsBufferBindFlags::VertexBuffer;
     vertexBufferDesc.debugName = "VertexBuffer";
-    m_VertexBuffer = graphics.CreateBuffer(vertexBufferDesc, default_mesh->get_sys_mem());
+    m_VertexBuffer = graphics.CreateBuffer(vertexBufferDesc, defaultMesh->get_sys_mem());
 
-    std::vector<std::uint32_t> indices(default_mesh->VertexNum);
-    for (std::uint32_t i = 0; i < static_cast<std::uint32_t>(default_mesh->VertexNum); ++i)
+    std::vector<std::uint32_t> indices(defaultMesh->VertexNum);
+    for (std::uint32_t i = 0; i < static_cast<std::uint32_t>(defaultMesh->VertexNum); ++i)
     {
         indices[i] = i;
     }
@@ -141,15 +255,8 @@ bool App::InitResources()
     m_ConstantBuffers[1] = graphics.CreateBuffer(constantBufferDesc, nullptr);
 
     m_cBuffer_MVP.world = DirectX::XMMatrixIdentity();
-    m_cBuffer_MVP.view = DirectX::XMMatrixTranspose(DirectX::XMMatrixLookAtLH(
-        DirectX::XMVectorSet(0.0f, 0.0f, -5.0f, 0.0f),
-        DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
-        DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)));
-    m_cBuffer_MVP.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(
-        DirectX::XMConvertToRadians(CameraFOVValue),
-        AspectRatio(),
-        1.0f,
-        1000.0f));
+    m_cBuffer_MVP.view = DirectX::XMMatrixIdentity();
+    m_cBuffer_MVP.proj = DirectX::XMMatrixIdentity();
 
     m_cBuffer_PS.directionalLightDirW = DirectX::XMFLOAT4(-0.577f, -0.577f, 0.577f, 1.0f);
 
@@ -202,10 +309,71 @@ bool App::InitShaders()
 
 float App::GetCameraFOVValue()
 {
-    return CameraFOVValue;
+    Object::MoonObject* cameraObject = FindMainCameraObject();
+    if (cameraObject == nullptr)
+    {
+        return 90.0f;
+    }
+
+    const auto* cameraComponent = cameraObject->GetComponent<Object::CameraComponent>();
+    if (cameraComponent == nullptr)
+    {
+        return 90.0f;
+    }
+
+    return DirectX::XMConvertToDegrees(cameraComponent->fovRadians);
 }
 
 void App::SetCameraFOVValue(float newCameraFOV)
 {
-    CameraFOVValue = newCameraFOV;
+    Object::MoonObject* cameraObject = FindMainCameraObject();
+    if (cameraObject == nullptr)
+    {
+        return;
+    }
+
+    auto* cameraComponent = cameraObject->GetComponent<Object::CameraComponent>();
+    if (cameraComponent != nullptr)
+    {
+        cameraComponent->fovRadians = DirectX::XMConvertToRadians(newCameraFOV);
+    }
+}
+
+Object::MoonObject* App::FindFirstRenderableObject()
+{
+    for (const auto& object : m_sceneObjects)
+    {
+        if (object->HasComponent<Object::TransformComponent>() && object->HasComponent<Object::MeshComponent>())
+        {
+            return object.get();
+        }
+    }
+    return nullptr;
+}
+
+Object::MoonObject* App::FindMainCameraObject()
+{
+    for (const auto& object : m_sceneObjects)
+    {
+        if (object->HasComponent<Object::TransformComponent>() && object->HasComponent<Object::CameraComponent>())
+        {
+            return object.get();
+        }
+    }
+    return nullptr;
+}
+
+Object::MoonObject* App::FindDirectionalLightObject()
+{
+    for (const auto& object : m_sceneObjects)
+    {
+        const auto* lightComponent = object->GetComponent<Object::LightComponent>();
+        if (object->HasComponent<Object::TransformComponent>() &&
+            lightComponent != nullptr &&
+            lightComponent->GetLightKind() == Object::LightKind::Directional)
+        {
+            return object.get();
+        }
+    }
+    return nullptr;
 }
