@@ -11,17 +11,38 @@ namespace MoonUI
         const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
         Object::MoonObject*& selectedObject)
     {
-        ImGui::BeginMainMenuBar();
+        DrawMainMenu();
+        DrawDockSpace();
+
+        if (showOutlineWindow)
+        {
+            DrawOutlineView(sceneObjects, selectedObject);
+        }
+
+        if (showCameraWindow)
+        {
+            DrawCameraView();
+        }
+
+        if (showOutputWindow)
+        {
+            DrawOutputLog();
+        }
+
+        return true;
+    }
+
+    void UserInterface::DrawMainMenu()
+    {
+        if (!ImGui::BeginMainMenuBar())
+        {
+            return;
+        }
+
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open"))
-            {
-            }
-
-            if (ImGui::MenuItem("Save"))
-            {
-            }
-
+            ImGui::MenuItem("Open");
+            ImGui::MenuItem("Save");
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Windows"))
@@ -31,48 +52,24 @@ namespace MoonUI
             ImGui::MenuItem("OutputLog", nullptr, &showOutputWindow);
             ImGui::EndMenu();
         }
+
         ImGui::EndMainMenuBar();
+    }
 
-        if (showOutlineWindow)
-        {
-            DrawOutlineView(sceneObjects, selectedObject);
-        }
-
-        if (showCameraWindow)
-        {
-            ImGui::Begin("Camera", &showCameraWindow);
-            if (ImGui::SliderFloat("Camera FOV", &ui_camera_fov, 10.0f, 120.0f))
-            {
-                EventCenter::EventTrigger("SetCameraFOVValue", ui_camera_fov);
-            }
-            ImGui::End();
-        }
-
-        if (showOutputWindow)
-        {
-            ImGui::Begin("OutputLog", &showOutputWindow);
-            if (log_system == nullptr)
-            {
-                ImGui::Text("No log system bound.");
-            }
-            else
-            {
-                ImGui::BeginChild("Text Output", ImVec2(0, 0), true);
-                const std::string logContent = log_system->GetLogContent();
-                ImGui::TextUnformatted(logContent.c_str());
-                ImGui::EndChild();
-            }
-            ImGui::End();
-        }
-
-        return true;
+    void UserInterface::DrawDockSpace()
+    {
+        ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_PassthruCentralNode;
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dockspaceFlags);
     }
 
     void UserInterface::DrawOutlineView(
         const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
         Object::MoonObject*& selectedObject)
     {
+        ImGui::SetNextWindowSize(ImVec2(280.0f, 520.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(16.0f, 48.0f), ImGuiCond_FirstUseEver);
         ImGui::Begin("OutlineView", &showOutlineWindow);
+
         for (const auto& object : sceneObjects)
         {
             if (!object->HasComponent<Object::TransformComponent>())
@@ -85,6 +82,38 @@ namespace MoonUI
             {
                 selectedObject = object.get();
             }
+        }
+        ImGui::End();
+    }
+
+    void UserInterface::DrawCameraView()
+    {
+        ImGui::SetNextWindowSize(ImVec2(320.0f, 140.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(312.0f, 48.0f), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Camera", &showCameraWindow);
+        ImGui::SetNextItemWidth(-1.0f);
+        if (ImGui::SliderFloat("FOV", &ui_camera_fov, 10.0f, 120.0f, "%.1f deg"))
+        {
+            EventCenter::EventTrigger("SetCameraFOVValue", ui_camera_fov);
+        }
+        ImGui::End();
+    }
+
+    void UserInterface::DrawOutputLog()
+    {
+        ImGui::SetNextWindowSize(ImVec2(640.0f, 220.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(312.0f, 512.0f), ImGuiCond_FirstUseEver);
+        ImGui::Begin("OutputLog", &showOutputWindow);
+        if (log_system == nullptr)
+        {
+            ImGui::TextDisabled("No log system bound.");
+        }
+        else
+        {
+            ImGui::BeginChild("Text Output", ImVec2(0, 0), true);
+            const std::string logContent = log_system->GetLogContent();
+            ImGui::TextUnformatted(logContent.c_str());
+            ImGui::EndChild();
         }
         ImGui::End();
     }

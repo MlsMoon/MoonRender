@@ -20,6 +20,6 @@ namespace Object
         DirectX::XMFLOAT4 ambient;
         DirectX::XMFLOAT4 diffuse;
         DirectX::XMFLOAT4 specular; // w = specular intensity
-        DirectX::XMFLOAT4 reflec
+        DirectX::XMFLOAT4 reflect;
     };
 }

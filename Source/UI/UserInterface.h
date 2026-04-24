@@ -25,9 +25,13 @@ namespace MoonUI
         bool BindLogSystem(Logging::LogSystem* log_system);
 
     private:
+        void DrawMainMenu();
+        void DrawDockSpace();
         void DrawOutlineView(
             const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
             Object::MoonObject*& selectedObject);
+        void DrawCameraView();
+        void DrawOutputLog();
 
     private:
         bool showOutlineWindow = true;
