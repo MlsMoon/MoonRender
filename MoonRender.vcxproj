@@ -161,10 +161,10 @@
     <None Include="Resources\Shaders\LightHelper.hlsli" />
     <ClInclude Include="Source\AppWin\public\MoonRenderClass.h" />
     <ClInclude Include="Source\EventSystem\EventCenter.h" />
-    <ClInclude Include="Source\GameObject\Camera.h" />
+    <ClInclude Include="Source\Object\Camera.h" />
     <ClInclude Include="Source\Logging\public\LogSystem.h" />
-    <ClInclude Include="Source\Render\LightType.h" />
-    <ClInclude Include="Source\Render\MaterialParam.h" />
+    <ClInclude Include="Source\Object\LightType.h" />
+    <ClInclude Include="Source\Object\MaterialParam.h" />
     <ClInclude Include="Source\ResourcesProcess\public\Mesh.h" />
     <ClInclude Include="Source\ResourcesProcess\public\MoonMeshLoader.h" />
     <ClInclude Include="Source\ThirdParty\tinyobjloader\tiny_obj_loader.h" />
@@ -173,7 +173,7 @@
     <ClInclude Include="Source\AppWin\public\D3DApp.h" />
     <ClInclude Include="Source\AppWin\public\D3DUtil.h" />
     <ClInclude Include="Source\AppWin\public\DXTrace.h" />
-    <ClInclude Include="Source\AppWin\public\GameApp.h" />
+    <ClInclude Include="Source\AppWin\public\App.h" />
     <ClInclude Include="Source\AppWin\public\WinMin.h" />
     <ClInclude Include="Source\Graphics\public\GraphicsBackend.h" />
     <ClInclude Include="Source\Graphics\public\GraphicsBackendFactory.h" />
@@ -192,7 +192,7 @@
     <None Include="Resources\Shaders\Light_PS.hlsl" />
     <None Include="Resources\Shaders\VertexCommon.hlsl" />
     <ClCompile Include="Source\EventSystem\EventCenter.cpp" />
-    <ClCompile Include="Source\GameObject\Camera.cpp" />
+    <ClCompile Include="Source\Object\Camera.cpp" />
     <ClCompile Include="Source\Logging\private\LogSystem.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -419,7 +419,7 @@
     <ClCompile Include="Source\AppWin\private\D3DApp.cpp" />
     <ClCompile Include="Source\AppWin\private\D3DUtil.cpp" />
     <ClCompile Include="Source\AppWin\private\DXTrace.cpp" />
-    <ClCompile Include="Source\AppWin\private\GameApp.cpp" />
+    <ClCompile Include="Source\AppWin\private\App.cpp" />
     <ClCompile Include="Source\AppWin\private\MainEntry.cpp" />
     <ClCompile Include="Source\Graphics\private\Dx11Backend.cpp" />
     <ClCompile Include="Source\Graphics\private\Dx12Backend.cpp" />

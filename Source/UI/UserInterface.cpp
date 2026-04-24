@@ -1,6 +1,6 @@
 ﻿#include "UserInterface.h"
 
-#include "Source/AppWin/public/GameApp.h"
+#include "Source/AppWin/public/App.h"
 
 
 namespace MoonUI
@@ -10,7 +10,7 @@ namespace MoonUI
 
         
         // ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // 设置alpha分量为0.5，表示半透明
-        // ImGui::SetNextWindowSize(ImVec2(GameApp::currentGameApp->ClientWidth +1 , GameApp::currentGameApp->ClientHeight -25));
+        // ImGui::SetNextWindowSize(ImVec2(App::currentApp->ClientWidth +1 , App::currentApp->ClientHeight -25));
         // ImGui::SetNextWindowPos(ImVec2(-1,25));
         // const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoFocusOnAppearing;
         // ImGui::Begin("MoonRenderer",nullptr,window_flags);
@@ -60,7 +60,7 @@ namespace MoonUI
         {
             if (log_system == nullptr)
             {
-                log_system = &GameApp::currentGameApp->log_system;
+                log_system = &App::currentApp->log_system;
             }
             ImGui::Begin("OutputLog",&showOutputWindow);
             // 创建子窗口，设置滚动条

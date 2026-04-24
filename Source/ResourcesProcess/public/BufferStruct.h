@@ -4,8 +4,6 @@
 #include <directxmath.h>
 
 #include "Source/Graphics/public/GraphicsTypes.h"
-#include "Source/Render/LightType.h"
-#include "Source/Render/MaterialParam.h"
 
 class BufferStruct
 {

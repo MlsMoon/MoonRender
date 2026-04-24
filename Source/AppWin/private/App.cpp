@@ -1,11 +1,11 @@
-#include "../public/GameApp.h"
+#include "../public/App.h"
 
 #include <vector>
 
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
-GameApp::GameApp(
+App::App(
     HINSTANCE hInstance,
     const std::wstring& windowName,
     int initWidth,
@@ -13,25 +13,25 @@ GameApp::GameApp(
     GraphicsBackendType backendType)
     : D3DApp(hInstance, windowName, initWidth, initHeight, backendType)
 {
-    if (GameApp::flag_exist)
+    if (App::flag_exist)
     {
         return;
     }
 
-    GameApp::flag_exist = true;
-    GameApp::currentGameApp = this;
+    App::flag_exist = true;
+    App::currentApp = this;
 
     m_cBuffer_MVP = BufferStruct::ConstantMVPBuffer();
     m_cBuffer_PS = BufferStruct::ConstantPSBuffer();
-    m_DirLight = Render::DirectionalLight();
-    m_PointLight = Render::PointLight();
-    m_SpotLight = Render::SpotLight();
+    m_DirLight = Object::DirectionalLight();
+    m_PointLight = Object::PointLight();
+    m_SpotLight = Object::SpotLight();
     m_IsWireframeMode = false;
 }
 
-GameApp::~GameApp() = default;
+App::~App() = default;
 
-bool GameApp::Init()
+bool App::Init()
 {
     MOON_LOG("Hello");
     MOON_LOG("Start Init");
@@ -50,12 +50,12 @@ bool GameApp::Init()
     return true;
 }
 
-void GameApp::OnResize()
+void App::OnResize()
 {
     D3DApp::OnResize();
 }
 
-void GameApp::UpdateScene(float dt)
+void App::UpdateScene(float dt)
 {
     static float phi = 0.0f;
     static float theta = 0.0f;
@@ -76,7 +76,7 @@ void GameApp::UpdateScene(float dt)
     graphics.UpdateBuffer(*m_ConstantBuffers[1], &m_cBuffer_PS, sizeof(m_cBuffer_PS));
 }
 
-void GameApp::DrawScene()
+void App::DrawScene()
 {
     static const float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 
@@ -89,12 +89,12 @@ void GameApp::DrawScene()
     graphics.Present();
 }
 
-void GameApp::DrawUI()
+void App::DrawUI()
 {
-    game_user_interface.DrawMainInterfaceUI();
+    user_interface.DrawMainInterfaceUI();
 }
 
-bool GameApp::InitResources()
+bool App::InitResources()
 {
     if (!InitShaders())
     {
@@ -172,7 +172,7 @@ bool GameApp::InitResources()
     return m_VertexBuffer && m_IndexBuffer && m_ConstantBuffers[0] && m_ConstantBuffers[1];
 }
 
-bool GameApp::InitShaders()
+bool App::InitShaders()
 {
     IGraphicsBackend& graphics = Graphics();
 
@@ -200,12 +200,12 @@ bool GameApp::InitShaders()
     return m_VertexShader && m_PixelShader && m_VertexLayout;
 }
 
-float GameApp::GetCameraFOVValue()
+float App::GetCameraFOVValue()
 {
     return CameraFOVValue;
 }
 
-void GameApp::SetCameraFOVValue(float newCameraFOV)
+void App::SetCameraFOVValue(float newCameraFOV)
 {
     CameraFOVValue = newCameraFOV;
 }

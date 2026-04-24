@@ -1,4 +1,4 @@
-#include "../public/GameApp.h"
+#include "../public/App.h"
 
 #include <string>
 
@@ -179,7 +179,7 @@ int WINAPI WinMain(
         return 0;
     }
 
-    GameApp theApp(hInstance, L"MoonRender", 1280, 720, backendType);
+    App theApp(hInstance, L"MoonRender", 1280, 720, backendType);
     if (!theApp.Init())
     {
         return 0;

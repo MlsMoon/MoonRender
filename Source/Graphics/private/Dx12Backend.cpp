@@ -1,4 +1,4 @@
-#include "Source/Graphics/public/GraphicsBackend.h"
+﻿#include "Source/Graphics/public/GraphicsBackend.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -29,6 +29,7 @@ namespace
 
     UINT AlignConstantBufferSize(UINT size)
     {
+        // D3D12 要求 CBV 按 256 字节对齐，这里统一向上取整。
         return (size + 255u) & ~255u;
     }
 
@@ -153,6 +154,8 @@ namespace
 
     struct Dx12ImGuiFrameResources
     {
+        // ImGui 每帧都会重新生成顶点/索引数据。
+        // 这里给每个 back buffer 准备一套 upload buffer，避免 CPU/GPU 同时踩同一块内存。
         ComPtr<ID3D12Resource> vertexBuffer;
         ComPtr<ID3D12Resource> indexBuffer;
         ImDrawVert* mappedVertexData = nullptr;
@@ -182,6 +185,10 @@ namespace
 
         bool Initialize(HWND hwnd, int width, int height, bool enable4xMsaa) override
         {
+            // DX12 鍒濆鍖栫殑鎬讳綋椤哄簭鏄細
+            // 1. 创建设备/命令队列/交换链
+            // 2. 创建 RTV/DSV/fence/命令列表等长期对象
+            // 3. 根据当前窗口尺寸创建 back buffer 和 depth buffer
             m_hwnd = hwnd;
             m_width = width;
             m_height = height;
@@ -203,6 +210,7 @@ namespace
                 return;
             }
 
+            // Resize 前先等 GPU，把旧尺寸下正在使用的 back buffer / depth buffer 完全消费掉。
             WaitForGpu();
 
             m_width = width;
@@ -225,6 +233,8 @@ namespace
 
             m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 
+            // 交换链只负责生成 back buffer 资源；
+            // 真正给渲染管线绑定时，还需要我们自己创建 RTV。
             D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
             for (UINT i = 0; i < kFrameCount; ++i)
             {
@@ -271,6 +281,7 @@ namespace
             dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
             m_device->CreateDepthStencilView(m_depthStencil.Get(), &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
+            // 视口和裁剪矩形通常跟窗口尺寸同步更新。
             GraphicsViewport viewport = {};
             viewport.width = static_cast<float>(width);
             viewport.height = static_cast<float>(height);
@@ -284,6 +295,8 @@ namespace
                 return true;
             }
 
+            // DX12 娌℃湁鍍?DX11 閭ｆ牱鐨勨€滆澶囦笂涓嬫枃鍗虫覆鏌撳櫒鈥濇ā寮忥紝
+            // 所以 ImGui 需要单独准备 root signature / PSO / SRV heap / 字体纹理。
             if (!CreateImGuiDeviceObjects())
             {
                 ShutdownImGui();
@@ -325,6 +338,8 @@ namespace
                 return;
             }
 
+            // ImGui 每帧先把 CPU 侧 draw list 拷进 upload buffer，
+            // 再把这些缓冲绑定到命令列表里发 draw call。
             UploadImGuiDrawData(*drawData, m_imguiFrameResources[m_frameIndex]);
             RecordImGuiDrawCommands(*drawData, m_imguiFrameResources[m_frameIndex]);
         }
@@ -369,6 +384,8 @@ namespace
                 return;
             }
 
+            // DX12 需要显式资源状态切换。
+            // back buffer 在 Present 之后处于 PRESENT，清屏/绘制前要切回 RENDER_TARGET。
             const D3D12_RESOURCE_BARRIER toRenderTarget = TransitionBarrier(
                 m_renderTargets[m_frameIndex].Get(),
                 D3D12_RESOURCE_STATE_PRESENT,
@@ -392,6 +409,7 @@ namespace
                 return;
             }
 
+            // 提交前切回 PRESENT，然后关闭命令列表并提交到队列。
             const D3D12_RESOURCE_BARRIER toPresent = TransitionBarrier(
                 m_renderTargets[m_frameIndex].Get(),
                 D3D12_RESOURCE_STATE_RENDER_TARGET,
@@ -427,6 +445,8 @@ namespace
             const UINT requestedSize = desc.byteWidth;
             const UINT resourceSize = isConstantBuffer ? AlignConstantBufferSize(requestedSize) : requestedSize;
 
+            // 这里当前统一用 UPLOAD heap，优点是实现简单、CPU 可直接写。
+            // 代价是性能不如 DEFAULT heap + staging/upload 的正式做法。
             D3D12_HEAP_PROPERTIES heapProperties = {};
             heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
 
@@ -654,6 +674,8 @@ namespace
                 return;
             }
 
+            // DX12 娌℃湁鈥滀复鏃剁姸鎬佹満鑷姩鎷艰绠＄嚎鈥濊繖涓€灞傦紝
+            // 所以 draw 前要确保当前 input layout / shader / rasterizer 对应的 PSO 已经准备好。
             if (!EnsurePipelineState())
             {
                 return;
@@ -688,6 +710,11 @@ namespace
     private:
         bool CreateImGuiDeviceObjects()
         {
+            // ImGui 在 DX12 下最核心的设备对象有四类：
+            // 1. Shader-visible SRV heap
+            // 2. 涓撶敤 root signature
+            // 3. 涓撶敤 PSO
+            // 4. 瀛椾綋绾圭悊鍙婂叾 SRV
             if (!CreateImGuiDescriptorHeap())
             {
                 return false;
@@ -712,6 +739,8 @@ namespace
 
         bool CreateImGuiPipelineState()
         {
+            // 这里直接内嵌了一套最小 HLSL，而不是依赖外部文件。
+            // 这样 ImGui backend 自己就能自洽，不影响主工程原有 shader 组织方式。
             static constexpr char kImGuiVertexShaderSource[] =
                 "cbuffer vertexBuffer : register(b0) { float4x4 ProjectionMatrix; };"
                 "struct VS_INPUT { float2 pos : POSITION; float4 col : COLOR0; float2 uv : TEXCOORD0; };"
@@ -750,12 +779,14 @@ namespace
             descriptorRange.OffsetInDescriptorsFromTableStart = 0;
 
             D3D12_ROOT_PARAMETER rootParameters[2] = {};
+            // root parameter 0: 鐩存帴濉?4x4 鎶曞奖鐭╅樀甯搁噺
             rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
             rootParameters[0].Constants.ShaderRegister = 0;
             rootParameters[0].Constants.RegisterSpace = 0;
             rootParameters[0].Constants.Num32BitValues = 16;
             rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
+            // root parameter 1: 字体/贴图使用的 SRV 描述符表
             rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
             rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
             rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRange;
@@ -808,6 +839,7 @@ namespace
             }
 
             const D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
+                // ImGui 椤剁偣鏍煎紡鍥哄畾灏辨槸 pos / uv / color
                 { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, static_cast<UINT>(IM_OFFSETOF(ImDrawVert, pos)), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
                 { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, static_cast<UINT>(IM_OFFSETOF(ImDrawVert, uv)), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
                 { "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, static_cast<UINT>(IM_OFFSETOF(ImDrawVert, col)), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
@@ -901,6 +933,7 @@ namespace
                 return false;
             }
 
+            // 字体纹理放在 DEFAULT heap，真正给像素数据时通过 upload buffer 中转。
             D3D12_HEAP_PROPERTIES textureHeapProperties = {};
             textureHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 
@@ -925,6 +958,8 @@ namespace
                 return false;
             }
 
+            // GetCopyableFootprints 浼氬憡璇夋垜浠細
+            // 这张纹理拷贝到 buffer 时，每行需要怎样对齐，整个 upload buffer 需要多大。
             UINT64 uploadBufferSize = 0;
             D3D12_PLACED_SUBRESOURCE_FOOTPRINT layout = {};
             UINT numRows = 0;
@@ -964,6 +999,7 @@ namespace
             const std::size_t sourceRowPitch = static_cast<std::size_t>(width) * 4u;
             for (UINT row = 0; row < numRows; ++row)
             {
+                // 纹理上传不是简单的一次 memcpy，因为 D3D12 对每行 pitch 有对齐要求。
                 std::memcpy(
                     mappedData + row * layout.Footprint.RowPitch,
                     pixels + row * sourceRowPitch,
@@ -986,6 +1022,7 @@ namespace
             srcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
             srcLocation.PlacedFootprint = layout;
 
+            // 先从 upload buffer 复制到默认堆纹理，再切到可供像素着色器读取的状态。
             m_commandList->CopyTextureRegion(&dstLocation, 0, 0, 0, &srcLocation, nullptr);
 
             const D3D12_RESOURCE_BARRIER shaderResourceBarrier = TransitionBarrier(
@@ -1059,6 +1096,7 @@ namespace
                 return true;
             }
 
+            // 容量按 1.5 倍扩容，避免窗口里控件一多时每帧都重新分配 upload buffer。
             capacity = requiredElementCount + requiredElementCount / 2 + 256;
             buffer.Reset();
             *mappedData = nullptr;
@@ -1094,6 +1132,8 @@ namespace
         {
             ImDrawVert* vertexDst = frameResources.mappedVertexData;
             ImDrawIdx* indexDst = frameResources.mappedIndexData;
+            // ImGui 最终给我们的就是一串已经拍平的 draw list。
+            // 这里做的事情很朴素：把 CPU 内存里的顶点/索引顺序拷到 GPU 可见的 upload buffer。
             for (int listIndex = 0; listIndex < drawData.CmdListsCount; ++listIndex)
             {
                 const ImDrawList* cmdList = drawData.CmdLists[listIndex];
@@ -1106,6 +1146,7 @@ namespace
 
         void RecordImGuiDrawCommands(const ImDrawData& drawData, const Dx12ImGuiFrameResources& frameResources)
         {
+            // ImGui 仍然走标准三角形列表，只是它的顶点格式和主场景不同。
             D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
             vertexBufferView.BufferLocation = frameResources.vertexBuffer->GetGPUVirtualAddress();
             vertexBufferView.SizeInBytes = frameResources.vertexBufferCapacity * static_cast<UINT>(sizeof(ImDrawVert));
@@ -1121,6 +1162,7 @@ namespace
             const float top = drawData.DisplayPos.y;
             const float bottom = drawData.DisplayPos.y + drawData.DisplaySize.y;
             const float projectionMatrix[4][4] = {
+                // 这里构造的是一个 2D 正交投影矩阵，把 ImGui 的屏幕空间坐标直接映射到 NDC。
                 { 2.0f / (right - left), 0.0f, 0.0f, 0.0f },
                 { 0.0f, 2.0f / (top - bottom), 0.0f, 0.0f },
                 { 0.0f, 0.0f, 0.5f, 0.0f },
@@ -1160,6 +1202,7 @@ namespace
                         continue;
                     }
 
+                    // ImGui 的每条命令都带一个裁剪矩形，这里把它翻译成 D3D12 的 scissor rect。
                     const ImVec2 clipMin(
                         std::max(0.0f, (drawCommand.ClipRect.x - drawData.DisplayPos.x) * drawData.FramebufferScale.x),
                         std::max(0.0f, (drawCommand.ClipRect.y - drawData.DisplayPos.y) * drawData.FramebufferScale.y));
@@ -1201,6 +1244,8 @@ namespace
 
         bool ResetCommandListForUpload()
         {
+            // 这条路径专门服务于一次性的上传命令，例如字体纹理初始化。
+            // 和常规每帧录制不同，这里会立即 reset / record / execute / wait。
             m_hasOpenCommandList = false;
 
             if (FAILED(m_commandAllocators[m_frameIndex]->Reset()))
@@ -1231,6 +1276,7 @@ namespace
             ComPtr<ID3D12Debug> debugController;
             if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
             {
+                // 有 debug layer 时再打开 DXGI debug factory，避免没装调试组件时初始化直接失败。
                 debugController->EnableDebugLayer();
                 factoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
             }
@@ -1248,6 +1294,7 @@ namespace
                 return false;
             }
 
+            // DX12 的所有 GPU 工作都通过 command queue 提交。
             D3D12_COMMAND_QUEUE_DESC queueDesc = {};
             queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
             if (FAILED(m_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue))))
@@ -1276,6 +1323,7 @@ namespace
                 return false;
             }
 
+            // 禁止 Alt+Enter 这类 DXGI 默认行为，窗口模式切换逻辑统一由应用自己控制。
             factory->MakeWindowAssociation(m_hwnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
             if (FAILED(swapChain1.As(&m_swapChain)))
             {
@@ -1324,6 +1372,7 @@ namespace
                 return false;
             }
 
+            // fence 是 DX12 CPU/GPU 同步的核心原语。
             if (FAILED(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence))))
             {
                 return false;
@@ -1354,12 +1403,14 @@ namespace
                     continue;
                 }
 
+                // 先尝试真实硬件适配器；成功后就停止枚举。
                 if (SUCCEEDED(D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device))))
                 {
                     return true;
                 }
             }
 
+            // 硬件不支持时回退到 WARP，至少能保证功能路径可运行。
             ComPtr<IDXGIAdapter> warpAdapter;
             if (FAILED(factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter))))
             {
@@ -1371,6 +1422,8 @@ namespace
 
         bool CreateRootSignature()
         {
+            // 当前主渲染路径很简单：VS 用 b0，PS 用 b1。
+            // 所以根签名只放两个 CBV，保持最小可用。
             D3D12_ROOT_PARAMETER rootParameters[2] = {};
             rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
             rootParameters[0].Descriptor.ShaderRegister = 0;
@@ -1417,6 +1470,8 @@ namespace
                 return false;
             }
 
+            // DX12 鐨?PSO 鏄€滃ぇ瀵硅薄鈥濓紝鎶?shader / rasterizer / blend / depth-stencil /
+            // input layout / render target format 等状态一次性打包固定。
             D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc = {};
             pipelineDesc.pRootSignature = m_rootSignature.Get();
             pipelineDesc.VS = {
@@ -1472,6 +1527,8 @@ namespace
                 return true;
             }
 
+            // 每帧开始时先 reset allocator，再 reset command list。
+            // allocator 存命令内存，command list 存本帧真正要执行的命令。
             if (FAILED(m_commandAllocators[m_frameIndex]->Reset()))
             {
                 return false;
@@ -1492,6 +1549,8 @@ namespace
                 return;
             }
 
+            // Signal 一个新的 fence 值，然后在 CPU 侧阻塞等待。
+            // 这是最直接、也最容易理解的同步方式。
             const UINT64 fenceToWaitFor = m_fenceValue++;
             m_commandQueue->Signal(m_fence.Get(), fenceToWaitFor);
             m_fence->SetEventOnCompletion(fenceToWaitFor, m_fenceEvent);
@@ -1501,6 +1560,8 @@ namespace
 
         void MoveToNextFrame()
         {
+            // Present 后给当前 frame 打一个 fence 标记，
+            // 下一次轮回到这个 back buffer 时，先确认 GPU 已经处理完旧内容。
             const UINT64 currentFenceValue = m_fenceValue++;
             m_commandQueue->Signal(m_fence.Get(), currentFenceValue);
             m_fenceValues[m_frameIndex] = currentFenceValue;
@@ -1627,3 +1688,4 @@ std::unique_ptr<IGraphicsBackend> CreateDx12Backend()
 {
     return std::make_unique<Dx12Backend>();
 }
+

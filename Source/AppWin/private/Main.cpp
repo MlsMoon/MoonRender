@@ -1,4 +1,4 @@
-#include "../public/GameApp.h"
+#include "../public/App.h"
 
 ///程序主入口
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
@@ -14,7 +14,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE prevInstance,
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    GameApp theApp(hInstance, L"MoonRender", 1280, 720);
+    App theApp(hInstance, L"MoonRender", 1280, 720);
 
     if (!theApp.Init())
         return 0;

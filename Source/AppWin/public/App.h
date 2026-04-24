@@ -1,5 +1,5 @@
-#ifndef GAMEAPP_H
-#define GAMEAPP_H
+#ifndef APP_H
+#define APP_H
 
 #include <memory>
 
@@ -8,25 +8,26 @@
 #include "Source/AppWin/public/DXTrace.h"
 #include "Source/EventSystem/EventCenter.h"
 #include "Source/Logging/public/LogSystem.h"
+#include "Source/Object/LightType.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
 #include "Source/ResourcesProcess/public/Mesh.h"
 #include "Source/UI/UserInterface.h"
 
-class GameApp : public D3DApp
+class App : public D3DApp
 {
 public:
-    GameApp(
+    App(
         HINSTANCE hInstance,
         const std::wstring& windowName,
         int initWidth,
         int initHeight,
         GraphicsBackendType backendType = GraphicsBackendType::DX11);
-    ~GameApp() override;
+    ~App() override;
 
-    inline static GameApp* currentGameApp = nullptr;
+    inline static App* currentApp = nullptr;
     inline static bool flag_exist = false;
 
-    MoonUI::UserInterface game_user_interface;
+    MoonUI::UserInterface user_interface;
     Logging::LogSystem log_system;
 
     bool Init() override;
@@ -57,9 +58,9 @@ private:
     std::shared_ptr<IGraphicsVertexShader> m_VertexShader;
     std::shared_ptr<IGraphicsPixelShader> m_PixelShader;
 
-    Render::DirectionalLight m_DirLight;
-    Render::PointLight m_PointLight;
-    Render::SpotLight m_SpotLight;
+    Object::DirectionalLight m_DirLight;
+    Object::PointLight m_PointLight;
+    Object::SpotLight m_SpotLight;
 
     std::shared_ptr<IGraphicsRasterizerState> m_WireframeRasterizerState;
     bool m_IsWireframeMode;

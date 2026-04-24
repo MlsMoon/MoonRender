@@ -1,9 +1,8 @@
-﻿#pragma once
+#pragma once
 #include <directxmath.h>
 
-namespace Render
+namespace Object
 {
-    // 物体表面材质参数
     struct MaterialParam
     {
         MaterialParam() = default;
@@ -20,7 +19,7 @@ namespace Render
 
         DirectX::XMFLOAT4 ambient;
         DirectX::XMFLOAT4 diffuse;
-        DirectX::XMFLOAT4 specular; // w = 镜面反射强度
-        DirectX::XMFLOAT4 reflect;
+        DirectX::XMFLOAT4 specular; // w = specular intensity
+        DirectX::XMFLOAT4 reflec
     };
 }
