@@ -11,31 +11,12 @@ namespace Object
     class AutoRotateComponent final : public MoonComponent
     {
     public:
-        ComponentType GetType() const override { return ComponentType::AutoRotate; }
-        const char* GetDisplayName() const override { return "Auto Rotate"; }
-
-        std::vector<ComponentProperty> GetProperties() override
+        AutoRotateComponent()
         {
-            return {
-                {
-                    "Angular Velocity",
-                    ComponentPropertyType::Float3,
-                    false,
-                    false,
-                    0.01f,
-                    0.0f,
-                    0.0f,
-                    "%.3f rad/s",
-                    {},
-                    {},
-                    {},
-                    [this]() { return angularVelocityRadians; },
-                    [this](const DirectX::XMFLOAT3& value) { angularVelocityRadians = value; },
-                    {},
-                    {}
-                }
-            };
+            RegisterProperty(MoonProp::Float3("Angular Velocity", angularVelocityRadians, "%.3f rad/s", 0.01f));
         }
+
+        MOON_COMPONENT(AutoRotate, "Auto Rotate", None)
 
         void Update(MoonObject& owner, float dt) override
         {

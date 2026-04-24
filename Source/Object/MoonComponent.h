@@ -3,6 +3,7 @@
 #include <directxmath.h>
 #include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Object
@@ -35,6 +36,14 @@ namespace Object
         Camera
     };
 
+#define MOON_COMPONENT(TypeName, DisplayName, ConflictGroup)                        \
+    ComponentType GetType() const override { return ComponentType::TypeName; }      \
+    const char* GetDisplayName() const override { return DisplayName; }             \
+    ComponentConflictGroup GetConflictGroup() const override                         \
+    {                                                                               \
+        return ComponentConflictGroup::ConflictGroup;                               \
+    }
+
     struct ComponentProperty
     {
         const char* name = "";
@@ -62,10 +71,200 @@ namespace Object
 
         virtual ComponentType GetType() const = 0;
         virtual const char* GetDisplayName() const = 0;
-        virtual std::vector<ComponentProperty> GetProperties() { return {}; }
+        std::vector<ComponentProperty> GetProperties() const { return m_properties; }
         virtual void Update(MoonObject& owner, float dt) {}
         virtual void Normalize() {}
         virtual ComponentConflictGroup GetConflictGroup() const { return ComponentConflictGroup::None; }
         virtual bool AllowMultiple() const { return false; }
+
+    protected:
+        void RegisterProperty(ComponentProperty property)
+        {
+            m_properties.push_back(std::move(property));
+        }
+
+    private:
+        std::vector<ComponentProperty> m_properties;
     };
+
+    namespace MoonProp
+    {
+        // -- Float3 factories --
+
+        inline ComponentProperty Float3(
+            const char* name,
+            DirectX::XMFLOAT3& member,
+            const char* format = "%.3f",
+            float speed = 0.05f)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float3;
+            prop.format = format;
+            prop.speed = speed;
+            prop.getFloat3 = [&member]() { return member; };
+            prop.setFloat3 = [&member](const DirectX::XMFLOAT3& v) { member = v; };
+            return prop;
+        }
+
+        inline ComponentProperty Float3(
+            const char* name,
+            DirectX::XMFLOAT3& member,
+            const char* format,
+            float speed,
+            float minValue,
+            float maxValue)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float3;
+            prop.clamp = true;
+            prop.format = format;
+            prop.speed = speed;
+            prop.minValue = minValue;
+            prop.maxValue = maxValue;
+            prop.getFloat3 = [&member]() { return member; };
+            prop.setFloat3 = [&member](const DirectX::XMFLOAT3& v) { member = v; };
+            return prop;
+        }
+
+        inline ComponentProperty Float3(
+            const char* name,
+            std::function<DirectX::XMFLOAT3()> getter,
+            std::function<void(const DirectX::XMFLOAT3&)> setter,
+            const char* format = "%.3f",
+            float speed = 0.05f)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float3;
+            prop.format = format;
+            prop.speed = speed;
+            prop.getFloat3 = std::move(getter);
+            prop.setFloat3 = std::move(setter);
+            return prop;
+        }
+
+        // -- Float factories --
+
+        inline ComponentProperty Float(
+            const char* name,
+            float& member,
+            const char* format = "%.3f",
+            float speed = 0.1f)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float;
+            prop.format = format;
+            prop.speed = speed;
+            prop.getFloat = [&member]() { return member; };
+            prop.setFloat = [&member](float v) { member = v; };
+            return prop;
+        }
+
+        inline ComponentProperty Float(
+            const char* name,
+            float& member,
+            const char* format,
+            float speed,
+            float minValue,
+            float maxValue)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float;
+            prop.clamp = true;
+            prop.format = format;
+            prop.speed = speed;
+            prop.minValue = minValue;
+            prop.maxValue = maxValue;
+            prop.getFloat = [&member]() { return member; };
+            prop.setFloat = [&member](float v) { member = v; };
+            return prop;
+        }
+
+        inline ComponentProperty Float(
+            const char* name,
+            std::function<float()> getter,
+            std::function<void(float)> setter,
+            const char* format = "%.3f",
+            float speed = 0.1f)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float;
+            prop.format = format;
+            prop.speed = speed;
+            prop.getFloat = std::move(getter);
+            prop.setFloat = std::move(setter);
+            return prop;
+        }
+
+        inline ComponentProperty Float(
+            const char* name,
+            std::function<float()> getter,
+            std::function<void(float)> setter,
+            const char* format,
+            float speed,
+            float minValue,
+            float maxValue)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float;
+            prop.clamp = true;
+            prop.format = format;
+            prop.speed = speed;
+            prop.minValue = minValue;
+            prop.maxValue = maxValue;
+            prop.getFloat = std::move(getter);
+            prop.setFloat = std::move(setter);
+            return prop;
+        }
+
+        // -- Float4 factories --
+
+        inline ComponentProperty Float4(
+            const char* name,
+            DirectX::XMFLOAT4& member,
+            const char* format = "%.3f",
+            float speed = 0.01f)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Float4;
+            prop.format = format;
+            prop.speed = speed;
+            prop.getFloat4 = [&member]() { return member; };
+            prop.setFloat4 = [&member](const DirectX::XMFLOAT4& v) { member = v; };
+            return prop;
+        }
+
+        // -- Text factories --
+
+        inline ComponentProperty Text(
+            const char* name,
+            std::function<std::string()> getter)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Text;
+            prop.readOnly = true;
+            prop.getText = std::move(getter);
+            return prop;
+        }
+
+        inline ComponentProperty Text(
+            const char* name,
+            const std::string& member)
+        {
+            ComponentProperty prop;
+            prop.name = name;
+            prop.type = ComponentPropertyType::Text;
+            prop.readOnly = true;
+            prop.getText = [&member]() { return member; };
+            return prop;
+        }
+    }
 }

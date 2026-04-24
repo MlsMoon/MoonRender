@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmake --version)",
+      "Bash(cmake --preset vs-debug-x64)",
+      "Bash(where cl *)",
+      "Bash(vswhere.exe -all)",
+      "Read(//c/Program Files \\(x86\\)/Microsoft Visual Studio//**)",
+      "Bash(cmake --help)",
+      "Bash(cmake -G \"\")",
+      "Bash(cmd.exe /c \"where ninja\")",
+      "Bash(cmd.exe /c \"where msbuild\")",
+      "Bash(cmd.exe /c \"where cmake\")",
+      "Bash(cmd.exe *)",
+      "Bash(cmake --build \"Builds/CMake/manual-x64\" --config Debug)"
+    ]
+  }
+}

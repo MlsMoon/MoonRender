@@ -17,77 +17,35 @@ namespace Object
         static constexpr float MinPlaneGap = 0.001f;
         static constexpr float MaxFarPlane = 10000.0f;
 
-        ComponentType GetType() const override { return ComponentType::Camera; }
-        const char* GetDisplayName() const override { return "Camera"; }
-        ComponentConflictGroup GetConflictGroup() const override { return ComponentConflictGroup::Camera; }
-        std::vector<ComponentProperty> GetProperties() override
+        CameraComponent()
         {
-            return {
+            RegisterProperty(MoonProp::Float("FOV",
+                [this]() { return DirectX::XMConvertToDegrees(fovRadians); },
+                [this](float value)
                 {
-                    "FOV",
-                    ComponentPropertyType::Float,
-                    false,
-                    true,
-                    0.1f,
-                    MinFovDegrees,
-                    MaxFovDegrees,
-                    "%.1f deg",
-                    {},
-                    [this]() { return DirectX::XMConvertToDegrees(fovRadians); },
-                    [this](float value)
-                    {
-                        fovRadians = DirectX::XMConvertToRadians(value);
-                        Normalize();
-                    },
-                    {},
-                    {},
-                    {},
-                    {}
+                    fovRadians = DirectX::XMConvertToRadians(value);
+                    Normalize();
                 },
+                "%.1f deg", 0.1f, MinFovDegrees, MaxFovDegrees));
+            RegisterProperty(MoonProp::Float("Near",
+                [this]() { return nearPlane; },
+                [this](float value)
                 {
-                    "Near",
-                    ComponentPropertyType::Float,
-                    false,
-                    true,
-                    0.05f,
-                    MinNearPlane,
-                    MaxFarPlane - MinPlaneGap,
-                    "%.3f",
-                    {},
-                    [this]() { return nearPlane; },
-                    [this](float value)
-                    {
-                        nearPlane = value;
-                        Normalize();
-                    },
-                    {},
-                    {},
-                    {},
-                    {}
+                    nearPlane = value;
+                    Normalize();
                 },
+                "%.3f", 0.05f, MinNearPlane, MaxFarPlane - MinPlaneGap));
+            RegisterProperty(MoonProp::Float("Far",
+                [this]() { return farPlane; },
+                [this](float value)
                 {
-                    "Far",
-                    ComponentPropertyType::Float,
-                    false,
-                    true,
-                    1.0f,
-                    MinNearPlane + MinPlaneGap,
-                    MaxFarPlane,
-                    "%.3f",
-                    {},
-                    [this]() { return farPlane; },
-                    [this](float value)
-                    {
-                        farPlane = value;
-                        Normalize();
-                    },
-                    {},
-                    {},
-                    {},
-                    {}
-                }
-            };
+                    farPlane = value;
+                    Normalize();
+                },
+                "%.3f", 1.0f, MinNearPlane + MinPlaneGap, MaxFarPlane));
         }
+
+        MOON_COMPONENT(Camera, "Camera", Camera)
 
         void Normalize() override
         {
