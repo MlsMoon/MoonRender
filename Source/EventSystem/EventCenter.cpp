@@ -13,8 +13,13 @@ bool EventCenter::EventTrigger(const std::string& event_name, float param)
     if (instance==nullptr)
         if(!EventCenter::CreateInstance<EventCenter>())
             return false;
-    const auto func_ptr = EventCenter::register_events_map_float[event_name];
-    func_ptr(param);
+    const auto event_iter = EventCenter::register_events_map_float.find(event_name);
+    if (event_iter == EventCenter::register_events_map_float.end())
+    {
+        return false;
+    }
+
+    event_iter->second(param);
     return true;
 }
 

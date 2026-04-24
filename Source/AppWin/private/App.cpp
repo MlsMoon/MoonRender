@@ -48,8 +48,6 @@ bool App::Init()
         return false;
     }
 
-    const MoonFunctionPtr<float> function_ptr_set_camera_fov = [this](float value) { SetCameraFOVValue(value); };
-    EventCenter::AddListener("SetCameraFOVValue", function_ptr_set_camera_fov);
     return true;
 }
 
@@ -307,40 +305,6 @@ bool App::InitShaders()
     m_VertexLayout = graphics.CreateInputLayout(BufferStruct::VertexPosNormal::GetVertexLayout(), *vertexBytecode, "VertexPosNormalLayout");
 
     return m_VertexShader && m_PixelShader && m_VertexLayout;
-}
-
-float App::GetCameraFOVValue()
-{
-    Object::MoonObject* cameraObject = FindMainCameraObject();
-    if (cameraObject == nullptr)
-    {
-        return 90.0f;
-    }
-
-    auto* cameraComponent = cameraObject->GetComponent<Object::CameraComponent>();
-    if (cameraComponent == nullptr)
-    {
-        return 90.0f;
-    }
-
-    cameraComponent->Normalize();
-    return DirectX::XMConvertToDegrees(cameraComponent->fovRadians);
-}
-
-void App::SetCameraFOVValue(float newCameraFOV)
-{
-    Object::MoonObject* cameraObject = FindMainCameraObject();
-    if (cameraObject == nullptr)
-    {
-        return;
-    }
-
-    auto* cameraComponent = cameraObject->GetComponent<Object::CameraComponent>();
-    if (cameraComponent != nullptr)
-    {
-        cameraComponent->fovRadians = DirectX::XMConvertToRadians(newCameraFOV);
-        cameraComponent->Normalize();
-    }
 }
 
 Object::MoonObject* App::FindFirstRenderableObject()

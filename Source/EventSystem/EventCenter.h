@@ -1,10 +1,11 @@
 #pragma once
+#include <any>
 #include <functional>
 #include <memory>
-#include "Source/AppWin/public/MoonRenderClass.h"
+#include <string>
 #include <unordered_map>
-#include "string"
-#include "any"
+
+#include "Source/AppWin/public/MoonRenderClass.h"
 
 template<typename R>
 using MoonFunctionPtr = std::function<void(R)>;

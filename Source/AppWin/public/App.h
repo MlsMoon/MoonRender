@@ -7,7 +7,6 @@
 #include "D3DApp.h"
 #include "Source/AppWin/public/D3DUtil.h"
 #include "Source/AppWin/public/DXTrace.h"
-#include "Source/EventSystem/EventCenter.h"
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/Object/MoonObject.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
@@ -35,8 +34,6 @@ public:
     void UpdateScene(float dt) override;
     void DrawScene() override;
     void DrawUI() override;
-    float GetCameraFOVValue();
-    void SetCameraFOVValue(float newCameraFOV);
 
     const std::vector<std::unique_ptr<Object::MoonObject>>& GetSceneObjects() const { return m_sceneObjects; }
     Object::MoonObject*& GetSelectedObject() { return m_selectedObject; }
