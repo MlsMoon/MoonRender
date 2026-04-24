@@ -58,22 +58,21 @@ void App::OnResize()
 
 void App::UpdateScene(float dt)
 {
-    m_renderObject = FindFirstRenderableObject();
-    m_mainCameraObject = FindMainCameraObject();
-    m_directionalLightObject = FindDirectionalLightObject();
-
-    for (const auto& object : m_sceneObjects)
+    if (m_scene == nullptr)
     {
-        for (const auto& component : object->GetComponents())
-        {
-            component->Update(*object, dt);
-        }
+        return;
     }
 
+    m_scene->Update(dt);
+
+    Object::MoonObject* renderObject = m_scene->FindFirstRenderable();
+    Object::MoonObject* mainCameraObject = m_scene->FindMainCamera();
+    Object::MoonObject* directionalLightObject = m_scene->FindDirectionalLight();
+
     Object::TransformComponent* renderTransform = nullptr;
-    if (m_renderObject != nullptr)
+    if (renderObject != nullptr)
     {
-        renderTransform = m_renderObject->GetComponent<Object::TransformComponent>();
+        renderTransform = renderObject->GetComponent<Object::TransformComponent>();
     }
 
     const DirectX::XMMATRIX world = renderTransform != nullptr
@@ -88,10 +87,10 @@ void App::UpdateScene(float dt)
     float cameraFovRadians = DirectX::XMConvertToRadians(90.0f);
     float cameraNearPlane = 1.0f;
     float cameraFarPlane = 1000.0f;
-    if (m_mainCameraObject != nullptr)
+    if (mainCameraObject != nullptr)
     {
-        const auto* cameraTransform = m_mainCameraObject->GetComponent<Object::TransformComponent>();
-        auto* cameraComponent = m_mainCameraObject->GetComponent<Object::CameraComponent>();
+        const auto* cameraTransform = mainCameraObject->GetComponent<Object::TransformComponent>();
+        auto* cameraComponent = mainCameraObject->GetComponent<Object::CameraComponent>();
         if (cameraTransform != nullptr && cameraComponent != nullptr)
         {
             cameraComponent->Normalize();
@@ -113,9 +112,9 @@ void App::UpdateScene(float dt)
         }
     }
 
-    if (m_directionalLightObject != nullptr)
+    if (directionalLightObject != nullptr)
     {
-        const auto* lightComponent = m_directionalLightObject->GetComponent<Object::LightComponent>();
+        const auto* lightComponent = directionalLightObject->GetComponent<Object::LightComponent>();
         if (lightComponent != nullptr && lightComponent->GetLightKind() == Object::LightKind::Directional)
         {
             m_cBuffer_PS.directionalLightDirW = lightComponent->directionalLight.direction_intensity;
@@ -157,25 +156,30 @@ void App::DrawScene()
 
 void App::DrawUI()
 {
-    editor.Draw(m_sceneObjects, m_selectedObject, GetGraphicsBackendType());
+    if (m_scene != nullptr)
+    {
+        editor.Draw(*m_scene, m_selectedObject, GetGraphicsBackendType());
+    }
 }
 
-void App::CreateDefaultScene()
+bool App::InitResources()
 {
-    m_sceneObjects.clear();
-    m_selectedObject = nullptr;
-    m_renderObject = nullptr;
-    m_mainCameraObject = nullptr;
-    m_directionalLightObject = nullptr;
+    if (!InitShaders())
+    {
+        return false;
+    }
 
-    auto sphereObject = std::make_unique<Object::MoonObject>("Sphere");
+    m_scene = std::make_unique<Object::Scene>();
+
+    // Default sphere
+    auto* sphereObject = m_scene->SpawnObject("Sphere");
     sphereObject->AddComponent<Object::TransformComponent>();
     sphereObject->AddComponent<Object::MeshComponent>(MoonGetAssetPath("Resources/Models/sphere.obj"), ResourcesProcess::OBJ);
     sphereObject->AddComponent<Object::AutoRotateComponent>();
-    m_selectedObject = sphereObject.get();
-    m_sceneObjects.push_back(std::move(sphereObject));
+    m_selectedObject = sphereObject;
 
-    auto cameraObject = std::make_unique<Object::MoonObject>("Main Camera");
+    // Default camera
+    auto* cameraObject = m_scene->SpawnObject("Main Camera");
     Object::TransformComponent* cameraTransform = cameraObject->AddComponent<Object::TransformComponent>();
     if (cameraTransform != nullptr)
     {
@@ -189,32 +193,19 @@ void App::CreateDefaultScene()
         cameraComponent->farPlane = 1000.0f;
         cameraComponent->Normalize();
     }
-    m_sceneObjects.push_back(std::move(cameraObject));
 
-    auto lightObject = std::make_unique<Object::MoonObject>("Directional Light");
+    // Default light
+    auto* lightObject = m_scene->SpawnObject("Directional Light");
     lightObject->AddComponent<Object::TransformComponent>();
     lightObject->AddComponent<Object::LightComponent>(Object::LightKind::Directional);
-    m_sceneObjects.push_back(std::move(lightObject));
 
-    m_renderObject = FindFirstRenderableObject();
-    m_mainCameraObject = FindMainCameraObject();
-    m_directionalLightObject = FindDirectionalLightObject();
-}
-
-bool App::InitResources()
-{
-    if (!InitShaders())
+    Object::MoonObject* renderObject = m_scene->FindFirstRenderable();
+    if (renderObject == nullptr)
     {
         return false;
     }
 
-    CreateDefaultScene();
-    if (m_renderObject == nullptr)
-    {
-        return false;
-    }
-
-    Object::MeshComponent* meshComponent = m_renderObject->GetComponent<Object::MeshComponent>();
+    Object::MeshComponent* meshComponent = renderObject->GetComponent<Object::MeshComponent>();
     if (meshComponent == nullptr || meshComponent->GetMesh() == nullptr || meshComponent->GetMesh()->VertexNum == 0)
     {
         return false;
@@ -309,43 +300,4 @@ bool App::InitShaders()
     m_VertexLayout = graphics.CreateInputLayout(BufferStruct::VertexPosNormal::GetVertexLayout(), *vertexBytecode, "VertexPosNormalLayout");
 
     return m_VertexShader && m_PixelShader && m_VertexLayout;
-}
-
-Object::MoonObject* App::FindFirstRenderableObject()
-{
-    for (const auto& object : m_sceneObjects)
-    {
-        if (object->HasComponent<Object::TransformComponent>() && object->HasComponent<Object::MeshComponent>())
-        {
-            return object.get();
-        }
-    }
-    return nullptr;
-}
-
-Object::MoonObject* App::FindMainCameraObject()
-{
-    for (const auto& object : m_sceneObjects)
-    {
-        if (object->HasComponent<Object::TransformComponent>() && object->HasComponent<Object::CameraComponent>())
-        {
-            return object.get();
-        }
-    }
-    return nullptr;
-}
-
-Object::MoonObject* App::FindDirectionalLightObject()
-{
-    for (const auto& object : m_sceneObjects)
-    {
-        const auto* lightComponent = object->GetComponent<Object::LightComponent>();
-        if (object->HasComponent<Object::TransformComponent>() &&
-            lightComponent != nullptr &&
-            lightComponent->GetLightKind() == Object::LightKind::Directional)
-        {
-            return object.get();
-        }
-    }
-    return nullptr;
 }

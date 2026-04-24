@@ -32,7 +32,7 @@ namespace Object
 
         MOON_COMPONENT(Transform, "Transform", Transform)
 
-        DirectX::XMMATRIX GetWorldMatrix() const
+        DirectX::XMMATRIX GetLocalMatrix() const
         {
             const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
             const DirectX::XMMATRIX rotationMatrix =
@@ -41,6 +41,20 @@ namespace Object
                 DirectX::XMMatrixRotationZ(rotationRadians.z);
             const DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
             return scaleMatrix * rotationMatrix * translationMatrix;
+        }
+
+        DirectX::XMMATRIX GetWorldMatrix() const
+        {
+            const DirectX::XMMATRIX local = GetLocalMatrix();
+            if (GetOwner() != nullptr && GetOwner()->GetParent() != nullptr)
+            {
+                const auto* parentTransform = GetOwner()->GetParent()->GetComponent<TransformComponent>();
+                if (parentTransform != nullptr)
+                {
+                    return local * parentTransform->GetWorldMatrix();
+                }
+            }
+            return local;
         }
 
         DirectX::XMFLOAT3 position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);

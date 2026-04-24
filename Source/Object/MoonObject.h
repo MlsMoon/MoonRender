@@ -21,6 +21,13 @@ namespace Object
         const std::string& GetDisplayName() const { return m_displayName; }
         void SetDisplayName(const std::string& name) { m_displayName = name; }
 
+        MoonObject* GetParent() const { return m_parent; }
+        const std::vector<MoonObject*>& GetChildren() const { return m_children; }
+
+        void SetParent(MoonObject* parent);
+        void AddChild(MoonObject* child);
+        void RemoveChild(MoonObject* child);
+
         template<typename T, typename... Args>
         T* AddComponent(Args&&... args)
         {
@@ -45,6 +52,7 @@ namespace Object
             }
 
             T* result = component.get();
+            component->SetOwner(this);
             m_components.push_back(std::move(component));
             return result;
         }
@@ -91,5 +99,8 @@ namespace Object
         std::string m_name;
         std::string m_displayName;
         std::vector<std::unique_ptr<MoonComponent>> m_components;
+
+        MoonObject* m_parent = nullptr;
+        std::vector<MoonObject*> m_children;
     };
 }

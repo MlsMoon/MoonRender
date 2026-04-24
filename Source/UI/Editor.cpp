@@ -1,11 +1,12 @@
 #include "Source/UI/Editor.h"
 
+#include "Source/Object/Scene.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
 namespace MoonUI
 {
     bool Editor::Draw(
-        std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
+        Object::Scene& scene,
         Object::MoonObject*& selectedObject,
         GraphicsBackendType graphicsBackendType)
     {
@@ -25,7 +26,7 @@ namespace MoonUI
 
         if (m_outlineWindow.IsOpen())
         {
-            m_outlineWindow.Draw(sceneObjects, selectedObject);
+            m_outlineWindow.Draw(scene, selectedObject);
         }
 
         if (m_inspectorWindow.IsOpen())

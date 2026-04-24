@@ -9,6 +9,7 @@
 namespace Object
 {
     class MoonObject;
+    class Scene;
 }
 
 namespace MoonUI
@@ -16,10 +17,13 @@ namespace MoonUI
     class OutlineWindow
     {
     public:
-        void Draw(std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects, Object::MoonObject*& selectedObject);
+        void Draw(Object::Scene& scene, Object::MoonObject*& selectedObject);
 
         bool IsOpen() const { return m_isOpen; }
         void SetOpen(bool open) { m_isOpen = open; }
+
+    private:
+        void DrawObjectTree(Object::MoonObject* object, Object::MoonObject*& selectedObject, Object::Scene& scene);
 
     private:
         bool m_isOpen = true;

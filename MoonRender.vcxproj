@@ -170,6 +170,7 @@
     <ClInclude Include="Source\Object\MeshComponent.h" />
     <ClInclude Include="Source\Object\MoonComponent.h" />
     <ClInclude Include="Source\Object\MoonObject.h" />
+    <ClInclude Include="Source\Object\Scene.h" />
     <ClInclude Include="Source\Object\TransformComponent.h" />
     <ClInclude Include="Source\ResourcesProcess\public\Mesh.h" />
     <ClInclude Include="Source\ResourcesProcess\public\MoonMeshLoader.h" />
@@ -205,6 +206,8 @@
     <None Include="Resources\Shaders\Light_PS.hlsl" />
     <None Include="Resources\Shaders\VertexCommon.hlsl" />
     <ClCompile Include="Source\EventSystem\EventCenter.cpp" />
+    <ClCompile Include="Source\Object\MoonObject.cpp" />
+    <ClCompile Include="Source\Object\Scene.cpp" />
     <ClCompile Include="Source\Logging\private\LogSystem.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

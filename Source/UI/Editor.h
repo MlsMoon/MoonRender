@@ -13,7 +13,7 @@
 
 namespace Object
 {
-    class MoonObject;
+    class Scene;
 }
 
 namespace MoonUI
@@ -25,7 +25,7 @@ namespace MoonUI
         ~Editor();
 
         bool Draw(
-            std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
+            Object::Scene& scene,
             Object::MoonObject*& selectedObject,
             GraphicsBackendType graphicsBackendType);
 

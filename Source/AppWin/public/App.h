@@ -8,7 +8,7 @@
 #include "Source/AppWin/public/D3DUtil.h"
 #include "Source/AppWin/public/DXTrace.h"
 #include "Source/Logging/public/LogSystem.h"
-#include "Source/Object/MoonObject.h"
+#include "Source/Object/Scene.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
 #include "Source/UI/Editor.h"
 
@@ -35,23 +35,16 @@ public:
     void DrawScene() override;
     void DrawUI() override;
 
-    const std::vector<std::unique_ptr<Object::MoonObject>>& GetSceneObjects() const { return m_sceneObjects; }
+    Object::Scene* GetScene() const { return m_scene.get(); }
     Object::MoonObject*& GetSelectedObject() { return m_selectedObject; }
 
 private:
-    void CreateDefaultScene();
     bool InitResources();
     bool InitShaders();
-    Object::MoonObject* FindFirstRenderableObject();
-    Object::MoonObject* FindMainCameraObject();
-    Object::MoonObject* FindDirectionalLightObject();
 
 private:
-    std::vector<std::unique_ptr<Object::MoonObject>> m_sceneObjects;
+    std::unique_ptr<Object::Scene> m_scene;
     Object::MoonObject* m_selectedObject = nullptr;
-    Object::MoonObject* m_renderObject = nullptr;
-    Object::MoonObject* m_mainCameraObject = nullptr;
-    Object::MoonObject* m_directionalLightObject = nullptr;
 
     std::shared_ptr<IGraphicsInputLayout> m_VertexLayout;
     std::shared_ptr<IGraphicsBuffer> m_VertexBuffer;

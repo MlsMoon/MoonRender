@@ -33,6 +33,8 @@ set(MOONRENDER_IMGUI_SOURCES
 
 set(MOONRENDER_SOURCES
     Source/EventSystem/EventCenter.cpp
+    Source/Object/MoonObject.cpp
+    Source/Object/Scene.cpp
     Source/Graphics/private/Dx11Backend.cpp
     Source/Graphics/private/Dx12Backend.cpp
     Source/Graphics/private/GraphicsBackendFactory.cpp
@@ -69,6 +71,7 @@ set(MOONRENDER_HEADERS
     Source/Object/MeshComponent.h
     Source/Object/MoonComponent.h
     Source/Object/MoonObject.h
+    Source/Object/Scene.h
     Source/Object/TransformComponent.h
     Source/ResourcesProcess/public/Mesh.h
     Source/ResourcesProcess/public/MoonMeshLoader.h

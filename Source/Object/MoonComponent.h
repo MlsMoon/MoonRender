@@ -77,6 +77,9 @@ namespace Object
         virtual ComponentConflictGroup GetConflictGroup() const { return ComponentConflictGroup::None; }
         virtual bool AllowMultiple() const { return false; }
 
+        void SetOwner(MoonObject* owner) { m_owner = owner; }
+        MoonObject* GetOwner() const { return m_owner; }
+
     protected:
         void RegisterProperty(ComponentProperty property)
         {
@@ -85,6 +88,7 @@ namespace Object
 
     private:
         std::vector<ComponentProperty> m_properties;
+        MoonObject* m_owner = nullptr;
     };
 
     namespace MoonProp
