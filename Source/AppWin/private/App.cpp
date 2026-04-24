@@ -37,7 +37,7 @@ bool App::Init()
 {
     MOON_LOG("Hello");
     MOON_LOG("Start Init");
-    user_interface.BindLogSystem(&log_system);
+    editor.BindLogSystem(&log_system);
     if (!D3DApp::Init())
     {
         return false;
@@ -157,7 +157,7 @@ void App::DrawScene()
 
 void App::DrawUI()
 {
-    user_interface.DrawMainInterfaceUI(m_sceneObjects, m_selectedObject, GetGraphicsBackendType());
+    editor.Draw(m_sceneObjects, m_selectedObject, GetGraphicsBackendType());
 }
 
 void App::CreateDefaultScene()

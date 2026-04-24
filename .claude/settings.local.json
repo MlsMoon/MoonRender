@@ -22,7 +22,10 @@
       "Bash(MSYS2_ARG_CONV_EXCL=\"*\" cmd.exe *)",
       "Bash(\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/Installer/vswhere.exe\" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)",
       "Bash(/c/Program Files \\(x86\\)/Microsoft Visual Studio/Installer/vswhere.exe *)",
-      "Bash(C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\18\\\\BuildTools\\\\Common7\\\\IDE\\\\CommonExtensions\\\\Microsoft\\\\CMake\\\\CMake\\\\bin\\\\cmake.exe *)"
+      "Bash(C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\18\\\\BuildTools\\\\Common7\\\\IDE\\\\CommonExtensions\\\\Microsoft\\\\CMake\\\\CMake\\\\bin\\\\cmake.exe *)",
+      "Bash(\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\18\\\\BuildTools\\\\Common7\\\\IDE\\\\CommonExtensions\\\\Microsoft\\\\CMake\\\\CMake\\\\bin\\\\cmake.exe\" --preset vs-debug-x64)",
+      "Bash(\"C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\18\\\\BuildTools\\\\Common7\\\\IDE\\\\CommonExtensions\\\\Microsoft\\\\CMake\\\\CMake\\\\bin\\\\cmake.exe\" --build --preset build-vs-debug-x64)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

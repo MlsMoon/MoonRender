@@ -10,7 +10,7 @@
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/Object/MoonObject.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
-#include "Source/UI/UserInterface.h"
+#include "Source/UI/Editor.h"
 
 class App : public D3DApp
 {
@@ -26,7 +26,7 @@ public:
     inline static App* currentApp = nullptr;
     inline static bool flag_exist = false;
 
-    MoonUI::UserInterface user_interface;
+    MoonUI::Editor editor;
     Logging::LogSystem log_system;
 
     bool Init() override;

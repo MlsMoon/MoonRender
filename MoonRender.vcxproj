@@ -174,7 +174,12 @@
     <ClInclude Include="Source\ResourcesProcess\public\Mesh.h" />
     <ClInclude Include="Source\ResourcesProcess\public\MoonMeshLoader.h" />
     <ClInclude Include="Source\ThirdParty\tinyobjloader\tiny_obj_loader.h" />
-    <ClInclude Include="Source\UI\UserInterface.h" />
+    <ClInclude Include="Source\UI\Editor.h" />
+    <ClInclude Include="Source\UI\MainMenuBar.h" />
+    <ClInclude Include="Source\UI\OutlineWindow.h" />
+    <ClInclude Include="Source\UI\InspectorWindow.h" />
+    <ClInclude Include="Source\UI\GlobalSettingWindow.h" />
+    <ClInclude Include="Source\UI\OutputLogWindow.h" />
     <ClInclude Include="Source\UI\Popups\PopupBase.h" />
     <ClInclude Include="Source\UI\Popups\DeleteCameraWarningPopup.h" />
     <ClInclude Include="Source\AppWin\public\CpuTimer.h" />
@@ -421,7 +426,12 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Source\ThirdParty\tinyobjloader\tiny_obj_loader.cpp" />
-    <ClCompile Include="Source\UI\UserInterface.cpp" />
+    <ClCompile Include="Source\UI\Editor.cpp" />
+    <ClCompile Include="Source\UI\MainMenuBar.cpp" />
+    <ClCompile Include="Source\UI\OutlineWindow.cpp" />
+    <ClCompile Include="Source\UI\InspectorWindow.cpp" />
+    <ClCompile Include="Source\UI\GlobalSettingWindow.cpp" />
+    <ClCompile Include="Source\UI\OutputLogWindow.cpp" />
     <ClCompile Include="Source\UI\Popups\PopupBase.cpp" />
     <ClCompile Include="Source\UI\Popups\DeleteCameraWarningPopup.cpp" />
     <ClCompile Include="Source\AppWin\private\CpuTimer.cpp" />

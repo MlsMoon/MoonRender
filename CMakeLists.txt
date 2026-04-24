@@ -40,7 +40,12 @@ set(MOONRENDER_SOURCES
     Source/ResourcesProcess/private/Mesh.cpp
     Source/ResourcesProcess/private/MoonMeshLoader.cpp
     Source/ThirdParty/tinyobjloader/tiny_obj_loader.cpp
-    Source/UI/UserInterface.cpp
+    Source/UI/Editor.cpp
+    Source/UI/MainMenuBar.cpp
+    Source/UI/OutlineWindow.cpp
+    Source/UI/InspectorWindow.cpp
+    Source/UI/GlobalSettingWindow.cpp
+    Source/UI/OutputLogWindow.cpp
     Source/UI/Popups/PopupBase.cpp
     Source/UI/Popups/DeleteCameraWarningPopup.cpp
     Source/AppWin/private/CpuTimer.cpp
@@ -68,7 +73,12 @@ set(MOONRENDER_HEADERS
     Source/ResourcesProcess/public/Mesh.h
     Source/ResourcesProcess/public/MoonMeshLoader.h
     Source/ThirdParty/tinyobjloader/tiny_obj_loader.h
-    Source/UI/UserInterface.h
+    Source/UI/Editor.h
+    Source/UI/MainMenuBar.h
+    Source/UI/OutlineWindow.h
+    Source/UI/InspectorWindow.h
+    Source/UI/GlobalSettingWindow.h
+    Source/UI/OutputLogWindow.h
     Source/AppWin/public/CpuTimer.h
     Source/AppWin/public/D3DApp.h
     Source/AppWin/public/D3DUtil.h

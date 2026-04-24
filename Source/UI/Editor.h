@@ -1,0 +1,43 @@
+#pragma once
+
+#include <memory>
+#include <vector>
+
+#include "Source/Graphics/public/GraphicsTypes.h"
+#include "Source/Logging/public/LogSystem.h"
+#include "Source/UI/GlobalSettingWindow.h"
+#include "Source/UI/InspectorWindow.h"
+#include "Source/UI/MainMenuBar.h"
+#include "Source/UI/OutlineWindow.h"
+#include "Source/UI/OutputLogWindow.h"
+
+namespace Object
+{
+    class MoonObject;
+}
+
+namespace MoonUI
+{
+    class Editor
+    {
+    public:
+        Editor();
+        ~Editor();
+
+        bool Draw(
+            std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
+            Object::MoonObject*& selectedObject,
+            GraphicsBackendType graphicsBackendType);
+
+        bool BindLogSystem(Logging::LogSystem* log_system);
+
+    private:
+        void DrawDockSpace();
+
+        MainMenuBar m_mainMenuBar;
+        OutlineWindow m_outlineWindow;
+        InspectorWindow m_inspectorWindow;
+        GlobalSettingWindow m_globalSettingWindow;
+        OutputLogWindow m_outputLogWindow;
+    };
+}
