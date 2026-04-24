@@ -161,6 +161,7 @@
     <None Include="Resources\Shaders\LightHelper.hlsli" />
     <ClInclude Include="Source\AppWin\public\MoonRenderClass.h" />
     <ClInclude Include="Source\EventSystem\EventCenter.h" />
+    <ClInclude Include="Source\Object\AutoRotateComponent.h" />
     <ClInclude Include="Source\Object\CameraComponent.h" />
     <ClInclude Include="Source\Object\LightComponent.h" />
     <ClInclude Include="Source\Logging\public\LogSystem.h" />

@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "Source/Graphics/public/GraphicsTypes.h"
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
@@ -20,7 +21,8 @@ namespace MoonUI
         ~UserInterface();
         bool DrawMainInterfaceUI(
             const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
-            Object::MoonObject*& selectedObject);
+            Object::MoonObject*& selectedObject,
+            GraphicsBackendType graphicsBackendType);
         bool BindLogSystem(Logging::LogSystem* log_system);
 
     private:
@@ -30,11 +32,13 @@ namespace MoonUI
             const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
             Object::MoonObject*& selectedObject);
         void DrawInspectorView(Object::MoonObject* selectedObject);
+        void DrawGlobalSettingView(GraphicsBackendType graphicsBackendType);
         void DrawOutputLog();
 
     private:
         bool showOutlineWindow = true;
         bool showInspectorWindow = true;
+        bool showGlobalSettingWindow = true;
         bool showOutputWindow = false;
 
         Logging::LogSystem* log_system = nullptr;

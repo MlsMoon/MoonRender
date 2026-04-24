@@ -7,12 +7,15 @@
 
 namespace Object
 {
+    class MoonObject;
+
     enum class ComponentType
     {
         Transform,
         Mesh,
         Light,
-        Camera
+        Camera,
+        AutoRotate
     };
 
     enum class ComponentPropertyType
@@ -60,6 +63,7 @@ namespace Object
         virtual ComponentType GetType() const = 0;
         virtual const char* GetDisplayName() const = 0;
         virtual std::vector<ComponentProperty> GetProperties() { return {}; }
+        virtual void Update(MoonObject& owner, float dt) {}
         virtual void Normalize() {}
         virtual ComponentConflictGroup GetConflictGroup() const { return ComponentConflictGroup::None; }
         virtual bool AllowMultiple() const { return false; }

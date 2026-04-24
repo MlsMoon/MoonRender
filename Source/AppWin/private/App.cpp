@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Source/Logging/public/LogSystem.h"
+#include "Source/Object/AutoRotateComponent.h"
 #include "Source/Object/CameraComponent.h"
 #include "Source/Object/LightComponent.h"
 #include "Source/Object/MeshComponent.h"
@@ -59,20 +60,18 @@ void App::OnResize()
 
 void App::UpdateScene(float dt)
 {
-    static float phi = 0.0f;
-    static float theta = 0.0f;
-    phi += 0.3f * dt;
-    theta += 0.37f * dt;
+    for (const auto& object : m_sceneObjects)
+    {
+        for (const auto& component : object->GetComponents())
+        {
+            component->Update(*object, dt);
+        }
+    }
 
     Object::TransformComponent* renderTransform = nullptr;
     if (m_renderObject != nullptr)
     {
         renderTransform = m_renderObject->GetComponent<Object::TransformComponent>();
-        if (renderTransform != nullptr)
-        {
-            renderTransform->rotationRadians.x = phi;
-            renderTransform->rotationRadians.y = theta;
-        }
     }
 
     const DirectX::XMMATRIX world = renderTransform != nullptr
@@ -156,7 +155,7 @@ void App::DrawScene()
 
 void App::DrawUI()
 {
-    user_interface.DrawMainInterfaceUI(m_sceneObjects, m_selectedObject);
+    user_interface.DrawMainInterfaceUI(m_sceneObjects, m_selectedObject, GetGraphicsBackendType());
 }
 
 void App::CreateDefaultScene()
@@ -170,6 +169,7 @@ void App::CreateDefaultScene()
     auto sphereObject = std::make_unique<Object::MoonObject>("Sphere");
     sphereObject->AddComponent<Object::TransformComponent>();
     sphereObject->AddComponent<Object::MeshComponent>(MoonGetAssetPath("Resources/Models/sphere.obj"), ResourcesProcess::OBJ);
+    sphereObject->AddComponent<Object::AutoRotateComponent>();
     m_selectedObject = sphereObject.get();
     m_sceneObjects.push_back(std::move(sphereObject));
 

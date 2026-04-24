@@ -10,6 +10,19 @@ namespace MoonUI
 {
     namespace
     {
+        const char* GetGraphicsBackendDisplayName(GraphicsBackendType graphicsBackendType)
+        {
+            switch (graphicsBackendType)
+            {
+            case GraphicsBackendType::DX11:
+                return "DirectX 11";
+            case GraphicsBackendType::DX12:
+                return "DirectX 12";
+            default:
+                return "Unknown";
+            }
+        }
+
         void DrawPropertyControl(Object::ComponentProperty& property)
         {
             const ImGuiSliderFlags sliderFlags = property.clamp ? ImGuiSliderFlags_AlwaysClamp : 0;
@@ -112,7 +125,8 @@ namespace MoonUI
 
     bool UserInterface::DrawMainInterfaceUI(
         const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
-        Object::MoonObject*& selectedObject)
+        Object::MoonObject*& selectedObject,
+        GraphicsBackendType graphicsBackendType)
     {
         DrawMainMenu();
         DrawDockSpace();
@@ -125,6 +139,11 @@ namespace MoonUI
         if (showInspectorWindow)
         {
             DrawInspectorView(selectedObject);
+        }
+
+        if (showGlobalSettingWindow)
+        {
+            DrawGlobalSettingView(graphicsBackendType);
         }
 
         if (showOutputWindow)
@@ -152,6 +171,7 @@ namespace MoonUI
         {
             ImGui::MenuItem("OutlineView", nullptr, &showOutlineWindow);
             ImGui::MenuItem("Inspector", nullptr, &showInspectorWindow);
+            ImGui::MenuItem("Global Setting", nullptr, &showGlobalSettingWindow);
             ImGui::MenuItem("OutputLog", nullptr, &showOutputWindow);
             ImGui::EndMenu();
         }
@@ -238,6 +258,31 @@ namespace MoonUI
             }
             ImGui::PopID();
             ++componentIndex;
+        }
+
+        ImGui::End();
+    }
+
+    void UserInterface::DrawGlobalSettingView(GraphicsBackendType graphicsBackendType)
+    {
+        ImGui::SetNextWindowSize(ImVec2(360.0f, 140.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(312.0f, 48.0f), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Global Setting", &showGlobalSettingWindow);
+
+        if (ImGui::BeginTable("GlobalSettingProperties", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
+        {
+            ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed, 128.0f);
+            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextUnformatted("Graphics API");
+
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextUnformatted(GetGraphicsBackendDisplayName(graphicsBackendType));
+
+            ImGui::EndTable();
         }
 
         ImGui::End();

@@ -22,7 +22,7 @@ namespace
 {
     D3DApp* g_pd3dApp = nullptr;
 
-    void ApplyMoonEditorStyle()
+    void ApplyMoonEditorStyle(float dpiScale)
     {
         ImGui::StyleColorsDark();
 
@@ -96,6 +96,11 @@ namespace
         colors[ImGuiCol_TableBorderLight] = ImVec4(0.15f, 0.17f, 0.20f, 1.00f);
         colors[ImGuiCol_TextSelectedBg] = ImVec4(0.36f, 0.62f, 0.87f, 0.35f);
         colors[ImGuiCol_NavHighlight] = ImVec4(0.46f, 0.74f, 1.00f, 0.75f);
+
+        if (dpiScale > 1.0f)
+        {
+            style.ScaleAllSizes(dpiScale);
+        }
     }
 }
 
@@ -311,6 +316,21 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         reinterpret_cast<MINMAXINFO*>(lParam)->ptMinTrackSize.y = 200;
         return 0;
 
+    case WM_DPICHANGED:
+        if (lParam != 0)
+        {
+            const RECT* suggestedRect = reinterpret_cast<const RECT*>(lParam);
+            SetWindowPos(
+                hwnd,
+                nullptr,
+                suggestedRect->left,
+                suggestedRect->top,
+                suggestedRect->right - suggestedRect->left,
+                suggestedRect->bottom - suggestedRect->top,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+        return 0;
+
     default:
         return DefWindowProc(hwnd, msg, wParam, lParam);
     }
@@ -318,6 +338,8 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 bool D3DApp::InitMainWindow()
 {
+    ImGui_ImplWin32_EnableDpiAwareness();
+
     WNDCLASS wc = {};
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc = MainWndProc;
@@ -414,7 +436,8 @@ bool D3DApp::InitImGui()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-    ApplyMoonEditorStyle();
+    const float dpiScale = ImGui_ImplWin32_GetDpiScaleForHwnd(m_hMainWnd);
+    ApplyMoonEditorStyle(dpiScale);
     io.FontGlobalScale = 1.0f;
 
     MoonEnsureDirectory("Builds/Runtime");
@@ -427,7 +450,11 @@ bool D3DApp::InitImGui()
     }
 
     const std::string fontPath = MoonGetAssetPath("Resources/Fonts/hanyiyingsong45jian.ttf");
-    ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 16.0f);
+    ImFontConfig fontConfig = {};
+    fontConfig.OversampleH = 3;
+    fontConfig.OversampleV = 2;
+    fontConfig.PixelSnapH = false;
+    ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 16.0f * dpiScale, &fontConfig);
     io.FontDefault = font;
 
     unsigned char* pixels = nullptr;

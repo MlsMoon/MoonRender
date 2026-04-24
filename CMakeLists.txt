@@ -53,6 +53,7 @@ set(MOONRENDER_SOURCES
 set(MOONRENDER_HEADERS
     Source/AppWin/public/MoonRenderClass.h
     Source/EventSystem/EventCenter.h
+    Source/Object/AutoRotateComponent.h
     Source/Object/CameraComponent.h
     Source/Object/LightComponent.h
     Source/Logging/public/LogSystem.h
