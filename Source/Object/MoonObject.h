@@ -13,10 +13,13 @@ namespace Object
     class MoonObject
     {
     public:
-        explicit MoonObject(std::string name) : m_name(std::move(name)) {}
+        explicit MoonObject(std::string name) : m_name(std::move(name)), m_displayName(m_name) {}
 
         const std::string& GetName() const { return m_name; }
         void SetName(const std::string& name) { m_name = name; }
+
+        const std::string& GetDisplayName() const { return m_displayName; }
+        void SetDisplayName(const std::string& name) { m_displayName = name; }
 
         template<typename T, typename... Args>
         T* AddComponent(Args&&... args)
@@ -86,6 +89,7 @@ namespace Object
 
     private:
         std::string m_name;
+        std::string m_displayName;
         std::vector<std::unique_ptr<MoonComponent>> m_components;
     };
 }

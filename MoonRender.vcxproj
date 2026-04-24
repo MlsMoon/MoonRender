@@ -175,6 +175,8 @@
     <ClInclude Include="Source\ResourcesProcess\public\MoonMeshLoader.h" />
     <ClInclude Include="Source\ThirdParty\tinyobjloader\tiny_obj_loader.h" />
     <ClInclude Include="Source\UI\UserInterface.h" />
+    <ClInclude Include="Source\UI\Popups\PopupBase.h" />
+    <ClInclude Include="Source\UI\Popups\DeleteCameraWarningPopup.h" />
     <ClInclude Include="Source\AppWin\public\CpuTimer.h" />
     <ClInclude Include="Source\AppWin\public\D3DApp.h" />
     <ClInclude Include="Source\AppWin\public\D3DUtil.h" />
@@ -420,6 +422,8 @@
     </ClCompile>
     <ClCompile Include="Source\ThirdParty\tinyobjloader\tiny_obj_loader.cpp" />
     <ClCompile Include="Source\UI\UserInterface.cpp" />
+    <ClCompile Include="Source\UI\Popups\PopupBase.cpp" />
+    <ClCompile Include="Source\UI\Popups\DeleteCameraWarningPopup.cpp" />
     <ClCompile Include="Source\AppWin\private\CpuTimer.cpp" />
     <ClCompile Include="Source\AppWin\private\D3DApp.cpp" />
     <ClCompile Include="Source\AppWin\private\D3DUtil.cpp" />

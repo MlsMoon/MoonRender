@@ -41,6 +41,8 @@ set(MOONRENDER_SOURCES
     Source/ResourcesProcess/private/MoonMeshLoader.cpp
     Source/ThirdParty/tinyobjloader/tiny_obj_loader.cpp
     Source/UI/UserInterface.cpp
+    Source/UI/Popups/PopupBase.cpp
+    Source/UI/Popups/DeleteCameraWarningPopup.cpp
     Source/AppWin/private/CpuTimer.cpp
     Source/AppWin/private/D3DApp.cpp
     Source/AppWin/private/D3DUtil.cpp
@@ -85,6 +87,8 @@ set(MOONRENDER_HEADERS
     Source/ThirdParty/ImGui/imstb_rectpack.h
     Source/ThirdParty/ImGui/imstb_textedit.h
     Source/ThirdParty/ImGui/imstb_truetype.h
+    Source/UI/Popups/PopupBase.h
+    Source/UI/Popups/DeleteCameraWarningPopup.h
 )
 
 add_library(imgui STATIC ${MOONRENDER_IMGUI_SOURCES})

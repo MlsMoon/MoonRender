@@ -6,6 +6,7 @@
 #include "Source/Graphics/public/GraphicsTypes.h"
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
+#include "Source/UI/Popups/DeleteCameraWarningPopup.h"
 
 namespace Object
 {
@@ -20,7 +21,7 @@ namespace MoonUI
         UserInterface();
         ~UserInterface();
         bool DrawMainInterfaceUI(
-            const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
+            std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
             Object::MoonObject*& selectedObject,
             GraphicsBackendType graphicsBackendType);
         bool BindLogSystem(Logging::LogSystem* log_system);
@@ -29,7 +30,7 @@ namespace MoonUI
         void DrawMainMenu();
         void DrawDockSpace();
         void DrawOutlineView(
-            const std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
+            std::vector<std::unique_ptr<Object::MoonObject>>& sceneObjects,
             Object::MoonObject*& selectedObject);
         void DrawInspectorView(Object::MoonObject* selectedObject);
         void DrawGlobalSettingView(GraphicsBackendType graphicsBackendType);
@@ -42,5 +43,7 @@ namespace MoonUI
         bool showOutputWindow = false;
 
         Logging::LogSystem* log_system = nullptr;
+
+        DeleteCameraWarningPopup m_deleteCameraWarningPopup;
     };
 }

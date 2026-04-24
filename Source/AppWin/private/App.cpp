@@ -58,6 +58,10 @@ void App::OnResize()
 
 void App::UpdateScene(float dt)
 {
+    m_renderObject = FindFirstRenderableObject();
+    m_mainCameraObject = FindMainCameraObject();
+    m_directionalLightObject = FindDirectionalLightObject();
+
     for (const auto& object : m_sceneObjects)
     {
         for (const auto& component : object->GetComponents())

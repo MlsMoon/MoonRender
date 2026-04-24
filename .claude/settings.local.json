@@ -12,7 +12,17 @@
       "Bash(cmd.exe /c \"where msbuild\")",
       "Bash(cmd.exe /c \"where cmake\")",
       "Bash(cmd.exe *)",
-      "Bash(cmake --build \"Builds/CMake/manual-x64\" --config Debug)"
+      "Bash(cmake --build \"Builds/CMake/manual-x64\" --config Debug)",
+      "Bash(msbuild *)",
+      "Bash(cmake *)",
+      "Bash(./Scripts/Build_MSBuild_Debug_x64.bat *)",
+      "Bash(cmd *)",
+      "Bash(C:/Program Files \\(x86\\)/Microsoft Visual Studio/18/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe *)",
+      "Bash(MSYS_NO_PATHCONV=1 cmd.exe *)",
+      "Bash(MSYS2_ARG_CONV_EXCL=\"*\" cmd.exe *)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft Visual Studio/Installer/vswhere.exe\" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)",
+      "Bash(/c/Program Files \\(x86\\)/Microsoft Visual Studio/Installer/vswhere.exe *)",
+      "Bash(C:\\\\Program Files \\(x86\\)\\\\Microsoft Visual Studio\\\\18\\\\BuildTools\\\\Common7\\\\IDE\\\\CommonExtensions\\\\Microsoft\\\\CMake\\\\CMake\\\\bin\\\\cmake.exe *)"
     ]
   }
 }

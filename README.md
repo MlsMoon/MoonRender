@@ -39,6 +39,18 @@ The repository includes `CMakePresets.json` so CMake build trees also stay under
 Scripts\Build_CMake_VS_Debug_x64.bat
 ```
 
+The direct command used during development is:
+
+```powershell
+& 'C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe' --build --preset build-vs-debug-x64
+```
+
+If the build tree has not been generated yet, configure it first:
+
+```powershell
+& 'C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe' --preset vs-debug-x64
+```
+
 CMake outputs are written under:
 
 ```text
