@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Source/ThirdParty/glm/glm.hpp"
-
+#include "Source/Math/public/MoonMath.h"
 #include "Source/Object/MoonComponent.h"
 #include "Source/Object/MoonObject.h"
 #include "Source/Object/TransformComponent.h"
@@ -31,6 +30,6 @@ namespace Object
             transform->rotationRadians.z += angularVelocityRadians.z * dt;
         }
 
-        glm::vec3 angularVelocityRadians = glm::vec3(0.3f, 0.37f, 0.0f);
+        MoonVector3 angularVelocityRadians = MoonVector3(0.3f, 0.37f, 0.0f);
     };
 }

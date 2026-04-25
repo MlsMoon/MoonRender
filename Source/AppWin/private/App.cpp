@@ -74,16 +74,16 @@ void App::UpdateScene(float dt)
         renderTransform = renderObject->GetComponent<Object::TransformComponent>();
     }
 
-    const glm::mat4 world = renderTransform != nullptr
+    const MoonMatrix4x4 world = renderTransform != nullptr
         ? renderTransform->GetWorldMatrix()
-        : glm::mat4(1.0f);
+        : MoonMatrix4x4::Identity();
 
-    glm::mat4 view = glm::lookAt(
-        glm::vec3(0.0f, 0.0f, -5.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f));
+    MoonMatrix4x4 view = MoonLookAt(
+        MoonVector3(0.0f, 0.0f, -5.0f),
+        MoonVector3(0.0f, 0.0f, 0.0f),
+        MoonVector3(0.0f, 1.0f, 0.0f));
 
-    float cameraFovRadians = glm::radians(90.0f);
+    float cameraFovRadians = MoonRadians(90.0f);
     float cameraNearPlane = 1.0f;
     float cameraFarPlane = 1000.0f;
     if (mainCameraObject != nullptr)
@@ -93,14 +93,14 @@ void App::UpdateScene(float dt)
         if (cameraTransform != nullptr && cameraComponent != nullptr)
         {
             cameraComponent->Normalize();
-            const glm::mat4 cameraRotation =
-                glm::rotate(glm::mat4(1.0f), cameraTransform->rotationRadians.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-                glm::rotate(glm::mat4(1.0f), cameraTransform->rotationRadians.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                glm::rotate(glm::mat4(1.0f), cameraTransform->rotationRadians.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            const glm::vec3 cameraPosition = cameraTransform->position;
-            const glm::vec3 forward = glm::mat3(cameraRotation) * glm::vec3(0.0f, 0.0f, 1.0f);
-            const glm::vec3 up = glm::mat3(cameraRotation) * glm::vec3(0.0f, 1.0f, 0.0f);
-            view = glm::lookAt(cameraPosition, cameraPosition + forward, up);
+            const MoonMatrix4x4 cameraRotation =
+                MoonRotate(cameraTransform->rotationRadians.x, MoonVector3(1.0f, 0.0f, 0.0f)) *
+                MoonRotate(cameraTransform->rotationRadians.y, MoonVector3(0.0f, 1.0f, 0.0f)) *
+                MoonRotate(cameraTransform->rotationRadians.z, MoonVector3(0.0f, 0.0f, 1.0f));
+            const MoonVector3 cameraPosition = cameraTransform->position;
+            const MoonVector3 forward = cameraRotation.TransformDirection(MoonVector3(0.0f, 0.0f, 1.0f));
+            const MoonVector3 up = cameraRotation.TransformDirection(MoonVector3(0.0f, 1.0f, 0.0f));
+            view = MoonLookAt(cameraPosition, cameraPosition + forward, up);
             cameraFovRadians = cameraComponent->fovRadians;
             cameraNearPlane = cameraComponent->nearPlane;
             cameraFarPlane = cameraComponent->farPlane;
@@ -117,9 +117,9 @@ void App::UpdateScene(float dt)
     }
 
     m_cBuffer_MVP.world = world;
-    m_cBuffer_MVP.worldInvTranspose = InverseTranspose(world);
+    m_cBuffer_MVP.worldInvTranspose = MoonInverseTranspose(world);
     m_cBuffer_MVP.view = view;
-    m_cBuffer_MVP.proj = glm::perspective(cameraFovRadians, AspectRatio(), cameraNearPlane, cameraFarPlane);
+    m_cBuffer_MVP.proj = MoonPerspective(cameraFovRadians, AspectRatio(), cameraNearPlane, cameraFarPlane);
 
     IGraphicsBackend& graphics = Graphics();
     if (m_ConstantBuffers[0] && m_ConstantBuffers[1])
@@ -174,12 +174,12 @@ bool App::InitResources()
     Object::TransformComponent* cameraTransform = cameraObject->AddComponent<Object::TransformComponent>();
     if (cameraTransform != nullptr)
     {
-        cameraTransform->position = glm::vec3(0.0f, 0.0f, -5.0f);
+        cameraTransform->position = MoonVector3(0.0f, 0.0f, -5.0f);
     }
     Object::CameraComponent* cameraComponent = cameraObject->AddComponent<Object::CameraComponent>();
     if (cameraComponent != nullptr)
     {
-        cameraComponent->fovRadians = glm::radians(90.0f);
+        cameraComponent->fovRadians = MoonRadians(90.0f);
         cameraComponent->nearPlane = 1.0f;
         cameraComponent->farPlane = 1000.0f;
         cameraComponent->Normalize();
@@ -240,11 +240,11 @@ bool App::InitResources()
     constantBufferDesc.debugName = "PSConstantBuffer";
     m_ConstantBuffers[1] = graphics.CreateBuffer(constantBufferDesc, nullptr);
 
-    m_cBuffer_MVP.world = glm::mat4(1.0f);
-    m_cBuffer_MVP.view = glm::mat4(1.0f);
-    m_cBuffer_MVP.proj = glm::mat4(1.0f);
+    m_cBuffer_MVP.world = MoonMatrix4x4::Identity();
+    m_cBuffer_MVP.view = MoonMatrix4x4::Identity();
+    m_cBuffer_MVP.proj = MoonMatrix4x4::Identity();
 
-    m_cBuffer_PS.directionalLightDirW = glm::vec4(-0.577f, -0.577f, 0.577f, 1.0f);
+    m_cBuffer_PS.directionalLightDirW = MoonVector4(-0.577f, -0.577f, 0.577f, 1.0f);
 
     GraphicsRasterizerDesc rasterizerDesc = {};
     rasterizerDesc.fillMode = GraphicsFillMode::Wireframe;

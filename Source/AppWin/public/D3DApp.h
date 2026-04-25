@@ -28,11 +28,15 @@ public:
     virtual bool Init();
     virtual void OnResize();
     virtual void DrawUI();
+
+    void UpdateFramebufferSize();
     virtual void UpdateScene(float dt) = 0;
     virtual void DrawScene() = 0;
 
     int ClientWidth;
     int ClientHeight;
+    int FramebufferWidth;
+    int FramebufferHeight;
 
 protected:
     bool InitMainWindow();

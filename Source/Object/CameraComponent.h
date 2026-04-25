@@ -2,11 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <algorithm>
-#include <cmath>
 
-#include "Source/ThirdParty/glm/glm.hpp"
-
+#include "Source/Math/public/MoonMath.h"
 #include "Source/Object/MoonComponent.h"
 
 namespace Object
@@ -23,10 +20,10 @@ namespace Object
         CameraComponent()
         {
             RegisterProperty(MoonProp::Float("FOV",
-                [this]() { return glm::degrees(fovRadians); },
+                [this]() { return MoonDegrees(fovRadians); },
                 [this](float value)
                 {
-                    fovRadians = glm::radians(value);
+                    fovRadians = MoonRadians(value);
                     Normalize();
                 },
                 "%.1f deg", 0.1f, MinFovDegrees, MaxFovDegrees));
@@ -52,13 +49,13 @@ namespace Object
 
         void Normalize() override
         {
-            float fovDegrees = glm::degrees(fovRadians);
+            float fovDegrees = MoonDegrees(fovRadians);
             if (!std::isfinite(fovDegrees))
             {
                 fovDegrees = 90.0f;
             }
             fovDegrees = std::max(MinFovDegrees, std::min(fovDegrees, MaxFovDegrees));
-            fovRadians = glm::radians(fovDegrees);
+            fovRadians = MoonRadians(fovDegrees);
 
             if (!std::isfinite(nearPlane))
             {

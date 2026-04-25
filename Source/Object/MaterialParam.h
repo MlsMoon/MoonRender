@@ -1,5 +1,5 @@
 #pragma once
-#include "Source/ThirdParty/glm/glm.hpp"
+#include "Source/Math/public/MoonMath.h"
 
 namespace Object
 {
@@ -13,13 +13,13 @@ namespace Object
         MaterialParam(MaterialParam&&) = default;
         MaterialParam& operator=(MaterialParam&&) = default;
 
-        MaterialParam(const glm::vec4& _ambient, const glm::vec4& _diffuse, const glm::vec4& _specular,
-            const glm::vec4& _reflect) :
+        MaterialParam(const MoonVector4& _ambient, const MoonVector4& _diffuse, const MoonVector4& _specular,
+            const MoonVector4& _reflect) :
             ambient(_ambient), diffuse(_diffuse), specular(_specular), reflect(_reflect) {}
 
-        glm::vec4 ambient;
-        glm::vec4 diffuse;
-        glm::vec4 specular; // w = specular intensity
-        glm::vec4 reflect;
+        MoonVector4 ambient;
+        MoonVector4 diffuse;
+        MoonVector4 specular; // w = specular intensity
+        MoonVector4 reflect;
     };
 }

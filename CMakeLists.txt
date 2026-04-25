@@ -61,6 +61,7 @@ set(MOONRENDER_SOURCES
     Source/Object/Scene.cpp
     Source/Graphics/private/GraphicsBackendFactory.cpp
     Source/Logging/private/LogSystem.cpp
+    Source/Math/private/MoonMath.cpp
     Source/ResourcesProcess/private/Mesh.cpp
     Source/ResourcesProcess/private/MoonMeshLoader.cpp
     Source/ThirdParty/tinyobjloader/tiny_obj_loader.cpp
@@ -120,6 +121,7 @@ set(MOONRENDER_HEADERS
     Source/AppWin/public/D3DUtil.h
     Source/AppWin/public/DXTrace.h
     Source/AppWin/public/App.h
+    Source/Math/public/MoonMath.h
     Source/Graphics/public/GraphicsBackend.h
     Source/Graphics/public/GraphicsBackendFactory.h
     Source/Graphics/public/GraphicsTypes.h
@@ -177,9 +179,6 @@ target_include_directories(MoonRender PRIVATE "${MOONRENDER_ROOT}")
 
 target_compile_definitions(MoonRender PRIVATE
     MOONRENDER_PROJECT_ROOT="${MOONRENDER_ROOT}"
-    GLM_FORCE_LEFT_HANDED
-    GLM_FORCE_DEPTH_ZERO_TO_ONE
-    GLM_FORCE_RADIANS
 )
 
 if(WIN32)

@@ -1,4 +1,4 @@
-﻿#include "../public/LogSystem.h"
+#include "../public/LogSystem.h"
 
 namespace Logging
 {
@@ -12,7 +12,7 @@ namespace Logging
 
     LogSystem::~LogSystem()
     {
-        
+
     }
 
     void LogSystem::Print(const std::string print_content)
@@ -22,7 +22,7 @@ namespace Logging
         CurrentLogSys->log_content = CurrentLogSys->log_content + print_content +"\n";
     }
 
-    void LogSystem::Print(const glm::vec3 print_content)
+    void LogSystem::Print(const MoonVector3 print_content)
     {
         if (LogSystem::CurrentLogSys==nullptr)
             return;

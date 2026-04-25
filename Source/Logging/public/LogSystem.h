@@ -1,7 +1,7 @@
-﻿#pragma once
+#pragma once
 #include <string>
 
-#include "Source/ThirdParty/glm/glm.hpp"
+#include "Source/Math/public/MoonMath.h"
 
 #define MOON_LOG(content) Logging::LogSystem::Print(content)
 
@@ -15,11 +15,10 @@ namespace Logging
 
         inline static LogSystem* CurrentLogSys = nullptr;
         static void Print(const std::string print_content);
-        static void Print(const glm::vec3 print_content);
+        static void Print(const MoonVector3 print_content);
         std::string GetLogContent();
 
     private:
         std::string log_content;
     };
 }
-

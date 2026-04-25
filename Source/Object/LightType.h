@@ -1,5 +1,5 @@
 #pragma once
-#include "Source/ThirdParty/glm/glm.hpp"
+#include "Source/Math/public/MoonMath.h"
 
 namespace Object
 {
@@ -13,9 +13,9 @@ namespace Object
         DirectionalLight(DirectionalLight&&) = default;
         DirectionalLight& operator=(DirectionalLight&&) = default;
 
-        DirectionalLight(const glm::vec4& _direction_intensity) : direction_intensity(_direction_intensity) {}
+        DirectionalLight(const MoonVector4& _direction_intensity) : direction_intensity(_direction_intensity) {}
 
-        glm::vec4 direction_intensity; // dir : x,y,z intensity: w
+        MoonVector4 direction_intensity; // dir : x,y,z intensity: w
     };
 
     struct PointLight
@@ -28,18 +28,18 @@ namespace Object
         PointLight(PointLight&&) = default;
         PointLight& operator=(PointLight&&) = default;
 
-        PointLight(const glm::vec4& _ambient, const glm::vec4& _diffuse, const glm::vec4& _specular,
-            const glm::vec3& _position, float _range, const glm::vec3& _att) :
+        PointLight(const MoonVector4& _ambient, const MoonVector4& _diffuse, const MoonVector4& _specular,
+            const MoonVector3& _position, float _range, const MoonVector3& _att) :
             ambient(_ambient), diffuse(_diffuse), specular(_specular), position(_position), range(_range), att(_att), pad() {}
 
-        glm::vec4 ambient;
-        glm::vec4 diffuse;
-        glm::vec4 specular;
+        MoonVector4 ambient;
+        MoonVector4 diffuse;
+        MoonVector4 specular;
 
-        glm::vec3 position;
+        MoonVector3 position;
         float range;
 
-        glm::vec3 att;
+        MoonVector3 att;
         float pad;
     };
 
@@ -53,23 +53,23 @@ namespace Object
         SpotLight(SpotLight&&) = default;
         SpotLight& operator=(SpotLight&&) = default;
 
-        SpotLight(const glm::vec4& _ambient, const glm::vec4& _diffuse, const glm::vec4& _specular,
-            const glm::vec3& _position, float _range, const glm::vec3& _direction,
-            float _spot, const glm::vec3& _att) :
+        SpotLight(const MoonVector4& _ambient, const MoonVector4& _diffuse, const MoonVector4& _specular,
+            const MoonVector3& _position, float _range, const MoonVector3& _direction,
+            float _spot, const MoonVector3& _att) :
             ambient(_ambient), diffuse(_diffuse), specular(_specular),
             position(_position), range(_range), direction(_direction), spot(_spot), att(_att), pad() {}
 
-        glm::vec4 ambient;
-        glm::vec4 diffuse;
-        glm::vec4 specular;
+        MoonVector4 ambient;
+        MoonVector4 diffuse;
+        MoonVector4 specular;
 
-        glm::vec3 position;
+        MoonVector3 position;
         float range;
 
-        glm::vec3 direction;
+        MoonVector3 direction;
         float spot;
 
-        glm::vec3 att;
+        MoonVector3 att;
         float pad;
     };
 }

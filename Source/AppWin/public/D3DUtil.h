@@ -15,10 +15,6 @@
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <d3dcompiler.h>
-#else
-#include "Source/ThirdParty/glm/glm.hpp"
-#include "Source/ThirdParty/glm/gtc/matrix_transform.hpp"
-#include "Source/ThirdParty/glm/gtc/matrix_inverse.hpp"
 #endif
 
 #include <vector>
@@ -218,7 +214,7 @@ bool MoonEnsureDirectory(const std::string& relativePath);
 
 
 //
-// 数学相关函数
+// 数学相关函数 (仅 Windows，跨平台代码请使用 MoonMath.h 中的 MoonInverseTranspose)
 //
 
 // ------------------------------
@@ -235,14 +231,6 @@ inline DirectX::XMMATRIX XM_CALLCONV InverseTranspose(DirectX::FXMMATRIX M)
     A.r[3] = g_XMIdentityR3;
 
     return XMMatrixTranspose(XMMatrixInverse(nullptr, A));
-}
-#else
-inline glm::mat4 InverseTranspose(const glm::mat4& M)
-{
-    // 世界矩阵的逆的转置仅针对法向量，去掉平移分量
-    glm::mat4 A = M;
-    A[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    return glm::transpose(glm::inverse(A));
 }
 #endif
 

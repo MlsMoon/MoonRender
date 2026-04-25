@@ -257,9 +257,15 @@ namespace
             m_metalLayer.device = m_device;
             m_metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
             m_metalLayer.drawableSize = CGSizeMake(static_cast<CGFloat>(width), static_cast<CGFloat>(height));
-            m_metalLayer.frame = view.frame;
+            m_metalLayer.frame = view.bounds;
+            m_metalLayer.contentsScale = [view.window backingScaleFactor] ?: 1.0;
             [view setLayer:m_metalLayer];
             [view setWantsLayer:YES];
+
+            NSLog(@"MetalInit: bounds=%@ drawableSize=%@ contentsScale=%f",
+                NSStringFromRect(view.bounds),
+                NSStringFromSize(NSSizeFromCGSize(m_metalLayer.drawableSize)),
+                m_metalLayer.contentsScale);
 
             MTLDepthStencilDescriptor* depthStencilDesc = [[MTLDepthStencilDescriptor alloc] init];
             depthStencilDesc.depthCompareFunction = MTLCompareFunctionLess;
@@ -275,7 +281,22 @@ namespace
             m_height = height;
             if (m_metalLayer)
             {
-                m_metalLayer.drawableSize = CGSizeMake(static_cast<CGFloat>(width), static_cast<CGFloat>(height));
+                NSWindow* cocoaWindow = glfwGetCocoaWindow(m_window);
+                if (cocoaWindow)
+                {
+                    NSView* view = [cocoaWindow contentView];
+                    m_metalLayer.frame = view.bounds;
+                    m_metalLayer.contentsScale = [view.window backingScaleFactor] ?: 1.0;
+                }
+                // On macOS, drawableSize is derived from bounds * contentsScale when onscreen.
+                // Explicitly setting it may have no effect, but we keep it for consistency.
+                CGSize autoSize = CGSizeMake(m_metalLayer.bounds.size.width * m_metalLayer.contentsScale,
+                                             m_metalLayer.bounds.size.height * m_metalLayer.contentsScale);
+                NSLog(@"MetalResize: bounds=%@ contentsScale=%f autoDrawableSize=%@ requested=%@",
+                    NSStringFromRect(m_metalLayer.bounds),
+                    m_metalLayer.contentsScale,
+                    NSStringFromSize(NSSizeFromCGSize(autoSize)),
+                    NSStringFromSize(NSSizeFromCGSize(CGSizeMake(width, height))));
             }
         }
 

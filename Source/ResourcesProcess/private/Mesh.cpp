@@ -1,4 +1,4 @@
-﻿#include "../public/Mesh.h"
+#include "../public/Mesh.h"
 
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/ResourcesProcess/public/MoonMeshLoader.h"
@@ -22,7 +22,7 @@ ResourcesProcess::Mesh::Mesh(std::string SourceFilePath,MeshFileType FileType)
 
 ResourcesProcess::Mesh::~Mesh()
 {
-    
+
 }
 
 
@@ -33,7 +33,7 @@ void* ResourcesProcess::Mesh::get_sys_mem()
 
 void ResourcesProcess::Mesh::init_obj_mesh(std::string FilePath)
 {
-    
+
     tinyobj::ObjReader reader = MoonMeshLoader::LoadObjFile(FilePath);
     auto& attrib = reader.GetAttrib();
     auto& shapes = reader.GetShapes();
@@ -47,7 +47,7 @@ void ResourcesProcess::Mesh::init_obj_mesh(std::string FilePath)
 
     //TODO:待确认这里 *3 的正确性
     VertexNum = shapes[0].mesh.num_face_vertices.size() * 3;
-    
+
     VertexBufferData.resize(VertexNum);
 
      for (size_t s = 0; s < shapes.size(); s++)
@@ -66,16 +66,16 @@ void ResourcesProcess::Mesh::init_obj_mesh(std::string FilePath)
                  tinyobj::real_t vx = attrib.vertices[3*size_t(idx.vertex_index)+0];
                  tinyobj::real_t vy = attrib.vertices[3*size_t(idx.vertex_index)+1];
                  tinyobj::real_t vz = attrib.vertices[3*size_t(idx.vertex_index)+2];
-                
-                 VertexBufferData[index_offset + v].pos = glm::vec3(vx,vy,vz);
+
+                 VertexBufferData[index_offset + v].pos = MoonVector3(vx,vy,vz);
 
                  // Check if `normal_index` is zero or positive. negative = no normal data
                  if (idx.normal_index >= 0) {
                      tinyobj::real_t nx = attrib.normals[3*size_t(idx.normal_index)+0];
                      tinyobj::real_t ny = attrib.normals[3*size_t(idx.normal_index)+1];
                      tinyobj::real_t nz = attrib.normals[3*size_t(idx.normal_index)+2];
-                    
-                     VertexBufferData[index_offset + v].normal = glm::vec3(nx,ny,nz);
+
+                     VertexBufferData[index_offset + v].normal = MoonVector3(nx,ny,nz);
                  }
 
                  // Check if `texcoord_index` is zero or positive. negative = no texcoord data

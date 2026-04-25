@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Source/ThirdParty/glm/glm.hpp"
-#include "Source/ThirdParty/glm/gtc/matrix_transform.hpp"
-
+#include "Source/Math/public/MoonMath.h"
 #include "Source/Object/MoonComponent.h"
 
 namespace Object
@@ -16,16 +14,16 @@ namespace Object
             RegisterProperty(MoonProp::Float3("Rotation",
                 [this]()
                 {
-                    return glm::vec3(
-                        glm::degrees(rotationRadians.x),
-                        glm::degrees(rotationRadians.y),
-                        glm::degrees(rotationRadians.z));
+                    return MoonVector3(
+                        MoonDegrees(rotationRadians.x),
+                        MoonDegrees(rotationRadians.y),
+                        MoonDegrees(rotationRadians.z));
                 },
-                [this](const glm::vec3& value)
+                [this](const MoonVector3& value)
                 {
-                    rotationRadians.x = glm::radians(value.x);
-                    rotationRadians.y = glm::radians(value.y);
-                    rotationRadians.z = glm::radians(value.z);
+                    rotationRadians.x = MoonRadians(value.x);
+                    rotationRadians.y = MoonRadians(value.y);
+                    rotationRadians.z = MoonRadians(value.z);
                 },
                 "%.2f deg", 0.25f));
             RegisterProperty(MoonProp::Float3("Scale", scale, "%.3f", 0.01f, 0.001f, 100.0f));
@@ -33,20 +31,20 @@ namespace Object
 
         MOON_COMPONENT(Transform, "Transform", Transform)
 
-        glm::mat4 GetLocalMatrix() const
+        MoonMatrix4x4 GetLocalMatrix() const
         {
-            const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
-            const glm::mat4 rotationMatrix =
-                glm::rotate(glm::mat4(1.0f), rotationRadians.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-                glm::rotate(glm::mat4(1.0f), rotationRadians.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                glm::rotate(glm::mat4(1.0f), rotationRadians.z, glm::vec3(0.0f, 0.0f, 1.0f));
-            const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), position);
+            const MoonMatrix4x4 scaleMatrix = MoonScale(scale);
+            const MoonMatrix4x4 rotationMatrix =
+                MoonRotate(rotationRadians.x, MoonVector3(1.0f, 0.0f, 0.0f)) *
+                MoonRotate(rotationRadians.y, MoonVector3(0.0f, 1.0f, 0.0f)) *
+                MoonRotate(rotationRadians.z, MoonVector3(0.0f, 0.0f, 1.0f));
+            const MoonMatrix4x4 translationMatrix = MoonTranslate(position);
             return scaleMatrix * rotationMatrix * translationMatrix;
         }
 
-        glm::mat4 GetWorldMatrix() const
+        MoonMatrix4x4 GetWorldMatrix() const
         {
-            const glm::mat4 local = GetLocalMatrix();
+            const MoonMatrix4x4 local = GetLocalMatrix();
             if (GetOwner() != nullptr && GetOwner()->GetParent() != nullptr)
             {
                 const auto* parentTransform = GetOwner()->GetParent()->GetComponent<TransformComponent>();
@@ -58,8 +56,8 @@ namespace Object
             return local;
         }
 
-        glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 rotationRadians = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        MoonVector3 position = MoonVector3(0.0f, 0.0f, 0.0f);
+        MoonVector3 rotationRadians = MoonVector3(0.0f, 0.0f, 0.0f);
+        MoonVector3 scale = MoonVector3(1.0f, 1.0f, 1.0f);
     };
 }

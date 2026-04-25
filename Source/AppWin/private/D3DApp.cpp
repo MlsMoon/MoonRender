@@ -2,11 +2,13 @@
 
 #include <cassert>
 #include <sstream>
+#include <string>
 
 #include <GLFW/glfw3.h>
 
 #include "../public/D3DUtil.h"
 #include "Source/Graphics/public/GraphicsBackendFactory.h"
+#include "Source/Logging/public/LogSystem.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
 #ifdef _WIN32
@@ -116,7 +118,9 @@ D3DApp::D3DApp(
       m_MainWndCaption(windowName),
       m_GraphicsBackendType(backendType),
       ClientWidth(initWidth),
-      ClientHeight(initHeight)
+      ClientHeight(initHeight),
+      FramebufferWidth(initWidth),
+      FramebufferHeight(initHeight)
 {
 }
 
@@ -153,6 +157,15 @@ GLFWwindow* D3DApp::GetWindow() const
 float D3DApp::AspectRatio() const
 {
     return static_cast<float>(ClientWidth) / ClientHeight;
+}
+
+void D3DApp::UpdateFramebufferSize()
+{
+    if (m_window)
+    {
+        glfwGetWindowSize(m_window, &ClientWidth, &ClientHeight);
+        glfwGetFramebufferSize(m_window, &FramebufferWidth, &FramebufferHeight);
+    }
 }
 
 GraphicsBackendType D3DApp::GetGraphicsBackendType() const
@@ -208,6 +221,9 @@ bool D3DApp::Init()
         return false;
     }
 
+    MOON_LOG("WindowSize: " + std::to_string(ClientWidth) + "x" + std::to_string(ClientHeight)
+        + " Framebuffer: " + std::to_string(FramebufferWidth) + "x" + std::to_string(FramebufferHeight));
+
     if (!InitGraphicsBackend())
     {
         return false;
@@ -225,7 +241,7 @@ void D3DApp::OnResize()
 {
     if (m_GraphicsBackend)
     {
-        m_GraphicsBackend->Resize(ClientWidth, ClientHeight);
+        m_GraphicsBackend->Resize(FramebufferWidth, FramebufferHeight);
     }
 }
 
@@ -237,13 +253,14 @@ bool D3DApp::InitMainWindow()
         return false;
     }
 
+    UpdateFramebufferSize();
+
     glfwSetWindowUserPointer(m_window, this);
 
-    glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* window, int width, int height)
+    glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* window, int /*width*/, int /*height*/)
     {
         auto* app = static_cast<D3DApp*>(glfwGetWindowUserPointer(window));
-        app->ClientWidth = width;
-        app->ClientHeight = height;
+        app->UpdateFramebufferSize();
         app->OnResize();
     });
 
@@ -274,7 +291,7 @@ bool D3DApp::InitGraphicsBackend()
         return false;
     }
 
-    if (!m_GraphicsBackend->Initialize(m_window, ClientWidth, ClientHeight, m_Enable4xMsaa))
+    if (!m_GraphicsBackend->Initialize(m_window, FramebufferWidth, FramebufferHeight, m_Enable4xMsaa))
     {
         return false;
     }

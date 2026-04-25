@@ -51,7 +51,7 @@ namespace MoonUI
             }
             case Object::ComponentPropertyType::Float3:
             {
-                glm::vec3 value = property.getFloat3 ? property.getFloat3() : glm::vec3(0.0f, 0.0f, 0.0f);
+                MoonVector3 value = property.getFloat3 ? property.getFloat3() : MoonVector3(0.0f, 0.0f, 0.0f);
                 if (property.readOnly)
                 {
                     ImGui::Text(property.format, value.x, value.y, value.z);
@@ -79,7 +79,7 @@ namespace MoonUI
             }
             case Object::ComponentPropertyType::Float4:
             {
-                glm::vec4 value = property.getFloat4 ? property.getFloat4() : glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+                MoonVector4 value = property.getFloat4 ? property.getFloat4() : MoonVector4(0.0f, 0.0f, 0.0f, 0.0f);
                 if (property.readOnly)
                 {
                     ImGui::Text(property.format, value.x, value.y, value.z, value.w);
@@ -115,8 +115,8 @@ namespace MoonUI
 
     void InspectorWindow::Draw(Object::MoonObject* selectedObject)
     {
-        ImGui::SetNextWindowSize(ImVec2(360.0f, 520.0f), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowPos(ImVec2(984.0f, 48.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(420.0f, 520.0f), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(920.0f, 48.0f), ImGuiCond_FirstUseEver);
         ImGui::Begin("Inspector", &m_isOpen);
 
         if (selectedObject == nullptr)
