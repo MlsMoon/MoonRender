@@ -91,6 +91,17 @@ namespace MoonUI
             flags |= ImGuiTreeNodeFlags_Selected;
         }
 
+        if (selectedObject == object)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.36f, 0.62f, 0.87f, 0.50f));
+            ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.46f, 0.74f, 1.00f, 0.55f));
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.13f, 0.15f, 0.18f, 1.00f));
+            ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.18f, 0.23f, 0.29f, 1.00f));
+        }
+
         const bool nodeOpen = ImGui::TreeNodeEx(object->GetDisplayName().c_str(), flags);
 
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
@@ -100,6 +111,36 @@ namespace MoonUI
 
         if (ImGui::BeginPopupContextItem())
         {
+            if (ImGui::BeginMenu("Create Child"))
+            {
+                if (ImGui::MenuItem("Empty Object"))
+                {
+                    static int childEmptyCounter = 1;
+                    auto* newObject = scene.SpawnObject("ChildEmpty_" + std::to_string(childEmptyCounter));
+                    newObject->SetDisplayName("Child Empty " + std::to_string(childEmptyCounter));
+                    newObject->AddComponent<Object::TransformComponent>();
+                    newObject->SetParent(object);
+                    selectedObject = newObject;
+                    ++childEmptyCounter;
+                }
+                if (ImGui::BeginMenu("Mesh"))
+                {
+                    if (ImGui::MenuItem("Sphere"))
+                    {
+                        static int childSphereCounter = 1;
+                        auto* newObject = scene.SpawnObject("ChildSphere_" + std::to_string(childSphereCounter));
+                        newObject->SetDisplayName("Child Sphere " + std::to_string(childSphereCounter));
+                        newObject->AddComponent<Object::TransformComponent>();
+                        newObject->AddComponent<Object::MeshComponent>("Resources/Models/sphere.obj", ResourcesProcess::OBJ);
+                        newObject->SetParent(object);
+                        selectedObject = newObject;
+                        ++childSphereCounter;
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::Separator();
             if (ImGui::MenuItem("Delete Object"))
             {
                 if (object->HasComponent<Object::CameraComponent>())
@@ -149,6 +190,7 @@ namespace MoonUI
             ImGui::TreePop();
         }
 
+        ImGui::PopStyleColor(2);
         ImGui::PopID();
     }
 }
