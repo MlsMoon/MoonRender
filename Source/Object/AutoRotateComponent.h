@@ -1,6 +1,6 @@
 #pragma once
 
-#include <directxmath.h>
+#include "Source/ThirdParty/glm/glm.hpp"
 
 #include "Source/Object/MoonComponent.h"
 #include "Source/Object/MoonObject.h"
@@ -31,6 +31,6 @@ namespace Object
             transform->rotationRadians.z += angularVelocityRadians.z * dt;
         }
 
-        DirectX::XMFLOAT3 angularVelocityRadians = DirectX::XMFLOAT3(0.3f, 0.37f, 0.0f);
+        glm::vec3 angularVelocityRadians = glm::vec3(0.3f, 0.37f, 0.0f);
     };
 }

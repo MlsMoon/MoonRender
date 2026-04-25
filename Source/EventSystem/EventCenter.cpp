@@ -4,6 +4,7 @@
 
 // 定义静态成员变量
 //instance
+template<>
 EventCenter* MoonRenderClass::Singleton<EventCenter>::instance = nullptr;
 std::unordered_map<std::string, MoonFunctionPtr<float>> EventCenter::register_events_map_float;
 

@@ -9,11 +9,18 @@
 #ifndef D3DUTIL_H
 #define D3DUTIL_H
 
+#ifdef _WIN32
 #include <d3d11_1.h>            // 已包含Windows.h
 #include <DirectXCollision.h>   // 已包含DirectXMath.h
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <d3dcompiler.h>
+#else
+#include "Source/ThirdParty/glm/glm.hpp"
+#include "Source/ThirdParty/glm/gtc/matrix_transform.hpp"
+#include "Source/ThirdParty/glm/gtc/matrix_inverse.hpp"
+#endif
+
 #include <vector>
 #include <string>
 
@@ -31,8 +38,10 @@
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = nullptr; } }
 
 //
-// 辅助调试相关函数
+// 辅助调试相关函数 (仅 Windows)
 //
+
+#ifdef _WIN32
 
 // ------------------------------
 // D3D11SetDebugObjectName函数
@@ -165,7 +174,7 @@ inline void DXGISetDebugObjectName(_In_ IDXGIObject* object, _In_ std::nullptr_t
 }
 
 //
-// 着色器编译相关函数
+// 着色器编译相关函数 (仅 Windows)
 //
 
 enum CompileShaderType
@@ -195,6 +204,8 @@ HRESULT MoonCreateShaderFromFile(
     CompileShaderType shaderType,
     ID3DBlob** ppBlobOut);
 
+#endif // _WIN32
+
 std::string MoonGetProjectRootPath();
 
 std::string MoonGetAssetPath(const std::string& relativePath);
@@ -213,6 +224,7 @@ bool MoonEnsureDirectory(const std::string& relativePath);
 // ------------------------------
 // InverseTranspose函数
 // ------------------------------
+#ifdef _WIN32
 inline DirectX::XMMATRIX XM_CALLCONV InverseTranspose(DirectX::FXMMATRIX M)
 {
     using namespace DirectX;
@@ -224,6 +236,15 @@ inline DirectX::XMMATRIX XM_CALLCONV InverseTranspose(DirectX::FXMMATRIX M)
 
     return XMMatrixTranspose(XMMatrixInverse(nullptr, A));
 }
+#else
+inline glm::mat4 InverseTranspose(const glm::mat4& M)
+{
+    // 世界矩阵的逆的转置仅针对法向量，去掉平移分量
+    glm::mat4 A = M;
+    A[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    return glm::transpose(glm::inverse(A));
+}
+#endif
 
 
 #endif

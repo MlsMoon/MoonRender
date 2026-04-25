@@ -6,7 +6,8 @@
 enum class GraphicsBackendType
 {
     DX11,
-    DX12
+    DX12,
+    Metal
 };
 
 enum class GraphicsFormat
@@ -97,6 +98,7 @@ struct GraphicsShaderDesc
 {
     std::wstring filePath;
     GraphicsShaderStage stage = GraphicsShaderStage::Vertex;
+    std::string entryPoint;
     std::string debugName;
 };
 

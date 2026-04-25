@@ -19,6 +19,10 @@
 #include "Source/ThirdParty/ImGui/imgui.h"
 #include "Source/ThirdParty/ImGui/imgui_impl_dx11.h"
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
 namespace
 {
     using Microsoft::WRL::ComPtr;
@@ -166,9 +170,9 @@ namespace
             return GraphicsBackendType::DX11;
         }
 
-        bool Initialize(HWND hwnd, int width, int height, bool enable4xMsaa) override
+        bool Initialize(void* nativeWindowHandle, int width, int height, bool enable4xMsaa) override
         {
-            m_hwnd = hwnd;
+            m_hwnd = glfwGetWin32Window(static_cast<GLFWwindow*>(nativeWindowHandle));
             m_width = width;
             m_height = height;
             m_enable4xMsaa = enable4xMsaa;
@@ -243,7 +247,7 @@ namespace
             SetViewport(viewport);
         }
 
-        bool InitializeImGui(HWND) override
+        bool InitializeImGui(void*) override
         {
             if (m_imguiInitialized)
             {

@@ -2,12 +2,14 @@
 // DXTrace.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
-// DirectX错误追踪 
-// DirectX Error Tracing. 
+// DirectX错误追踪
+// DirectX Error Tracing.
 //***************************************************************************************
 
 #ifndef DXTRACE_H
 #define DXTRACE_H
+
+#ifdef _WIN32
 
 #include <Windows.h>
 
@@ -42,9 +44,16 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
 #else
     #ifndef HR
     #define HR(x) (x)
-    #endif 
+    #endif
 #endif
 
+#else // !_WIN32
+
+#ifndef HR
+#define HR(x) (x)
+#endif
+
+#endif // _WIN32
 
 
 #endif

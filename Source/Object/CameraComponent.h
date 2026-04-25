@@ -2,7 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
-#include <directxmath.h>
+#include <algorithm>
+#include <cmath>
+
+#include "Source/ThirdParty/glm/glm.hpp"
 
 #include "Source/Object/MoonComponent.h"
 
@@ -20,10 +23,10 @@ namespace Object
         CameraComponent()
         {
             RegisterProperty(MoonProp::Float("FOV",
-                [this]() { return DirectX::XMConvertToDegrees(fovRadians); },
+                [this]() { return glm::degrees(fovRadians); },
                 [this](float value)
                 {
-                    fovRadians = DirectX::XMConvertToRadians(value);
+                    fovRadians = glm::radians(value);
                     Normalize();
                 },
                 "%.1f deg", 0.1f, MinFovDegrees, MaxFovDegrees));
@@ -49,13 +52,13 @@ namespace Object
 
         void Normalize() override
         {
-            float fovDegrees = DirectX::XMConvertToDegrees(fovRadians);
+            float fovDegrees = glm::degrees(fovRadians);
             if (!std::isfinite(fovDegrees))
             {
                 fovDegrees = 90.0f;
             }
             fovDegrees = std::max(MinFovDegrees, std::min(fovDegrees, MaxFovDegrees));
-            fovRadians = DirectX::XMConvertToRadians(fovDegrees);
+            fovRadians = glm::radians(fovDegrees);
 
             if (!std::isfinite(nearPlane))
             {

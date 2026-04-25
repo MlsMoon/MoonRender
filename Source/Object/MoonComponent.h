@@ -1,6 +1,7 @@
 #pragma once
 
-#include <directxmath.h>
+#include "Source/ThirdParty/glm/glm.hpp"
+
 #include <functional>
 #include <string>
 #include <utility>
@@ -58,10 +59,10 @@ namespace Object
         std::function<std::string()> getText;
         std::function<float()> getFloat;
         std::function<void(float)> setFloat;
-        std::function<DirectX::XMFLOAT3()> getFloat3;
-        std::function<void(const DirectX::XMFLOAT3&)> setFloat3;
-        std::function<DirectX::XMFLOAT4()> getFloat4;
-        std::function<void(const DirectX::XMFLOAT4&)> setFloat4;
+        std::function<glm::vec3()> getFloat3;
+        std::function<void(const glm::vec3&)> setFloat3;
+        std::function<glm::vec4()> getFloat4;
+        std::function<void(const glm::vec4&)> setFloat4;
     };
 
     class MoonComponent
@@ -97,7 +98,7 @@ namespace Object
 
         inline ComponentProperty Float3(
             const char* name,
-            DirectX::XMFLOAT3& member,
+            glm::vec3& member,
             const char* format = "%.3f",
             float speed = 0.05f)
         {
@@ -107,13 +108,13 @@ namespace Object
             prop.format = format;
             prop.speed = speed;
             prop.getFloat3 = [&member]() { return member; };
-            prop.setFloat3 = [&member](const DirectX::XMFLOAT3& v) { member = v; };
+            prop.setFloat3 = [&member](const glm::vec3& v) { member = v; };
             return prop;
         }
 
         inline ComponentProperty Float3(
             const char* name,
-            DirectX::XMFLOAT3& member,
+            glm::vec3& member,
             const char* format,
             float speed,
             float minValue,
@@ -128,14 +129,14 @@ namespace Object
             prop.minValue = minValue;
             prop.maxValue = maxValue;
             prop.getFloat3 = [&member]() { return member; };
-            prop.setFloat3 = [&member](const DirectX::XMFLOAT3& v) { member = v; };
+            prop.setFloat3 = [&member](const glm::vec3& v) { member = v; };
             return prop;
         }
 
         inline ComponentProperty Float3(
             const char* name,
-            std::function<DirectX::XMFLOAT3()> getter,
-            std::function<void(const DirectX::XMFLOAT3&)> setter,
+            std::function<glm::vec3()> getter,
+            std::function<void(const glm::vec3&)> setter,
             const char* format = "%.3f",
             float speed = 0.05f)
         {
@@ -231,7 +232,7 @@ namespace Object
 
         inline ComponentProperty Float4(
             const char* name,
-            DirectX::XMFLOAT4& member,
+            glm::vec4& member,
             const char* format = "%.3f",
             float speed = 0.01f)
         {
@@ -241,7 +242,7 @@ namespace Object
             prop.format = format;
             prop.speed = speed;
             prop.getFloat4 = [&member]() { return member; };
-            prop.setFloat4 = [&member](const DirectX::XMFLOAT4& v) { member = v; };
+            prop.setFloat4 = [&member](const glm::vec4& v) { member = v; };
             return prop;
         }
 

@@ -51,7 +51,7 @@ namespace MoonUI
             }
             case Object::ComponentPropertyType::Float3:
             {
-                DirectX::XMFLOAT3 value = property.getFloat3 ? property.getFloat3() : DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+                glm::vec3 value = property.getFloat3 ? property.getFloat3() : glm::vec3(0.0f, 0.0f, 0.0f);
                 if (property.readOnly)
                 {
                     ImGui::Text(property.format, value.x, value.y, value.z);
@@ -79,7 +79,7 @@ namespace MoonUI
             }
             case Object::ComponentPropertyType::Float4:
             {
-                DirectX::XMFLOAT4 value = property.getFloat4 ? property.getFloat4() : DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+                glm::vec4 value = property.getFloat4 ? property.getFloat4() : glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
                 if (property.readOnly)
                 {
                     ImGui::Text(property.format, value.x, value.y, value.z, value.w);

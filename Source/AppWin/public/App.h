@@ -16,8 +16,7 @@ class App : public D3DApp
 {
 public:
     App(
-        HINSTANCE hInstance,
-        const std::wstring& windowName,
+        const std::string& windowName,
         int initWidth,
         int initHeight,
         GraphicsBackendType backendType = GraphicsBackendType::DX11);

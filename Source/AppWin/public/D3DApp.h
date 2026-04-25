@@ -5,22 +5,21 @@
 #include <string>
 
 #include "CpuTimer.h"
-#include "WinMin.h"
 #include "Source/Graphics/public/GraphicsBackend.h"
+
+struct GLFWwindow;
 
 class D3DApp
 {
 public:
     D3DApp(
-        HINSTANCE hInstance,
-        const std::wstring& windowName,
+        const std::string& windowName,
         int initWidth,
         int initHeight,
         GraphicsBackendType backendType = GraphicsBackendType::DX11);
     virtual ~D3DApp();
 
-    HINSTANCE AppInst() const;
-    HWND MainWnd() const;
+    GLFWwindow* GetWindow() const;
     float AspectRatio() const;
     GraphicsBackendType GetGraphicsBackendType() const;
 
@@ -31,7 +30,6 @@ public:
     virtual void DrawUI();
     virtual void UpdateScene(float dt) = 0;
     virtual void DrawScene() = 0;
-    virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
     int ClientWidth;
     int ClientHeight;
@@ -46,16 +44,15 @@ protected:
     const IGraphicsBackend& Graphics() const;
 
 protected:
-    HINSTANCE m_hAppInst;
-    HWND m_hMainWnd;
-    bool m_AppPaused;
-    bool m_Minimized;
-    bool m_Maximized;
-    bool m_Resizing;
-    bool m_Enable4xMsaa;
+    GLFWwindow* m_window = nullptr;
+    bool m_AppPaused = false;
+    bool m_Minimized = false;
+    bool m_Maximized = false;
+    bool m_Resizing = false;
+    bool m_Enable4xMsaa = true;
 
     CpuTimer m_Timer;
-    std::wstring m_MainWndCaption;
+    std::string m_MainWndCaption;
     GraphicsBackendType m_GraphicsBackendType;
     std::unique_ptr<IGraphicsBackend> m_GraphicsBackend;
 };

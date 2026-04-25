@@ -67,7 +67,7 @@ void ResourcesProcess::Mesh::init_obj_mesh(std::string FilePath)
                  tinyobj::real_t vy = attrib.vertices[3*size_t(idx.vertex_index)+1];
                  tinyobj::real_t vz = attrib.vertices[3*size_t(idx.vertex_index)+2];
                 
-                 VertexBufferData[index_offset + v].pos = DirectX::XMFLOAT3(vx,vy,vz);
+                 VertexBufferData[index_offset + v].pos = glm::vec3(vx,vy,vz);
 
                  // Check if `normal_index` is zero or positive. negative = no normal data
                  if (idx.normal_index >= 0) {
@@ -75,7 +75,7 @@ void ResourcesProcess::Mesh::init_obj_mesh(std::string FilePath)
                      tinyobj::real_t ny = attrib.normals[3*size_t(idx.normal_index)+1];
                      tinyobj::real_t nz = attrib.normals[3*size_t(idx.normal_index)+2];
                     
-                     VertexBufferData[index_offset + v].normal = DirectX::XMFLOAT3(nx,ny,nz);
+                     VertexBufferData[index_offset + v].normal = glm::vec3(nx,ny,nz);
                  }
 
                  // Check if `texcoord_index` is zero or positive. negative = no texcoord data

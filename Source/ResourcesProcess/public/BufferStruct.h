@@ -1,7 +1,7 @@
 #ifndef BUFFERSTUCT_H
 #define BUFFERSTUCT_H
 
-#include <directxmath.h>
+#include "Source/ThirdParty/glm/glm.hpp"
 
 #include "Source/Graphics/public/GraphicsTypes.h"
 
@@ -10,47 +10,47 @@ class BufferStruct
 public:
     struct BaseVertex
     {
-        DirectX::XMFLOAT3 pos;
+        glm::vec3 pos;
     };
 
     struct VertexPosColor : BaseVertex
     {
-        DirectX::XMFLOAT4 color;
+        glm::vec4 color;
         static VertexLayoutDesc GetVertexLayout();
     };
 
     struct VertexPosNormalColor : BaseVertex
     {
-        DirectX::XMFLOAT3 normal;
-        DirectX::XMFLOAT4 color;
+        glm::vec3 normal;
+        glm::vec4 color;
         static VertexLayoutDesc GetVertexLayout();
     };
 
     struct VertexPosNormal : BaseVertex
     {
-        DirectX::XMFLOAT3 normal;
+        glm::vec3 normal;
         static VertexLayoutDesc GetVertexLayout();
     };
 
     struct VertexPosNormalColorUV : BaseVertex
     {
-        DirectX::XMFLOAT3 normal;
-        DirectX::XMFLOAT4 color;
-        DirectX::XMFLOAT2 uv;
+        glm::vec3 normal;
+        glm::vec4 color;
+        glm::vec2 uv;
         static VertexLayoutDesc GetVertexLayout();
     };
 
     struct ConstantMVPBuffer
     {
-        DirectX::XMMATRIX world;
-        DirectX::XMMATRIX view;
-        DirectX::XMMATRIX proj;
-        DirectX::XMMATRIX worldInvTranspose;
+        glm::mat4 world;
+        glm::mat4 view;
+        glm::mat4 proj;
+        glm::mat4 worldInvTranspose;
     };
 
     struct ConstantPSBuffer
     {
-        DirectX::XMFLOAT4 directionalLightDirW;
+        glm::vec4 directionalLightDirW;
     };
 };
 

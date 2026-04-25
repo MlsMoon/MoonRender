@@ -3,7 +3,9 @@
 #include <filesystem>
 #include <string>
 
+#ifdef _WIN32
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = nullptr; } }
+#endif
 
 namespace
 {
@@ -17,6 +19,8 @@ namespace
 #endif
     }
 }
+
+#ifdef _WIN32
 
 HRESULT CreateShaderFromFile(
     const WCHAR* csoFileNameInOut,
@@ -137,6 +141,8 @@ HRESULT MoonCreateShaderFromFile(const WCHAR* hlslFileName, CompileShaderType sh
     delete[] result;
     return hr;
 }
+
+#endif // _WIN32
 
 std::string MoonGetProjectRootPath()
 {

@@ -18,7 +18,7 @@ namespace Object
         explicit LightComponent(LightKind lightKind = LightKind::Directional)
             : m_lightKind(lightKind)
         {
-            directionalLight.direction_intensity = DirectX::XMFLOAT4(-0.577f, -0.577f, 0.577f, 1.0f);
+            directionalLight.direction_intensity = glm::vec4(-0.577f, -0.577f, 0.577f, 1.0f);
 
             RegisterProperty(MoonProp::Text("Type",
                 [this]()

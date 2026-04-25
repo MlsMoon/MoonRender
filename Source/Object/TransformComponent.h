@@ -1,6 +1,7 @@
 #pragma once
 
-#include <directxmath.h>
+#include "Source/ThirdParty/glm/glm.hpp"
+#include "Source/ThirdParty/glm/gtc/matrix_transform.hpp"
 
 #include "Source/Object/MoonComponent.h"
 
@@ -15,16 +16,16 @@ namespace Object
             RegisterProperty(MoonProp::Float3("Rotation",
                 [this]()
                 {
-                    return DirectX::XMFLOAT3(
-                        DirectX::XMConvertToDegrees(rotationRadians.x),
-                        DirectX::XMConvertToDegrees(rotationRadians.y),
-                        DirectX::XMConvertToDegrees(rotationRadians.z));
+                    return glm::vec3(
+                        glm::degrees(rotationRadians.x),
+                        glm::degrees(rotationRadians.y),
+                        glm::degrees(rotationRadians.z));
                 },
-                [this](const DirectX::XMFLOAT3& value)
+                [this](const glm::vec3& value)
                 {
-                    rotationRadians.x = DirectX::XMConvertToRadians(value.x);
-                    rotationRadians.y = DirectX::XMConvertToRadians(value.y);
-                    rotationRadians.z = DirectX::XMConvertToRadians(value.z);
+                    rotationRadians.x = glm::radians(value.x);
+                    rotationRadians.y = glm::radians(value.y);
+                    rotationRadians.z = glm::radians(value.z);
                 },
                 "%.2f deg", 0.25f));
             RegisterProperty(MoonProp::Float3("Scale", scale, "%.3f", 0.01f, 0.001f, 100.0f));
@@ -32,20 +33,20 @@ namespace Object
 
         MOON_COMPONENT(Transform, "Transform", Transform)
 
-        DirectX::XMMATRIX GetLocalMatrix() const
+        glm::mat4 GetLocalMatrix() const
         {
-            const DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
-            const DirectX::XMMATRIX rotationMatrix =
-                DirectX::XMMatrixRotationX(rotationRadians.x) *
-                DirectX::XMMatrixRotationY(rotationRadians.y) *
-                DirectX::XMMatrixRotationZ(rotationRadians.z);
-            const DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+            const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+            const glm::mat4 rotationMatrix =
+                glm::rotate(glm::mat4(1.0f), rotationRadians.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                glm::rotate(glm::mat4(1.0f), rotationRadians.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                glm::rotate(glm::mat4(1.0f), rotationRadians.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), position);
             return scaleMatrix * rotationMatrix * translationMatrix;
         }
 
-        DirectX::XMMATRIX GetWorldMatrix() const
+        glm::mat4 GetWorldMatrix() const
         {
-            const DirectX::XMMATRIX local = GetLocalMatrix();
+            const glm::mat4 local = GetLocalMatrix();
             if (GetOwner() != nullptr && GetOwner()->GetParent() != nullptr)
             {
                 const auto* parentTransform = GetOwner()->GetParent()->GetComponent<TransformComponent>();
@@ -57,8 +58,8 @@ namespace Object
             return local;
         }
 
-        DirectX::XMFLOAT3 position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-        DirectX::XMFLOAT3 rotationRadians = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-        DirectX::XMFLOAT3 scale = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+        glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 rotationRadians = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
     };
 }

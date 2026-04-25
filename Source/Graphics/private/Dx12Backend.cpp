@@ -21,6 +21,10 @@
 #include "Source/AppWin/public/D3DUtil.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
 namespace
 {
     using Microsoft::WRL::ComPtr;
@@ -183,13 +187,13 @@ namespace
             return GraphicsBackendType::DX12;
         }
 
-        bool Initialize(HWND hwnd, int width, int height, bool enable4xMsaa) override
+        bool Initialize(void* nativeWindowHandle, int width, int height, bool enable4xMsaa) override
         {
             // DX12 鍒濆鍖栫殑鎬讳綋椤哄簭鏄細
             // 1. 创建设备/命令队列/交换链
             // 2. 创建 RTV/DSV/fence/命令列表等长期对象
             // 3. 根据当前窗口尺寸创建 back buffer 和 depth buffer
-            m_hwnd = hwnd;
+            m_hwnd = glfwGetWin32Window(static_cast<GLFWwindow*>(nativeWindowHandle));
             m_width = width;
             m_height = height;
             m_enable4xMsaa = enable4xMsaa;
@@ -288,7 +292,7 @@ namespace
             SetViewport(viewport);
         }
 
-        bool InitializeImGui(HWND) override
+        bool InitializeImGui(void*) override
         {
             if (m_imguiInitialized)
             {

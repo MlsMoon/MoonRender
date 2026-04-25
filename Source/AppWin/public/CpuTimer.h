@@ -1,7 +1,7 @@
 //***************************************************************************************
 // CpuTimer.h by Frank Luna (C) 2011 All Rights Reserved.
 // Modify name from GameTimer.cpp
-// CPU¼ÆÊ±Æ÷
+// CPUè®¡æ—¶å™¨
 //***************************************************************************************
 
 #pragma once
@@ -9,31 +9,32 @@
 #ifndef CPU_TIMER_H
 #define CPU_TIMER_H
 
+#include <chrono>
+
 class CpuTimer
 {
 public:
     CpuTimer();
 
-    float TotalTime()const;     // ·µ»Ø´ÓReset()µ÷ÓÃÖ®ºó¾­¹ýµÄÊ±¼ä£¬µ«²»°üÀ¨ÔÝÍ£ÆÚ¼äµÄ
-    float DeltaTime()const;     // ·µ»ØÖ¡¼ä¸ôÊ±¼ä
+    float TotalTime() const;
+    float DeltaTime() const;
 
-    void Reset();               // ¼ÆÊ±¿ªÊ¼Ç°»òÕßÐèÒªÖØÖÃÊ±µ÷ÓÃ
-    void Start();               // ÔÚ¿ªÊ¼¼ÆÊ±»òÈ¡ÏûÔÝÍ£µÄÊ±ºòµ÷ÓÃ
-    void Stop();                // ÔÚÐèÒªÔÝÍ£µÄÊ±ºòµ÷ÓÃ
-    void Tick();                // ÔÚÃ¿Ò»Ö¡¿ªÊ¼µÄÊ±ºòµ÷ÓÃ
-    bool IsStopped() const;     // ¼ÆÊ±Æ÷ÊÇ·ñÔÝÍ£/½áÊø
+    void Reset();
+    void Start();
+    void Stop();
+    void Tick();
+    bool IsStopped() const;
 
 private:
-    double m_SecondsPerCount = 0.0;
     double m_DeltaTime = -1.0;
 
-    __int64 m_BaseTime = 0;
-    __int64 m_PausedTime = 0;
-    __int64 m_StopTime = 0;
-    __int64 m_PrevTime = 0;
-    __int64 m_CurrTime = 0;
+    std::chrono::high_resolution_clock::time_point m_BaseTime;
+    std::chrono::high_resolution_clock::duration m_PausedTime;
+    std::chrono::high_resolution_clock::time_point m_StopTime;
+    std::chrono::high_resolution_clock::time_point m_PrevTime;
+    std::chrono::high_resolution_clock::time_point m_CurrTime;
 
     bool m_Stopped = false;
 };
 
-#endif // GAMETIMER_H
+#endif // CPU_TIMER_H

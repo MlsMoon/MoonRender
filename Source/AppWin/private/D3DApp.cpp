@@ -1,27 +1,25 @@
 #include "../public/D3DApp.h"
 
-#pragma warning(disable: 6031)
-
 #include <cassert>
 #include <sstream>
+
+#include <GLFW/glfw3.h>
 
 #include "../public/D3DUtil.h"
 #include "Source/Graphics/public/GraphicsBackendFactory.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
+
+#ifdef _WIN32
 #include "Source/ThirdParty/ImGui/imgui_impl_win32.h"
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
-extern "C"
-{
-    __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
-}
+#ifdef __APPLE__
+#include "Source/ThirdParty/ImGui/imgui_impl_glfw.h"
+#endif
 
 namespace
 {
-    D3DApp* g_pd3dApp = nullptr;
-
     void ApplyMoonEditorStyle(float dpiScale)
     {
         ImGui::StyleColorsDark();
@@ -104,19 +102,12 @@ namespace
     }
 }
 
-LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    return g_pd3dApp->MsgProc(hwnd, msg, wParam, lParam);
-}
-
 D3DApp::D3DApp(
-    HINSTANCE hInstance,
-    const std::wstring& windowName,
+    const std::string& windowName,
     int initWidth,
     int initHeight,
     GraphicsBackendType backendType)
-    : m_hAppInst(hInstance),
-      m_hMainWnd(nullptr),
+    : m_window(nullptr),
       m_AppPaused(false),
       m_Minimized(false),
       m_Maximized(false),
@@ -127,7 +118,6 @@ D3DApp::D3DApp(
       ClientWidth(initWidth),
       ClientHeight(initHeight)
 {
-    g_pd3dApp = this;
 }
 
 D3DApp::~D3DApp()
@@ -138,19 +128,26 @@ D3DApp::~D3DApp()
         {
             m_GraphicsBackend->ShutdownImGui();
         }
+
+#ifdef _WIN32
         ImGui_ImplWin32_Shutdown();
+#endif
+#ifdef __APPLE__
+        ImGui_ImplGlfw_Shutdown();
+#endif
         ImGui::DestroyContext();
     }
+
+    if (m_window)
+    {
+        glfwDestroyWindow(m_window);
+    }
+    glfwTerminate();
 }
 
-HINSTANCE D3DApp::AppInst() const
+GLFWwindow* D3DApp::GetWindow() const
 {
-    return m_hAppInst;
-}
-
-HWND D3DApp::MainWnd() const
-{
-    return m_hMainWnd;
+    return m_window;
 }
 
 float D3DApp::AspectRatio() const
@@ -165,44 +162,47 @@ GraphicsBackendType D3DApp::GetGraphicsBackendType() const
 
 int D3DApp::Run()
 {
-    MSG msg = { 0 };
     m_Timer.Reset();
 
-    while (msg.message != WM_QUIT)
+    while (!glfwWindowShouldClose(m_window))
     {
-        if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+        glfwPollEvents();
+
+        m_Timer.Tick();
+
+        if (!m_AppPaused)
         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-        else
-        {
-            m_Timer.Tick();
+            CalculateFrameStats();
 
-            if (!m_AppPaused)
-            {
-                CalculateFrameStats();
+            Graphics().BeginImGuiFrame();
 
-                Graphics().BeginImGuiFrame();
-                ImGui_ImplWin32_NewFrame();
-                ImGui::NewFrame();
+#ifdef _WIN32
+            ImGui_ImplWin32_NewFrame();
+#endif
+#ifdef __APPLE__
+            ImGui_ImplGlfw_NewFrame();
+#endif
+            ImGui::NewFrame();
 
-                DrawUI();
-                UpdateScene(m_Timer.DeltaTime());
-                DrawScene();
-            }
-            else
-            {
-                Sleep(100);
-            }
+            DrawUI();
+            UpdateScene(m_Timer.DeltaTime());
+            DrawScene();
         }
     }
 
-    return static_cast<int>(msg.wParam);
+    return 0;
 }
 
 bool D3DApp::Init()
 {
+    if (!glfwInit())
+    {
+        return false;
+    }
+
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
     if (!InitMainWindow())
     {
         return false;
@@ -229,157 +229,40 @@ void D3DApp::OnResize()
     }
 }
 
-LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+bool D3DApp::InitMainWindow()
 {
-    if (ImGui::GetCurrentContext() != nullptr && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+    m_window = glfwCreateWindow(ClientWidth, ClientHeight, m_MainWndCaption.c_str(), nullptr, nullptr);
+    if (!m_window)
     {
-        return true;
+        return false;
     }
 
-    switch (msg)
+    glfwSetWindowUserPointer(m_window, this);
+
+    glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* window, int width, int height)
     {
-    case WM_ACTIVATE:
-        if (LOWORD(wParam) == WA_INACTIVE)
+        auto* app = static_cast<D3DApp*>(glfwGetWindowUserPointer(window));
+        app->ClientWidth = width;
+        app->ClientHeight = height;
+        app->OnResize();
+    });
+
+    glfwSetWindowIconifyCallback(m_window, [](GLFWwindow* window, int iconified)
+    {
+        auto* app = static_cast<D3DApp*>(glfwGetWindowUserPointer(window));
+        app->m_Minimized = iconified;
+        if (iconified)
         {
-            m_AppPaused = true;
-            m_Timer.Stop();
+            app->m_AppPaused = true;
+            app->m_Timer.Stop();
         }
         else
         {
-            m_AppPaused = false;
-            m_Timer.Start();
+            app->m_AppPaused = false;
+            app->m_Timer.Start();
         }
-        return 0;
+    });
 
-    case WM_SIZE:
-        ClientWidth = LOWORD(lParam);
-        ClientHeight = HIWORD(lParam);
-        if (m_GraphicsBackend)
-        {
-            if (wParam == SIZE_MINIMIZED)
-            {
-                m_AppPaused = true;
-                m_Minimized = true;
-                m_Maximized = false;
-            }
-            else if (wParam == SIZE_MAXIMIZED)
-            {
-                m_AppPaused = false;
-                m_Minimized = false;
-                m_Maximized = true;
-                OnResize();
-            }
-            else if (wParam == SIZE_RESTORED)
-            {
-                if (m_Minimized)
-                {
-                    m_AppPaused = false;
-                    m_Minimized = false;
-                    OnResize();
-                }
-                else if (m_Maximized)
-                {
-                    m_AppPaused = false;
-                    m_Maximized = false;
-                    OnResize();
-                }
-                else if (!m_Resizing)
-                {
-                    OnResize();
-                }
-            }
-        }
-        return 0;
-
-    case WM_ENTERSIZEMOVE:
-        m_AppPaused = true;
-        m_Resizing = true;
-        m_Timer.Stop();
-        return 0;
-
-    case WM_EXITSIZEMOVE:
-        m_AppPaused = false;
-        m_Resizing = false;
-        m_Timer.Start();
-        OnResize();
-        return 0;
-
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
-
-    case WM_MENUCHAR:
-        return MAKELRESULT(0, 1);
-
-    case WM_GETMINMAXINFO:
-        reinterpret_cast<MINMAXINFO*>(lParam)->ptMinTrackSize.x = 200;
-        reinterpret_cast<MINMAXINFO*>(lParam)->ptMinTrackSize.y = 200;
-        return 0;
-
-    case WM_DPICHANGED:
-        if (lParam != 0)
-        {
-            const RECT* suggestedRect = reinterpret_cast<const RECT*>(lParam);
-            SetWindowPos(
-                hwnd,
-                nullptr,
-                suggestedRect->left,
-                suggestedRect->top,
-                suggestedRect->right - suggestedRect->left,
-                suggestedRect->bottom - suggestedRect->top,
-                SWP_NOZORDER | SWP_NOACTIVATE);
-        }
-        return 0;
-
-    default:
-        return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-}
-
-bool D3DApp::InitMainWindow()
-{
-    ImGui_ImplWin32_EnableDpiAwareness();
-
-    WNDCLASS wc = {};
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = MainWndProc;
-    wc.hInstance = m_hAppInst;
-    wc.hIcon = nullptr;
-    wc.hCursor = LoadCursor(0, IDC_ARROW);
-    wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(NULL_BRUSH));
-    wc.lpszClassName = L"D3DWndClassName";
-
-    if (!RegisterClass(&wc))
-    {
-        MessageBox(0, L"RegisterClass Failed.", 0, 0);
-        return false;
-    }
-
-    RECT windowRect = { 0, 0, ClientWidth, ClientHeight };
-    AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, false);
-    const int width = windowRect.right - windowRect.left;
-    const int height = windowRect.bottom - windowRect.top;
-
-    m_hMainWnd = CreateWindow(
-        L"D3DWndClassName",
-        m_MainWndCaption.c_str(),
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        width,
-        height,
-        0,
-        0,
-        m_hAppInst,
-        0);
-    if (!m_hMainWnd)
-    {
-        MessageBox(0, L"CreateWindow Failed.", 0, 0);
-        return false;
-    }
-
-    ShowWindow(m_hMainWnd, SW_SHOW);
-    UpdateWindow(m_hMainWnd);
     return true;
 }
 
@@ -388,15 +271,11 @@ bool D3DApp::InitGraphicsBackend()
     m_GraphicsBackend = CreateGraphicsBackend(m_GraphicsBackendType);
     if (!m_GraphicsBackend)
     {
-        MessageBox(0, L"The selected graphics backend is not implemented.", 0, 0);
         return false;
     }
 
-    if (!m_GraphicsBackend->Initialize(m_hMainWnd, ClientWidth, ClientHeight, m_Enable4xMsaa))
+    if (!m_GraphicsBackend->Initialize(m_window, ClientWidth, ClientHeight, m_Enable4xMsaa))
     {
-        const wchar_t* backendName = m_GraphicsBackendType == GraphicsBackendType::DX12 ? L"DirectX 12" : L"DirectX 11";
-        std::wstring message = std::wstring(backendName) + L" initialization failed.";
-        MessageBox(0, message.c_str(), L"MoonRender", 0);
         return false;
     }
 
@@ -414,12 +293,12 @@ void D3DApp::CalculateFrameStats()
         const float fps = static_cast<float>(frameCnt);
         const float mspf = 1000.0f / fps;
 
-        std::wostringstream outs;
+        std::ostringstream outs;
         outs.precision(6);
-        outs << m_MainWndCaption << L"    "
-            << L"FPS: " << fps << L"    "
-            << L"Frame Time: " << mspf << L" (ms)";
-        SetWindowText(m_hMainWnd, outs.str().c_str());
+        outs << m_MainWndCaption << "    "
+            << "FPS: " << fps << "    "
+            << "Frame Time: " << mspf << " (ms)";
+        glfwSetWindowTitle(m_window, outs.str().c_str());
 
         frameCnt = 0;
         timeElapsed += 1.0f;
@@ -436,7 +315,11 @@ bool D3DApp::InitImGui()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-    const float dpiScale = ImGui_ImplWin32_GetDpiScaleForHwnd(m_hMainWnd);
+    float dpiScale = 1.0f;
+#ifdef _WIN32
+    dpiScale = ImGui_ImplWin32_GetDpiScaleForHwnd(glfwGetWin32Window(m_window));
+#endif
+
     ApplyMoonEditorStyle(dpiScale);
     io.FontGlobalScale = 1.0f;
 
@@ -444,10 +327,18 @@ bool D3DApp::InitImGui()
     static std::string imguiIniPath = MoonGetAssetPath("Builds/Runtime/imgui.ini");
     io.IniFilename = imguiIniPath.c_str();
 
-    if (!ImGui_ImplWin32_Init(m_hMainWnd))
+#ifdef _WIN32
+    if (!ImGui_ImplWin32_Init(glfwGetWin32Window(m_window)))
     {
         return false;
     }
+#endif
+#ifdef __APPLE__
+    if (!ImGui_ImplGlfw_InitForOther(m_window, true))
+    {
+        return false;
+    }
+#endif
 
     const std::string fontPath = MoonGetAssetPath("Resources/Fonts/hanyiyingsong45jian.ttf");
     ImFontConfig fontConfig = {};
@@ -462,7 +353,7 @@ bool D3DApp::InitImGui()
     int height = 0;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    return Graphics().InitializeImGui(m_hMainWnd);
+    return Graphics().InitializeImGui(m_window);
 }
 
 void D3DApp::DrawUI()

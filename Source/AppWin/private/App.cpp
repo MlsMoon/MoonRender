@@ -11,12 +11,11 @@
 #include "Source/ThirdParty/ImGui/imgui.h"
 
 App::App(
-    HINSTANCE hInstance,
-    const std::wstring& windowName,
+    const std::string& windowName,
     int initWidth,
     int initHeight,
     GraphicsBackendType backendType)
-    : D3DApp(hInstance, windowName, initWidth, initHeight, backendType)
+    : D3DApp(windowName, initWidth, initHeight, backendType)
 {
     if (App::flag_exist)
     {
@@ -75,16 +74,16 @@ void App::UpdateScene(float dt)
         renderTransform = renderObject->GetComponent<Object::TransformComponent>();
     }
 
-    const DirectX::XMMATRIX world = renderTransform != nullptr
+    const glm::mat4 world = renderTransform != nullptr
         ? renderTransform->GetWorldMatrix()
-        : DirectX::XMMatrixIdentity();
+        : glm::mat4(1.0f);
 
-    DirectX::XMMATRIX view = DirectX::XMMatrixLookAtLH(
-        DirectX::XMVectorSet(0.0f, 0.0f, -5.0f, 0.0f),
-        DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
-        DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(
+        glm::vec3(0.0f, 0.0f, -5.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f));
 
-    float cameraFovRadians = DirectX::XMConvertToRadians(90.0f);
+    float cameraFovRadians = glm::radians(90.0f);
     float cameraNearPlane = 1.0f;
     float cameraFarPlane = 1000.0f;
     if (mainCameraObject != nullptr)
@@ -94,18 +93,14 @@ void App::UpdateScene(float dt)
         if (cameraTransform != nullptr && cameraComponent != nullptr)
         {
             cameraComponent->Normalize();
-            const DirectX::XMMATRIX cameraRotation =
-                DirectX::XMMatrixRotationX(cameraTransform->rotationRadians.x) *
-                DirectX::XMMatrixRotationY(cameraTransform->rotationRadians.y) *
-                DirectX::XMMatrixRotationZ(cameraTransform->rotationRadians.z);
-            const DirectX::XMVECTOR cameraPosition = DirectX::XMLoadFloat3(&cameraTransform->position);
-            const DirectX::XMVECTOR forward = DirectX::XMVector3TransformNormal(
-                DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
-                cameraRotation);
-            const DirectX::XMVECTOR up = DirectX::XMVector3TransformNormal(
-                DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f),
-                cameraRotation);
-            view = DirectX::XMMatrixLookAtLH(cameraPosition, DirectX::XMVectorAdd(cameraPosition, forward), up);
+            const glm::mat4 cameraRotation =
+                glm::rotate(glm::mat4(1.0f), cameraTransform->rotationRadians.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                glm::rotate(glm::mat4(1.0f), cameraTransform->rotationRadians.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                glm::rotate(glm::mat4(1.0f), cameraTransform->rotationRadians.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            const glm::vec3 cameraPosition = cameraTransform->position;
+            const glm::vec3 forward = glm::mat3(cameraRotation) * glm::vec3(0.0f, 0.0f, 1.0f);
+            const glm::vec3 up = glm::mat3(cameraRotation) * glm::vec3(0.0f, 1.0f, 0.0f);
+            view = glm::lookAt(cameraPosition, cameraPosition + forward, up);
             cameraFovRadians = cameraComponent->fovRadians;
             cameraNearPlane = cameraComponent->nearPlane;
             cameraFarPlane = cameraComponent->farPlane;
@@ -121,14 +116,10 @@ void App::UpdateScene(float dt)
         }
     }
 
-    m_cBuffer_MVP.world = DirectX::XMMatrixTranspose(world);
-    m_cBuffer_MVP.worldInvTranspose = DirectX::XMMatrixTranspose(InverseTranspose(world));
-    m_cBuffer_MVP.view = DirectX::XMMatrixTranspose(view);
-    m_cBuffer_MVP.proj = DirectX::XMMatrixTranspose(DirectX::XMMatrixPerspectiveFovLH(
-        cameraFovRadians,
-        AspectRatio(),
-        cameraNearPlane,
-        cameraFarPlane));
+    m_cBuffer_MVP.world = world;
+    m_cBuffer_MVP.worldInvTranspose = InverseTranspose(world);
+    m_cBuffer_MVP.view = view;
+    m_cBuffer_MVP.proj = glm::perspective(cameraFovRadians, AspectRatio(), cameraNearPlane, cameraFarPlane);
 
     IGraphicsBackend& graphics = Graphics();
     if (m_ConstantBuffers[0] && m_ConstantBuffers[1])
@@ -183,12 +174,12 @@ bool App::InitResources()
     Object::TransformComponent* cameraTransform = cameraObject->AddComponent<Object::TransformComponent>();
     if (cameraTransform != nullptr)
     {
-        cameraTransform->position = DirectX::XMFLOAT3(0.0f, 0.0f, -5.0f);
+        cameraTransform->position = glm::vec3(0.0f, 0.0f, -5.0f);
     }
     Object::CameraComponent* cameraComponent = cameraObject->AddComponent<Object::CameraComponent>();
     if (cameraComponent != nullptr)
     {
-        cameraComponent->fovRadians = DirectX::XMConvertToRadians(90.0f);
+        cameraComponent->fovRadians = glm::radians(90.0f);
         cameraComponent->nearPlane = 1.0f;
         cameraComponent->farPlane = 1000.0f;
         cameraComponent->Normalize();
@@ -249,11 +240,11 @@ bool App::InitResources()
     constantBufferDesc.debugName = "PSConstantBuffer";
     m_ConstantBuffers[1] = graphics.CreateBuffer(constantBufferDesc, nullptr);
 
-    m_cBuffer_MVP.world = DirectX::XMMatrixIdentity();
-    m_cBuffer_MVP.view = DirectX::XMMatrixIdentity();
-    m_cBuffer_MVP.proj = DirectX::XMMatrixIdentity();
+    m_cBuffer_MVP.world = glm::mat4(1.0f);
+    m_cBuffer_MVP.view = glm::mat4(1.0f);
+    m_cBuffer_MVP.proj = glm::mat4(1.0f);
 
-    m_cBuffer_PS.directionalLightDirW = DirectX::XMFLOAT4(-0.577f, -0.577f, 0.577f, 1.0f);
+    m_cBuffer_PS.directionalLightDirW = glm::vec4(-0.577f, -0.577f, 0.577f, 1.0f);
 
     GraphicsRasterizerDesc rasterizerDesc = {};
     rasterizerDesc.fillMode = GraphicsFillMode::Wireframe;
@@ -281,11 +272,13 @@ bool App::InitShaders()
     GraphicsShaderDesc vertexShaderDesc = {};
     vertexShaderDesc.filePath = MoonGetAssetPathW(L"Resources/Shaders/VertexCommon.hlsl");
     vertexShaderDesc.stage = GraphicsShaderStage::Vertex;
+    vertexShaderDesc.entryPoint = "VS";
     vertexShaderDesc.debugName = "Light_VS";
 
     GraphicsShaderDesc pixelShaderDesc = {};
     pixelShaderDesc.filePath = MoonGetAssetPathW(L"Resources/Shaders/Light_PS.hlsl");
     pixelShaderDesc.stage = GraphicsShaderStage::Pixel;
+    pixelShaderDesc.entryPoint = "PS";
     pixelShaderDesc.debugName = "Light_PS";
 
     std::shared_ptr<IGraphicsShaderBytecode> vertexBytecode = graphics.CompileShader(vertexShaderDesc);

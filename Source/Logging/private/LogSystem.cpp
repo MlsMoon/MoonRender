@@ -22,11 +22,11 @@ namespace Logging
         CurrentLogSys->log_content = CurrentLogSys->log_content + print_content +"\n";
     }
 
-    void LogSystem::Print(const DirectX::XMFLOAT3 print_content)
+    void LogSystem::Print(const glm::vec3 print_content)
     {
         if (LogSystem::CurrentLogSys==nullptr)
             return;
-        LogSystem::Print("XMFLOAT3:("+std::to_string(print_content.x)+","+std::to_string(print_content.x)+","+std::to_string(print_content.x)+")");
+        LogSystem::Print("vec3:("+std::to_string(print_content.x)+","+std::to_string(print_content.y)+","+std::to_string(print_content.z)+")");
     }
 
     std::string LogSystem::GetLogContent()

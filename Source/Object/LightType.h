@@ -1,5 +1,5 @@
 #pragma once
-#include <directxmath.h>
+#include "Source/ThirdParty/glm/glm.hpp"
 
 namespace Object
 {
@@ -13,9 +13,9 @@ namespace Object
         DirectionalLight(DirectionalLight&&) = default;
         DirectionalLight& operator=(DirectionalLight&&) = default;
 
-        DirectionalLight(const DirectX::XMFLOAT4& _direction_intensity) : direction_intensity(_direction_intensity) {}
+        DirectionalLight(const glm::vec4& _direction_intensity) : direction_intensity(_direction_intensity) {}
 
-        DirectX::XMFLOAT4 direction_intensity; // dir : x,y,z intensity: w
+        glm::vec4 direction_intensity; // dir : x,y,z intensity: w
     };
 
     struct PointLight
@@ -28,18 +28,18 @@ namespace Object
         PointLight(PointLight&&) = default;
         PointLight& operator=(PointLight&&) = default;
 
-        PointLight(const DirectX::XMFLOAT4& _ambient, const DirectX::XMFLOAT4& _diffuse, const DirectX::XMFLOAT4& _specular,
-            const DirectX::XMFLOAT3& _position, float _range, const DirectX::XMFLOAT3& _att) :
+        PointLight(const glm::vec4& _ambient, const glm::vec4& _diffuse, const glm::vec4& _specular,
+            const glm::vec3& _position, float _range, const glm::vec3& _att) :
             ambient(_ambient), diffuse(_diffuse), specular(_specular), position(_position), range(_range), att(_att), pad() {}
 
-        DirectX::XMFLOAT4 ambient;
-        DirectX::XMFLOAT4 diffuse;
-        DirectX::XMFLOAT4 specular;
+        glm::vec4 ambient;
+        glm::vec4 diffuse;
+        glm::vec4 specular;
 
-        DirectX::XMFLOAT3 position;
+        glm::vec3 position;
         float range;
 
-        DirectX::XMFLOAT3 att;
+        glm::vec3 att;
         float pad;
     };
 
@@ -53,23 +53,23 @@ namespace Object
         SpotLight(SpotLight&&) = default;
         SpotLight& operator=(SpotLight&&) = default;
 
-        SpotLight(const DirectX::XMFLOAT4& _ambient, const DirectX::XMFLOAT4& _diffuse, const DirectX::XMFLOAT4& _specular,
-            const DirectX::XMFLOAT3& _position, float _range, const DirectX::XMFLOAT3& _direction,
-            float _spot, const DirectX::XMFLOAT3& _att) :
+        SpotLight(const glm::vec4& _ambient, const glm::vec4& _diffuse, const glm::vec4& _specular,
+            const glm::vec3& _position, float _range, const glm::vec3& _direction,
+            float _spot, const glm::vec3& _att) :
             ambient(_ambient), diffuse(_diffuse), specular(_specular),
             position(_position), range(_range), direction(_direction), spot(_spot), att(_att), pad() {}
 
-        DirectX::XMFLOAT4 ambient;
-        DirectX::XMFLOAT4 diffuse;
-        DirectX::XMFLOAT4 specular;
+        glm::vec4 ambient;
+        glm::vec4 diffuse;
+        glm::vec4 specular;
 
-        DirectX::XMFLOAT3 position;
+        glm::vec3 position;
         float range;
 
-        DirectX::XMFLOAT3 direction;
+        glm::vec3 direction;
         float spot;
 
-        DirectX::XMFLOAT3 att;
+        glm::vec3 att;
         float pad;
     };
 }

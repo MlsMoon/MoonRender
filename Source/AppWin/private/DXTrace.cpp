@@ -1,4 +1,7 @@
 #include "../public/DXTrace.h"
+
+#ifdef _WIN32
+
 #include <cstdio>
 
 HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRESULT hr,
@@ -63,3 +66,5 @@ HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRE
 
     return hr;
 }
+
+#endif // _WIN32

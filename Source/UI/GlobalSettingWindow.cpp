@@ -14,6 +14,8 @@ namespace MoonUI
                 return "DirectX 11";
             case GraphicsBackendType::DX12:
                 return "DirectX 12";
+            case GraphicsBackendType::Metal:
+                return "Metal";
             default:
                 return "Unknown";
             }

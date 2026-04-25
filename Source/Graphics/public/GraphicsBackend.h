@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "GraphicsTypes.h"
-#include "Source/AppWin/public/WinMin.h"
 
 class IGraphicsBuffer
 {
@@ -49,10 +48,10 @@ public:
     virtual ~IGraphicsBackend() = default;
 
     virtual GraphicsBackendType GetType() const = 0;
-    virtual bool Initialize(HWND hwnd, int width, int height, bool enable4xMsaa) = 0;
+    virtual bool Initialize(void* nativeWindowHandle, int width, int height, bool enable4xMsaa) = 0;
     virtual void Resize(int width, int height) = 0;
 
-    virtual bool InitializeImGui(HWND hwnd) = 0;
+    virtual bool InitializeImGui(void* nativeWindowHandle) = 0;
     virtual void BeginImGuiFrame() = 0;
     virtual void RenderImGuiDrawData() = 0;
     virtual void ShutdownImGui() = 0;
