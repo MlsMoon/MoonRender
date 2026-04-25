@@ -38,6 +38,10 @@ public:
     int FramebufferWidth;
     int FramebufferHeight;
 
+    double MouseX = 0.0;
+    double MouseY = 0.0;
+    bool MouseButtonLeft = false;
+
 protected:
     bool InitMainWindow();
     bool InitGraphicsBackend();

@@ -42,6 +42,12 @@ public:
     virtual ~IGraphicsRasterizerState() = default;
 };
 
+class IGraphicsDepthStencilState
+{
+public:
+    virtual ~IGraphicsDepthStencilState() = default;
+};
+
 class IGraphicsBackend
 {
 public:
@@ -75,6 +81,8 @@ public:
         const IGraphicsShaderBytecode& bytecode,
         const char* debugName) = 0;
     virtual std::shared_ptr<IGraphicsRasterizerState> CreateRasterizerState(const GraphicsRasterizerDesc& desc) = 0;
+    virtual std::shared_ptr<IGraphicsDepthStencilState> CreateDepthStencilState(const GraphicsDepthStencilDesc& desc) = 0;
+    virtual void SetDepthStencilState(const IGraphicsDepthStencilState* depthStencilState) = 0;
 
     virtual void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) = 0;
     virtual void SetIndexBuffer(const IGraphicsBuffer& buffer, GraphicsIndexFormat format, std::uint32_t offset) = 0;

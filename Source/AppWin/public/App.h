@@ -11,6 +11,8 @@
 #include "Source/Object/Scene.h"
 #include "Source/ResourcesProcess/public/BufferStruct.h"
 #include "Source/UI/Editor.h"
+#include "Source/Gizmo/public/GizmoRenderer.h"
+#include "Source/Gizmo/public/GridRenderer.h"
 
 class App : public D3DApp
 {
@@ -58,6 +60,20 @@ private:
 
     std::shared_ptr<IGraphicsRasterizerState> m_WireframeRasterizerState;
     bool m_IsWireframeMode;
+
+    // Grid + Gizmo
+    GridRenderer m_gridRenderer;
+    GizmoRenderer m_gizmoRenderer;
+    std::shared_ptr<IGraphicsDepthStencilState> m_defaultDepthStencilState;
+    std::shared_ptr<IGraphicsDepthStencilState> m_gizmoDepthStencilState;
+
+    // Gizmo interaction state
+    GizmoAxis m_gizmoHoveredAxis = GizmoAxis::None;
+    bool m_gizmoDragging = false;
+    MoonVector3 m_gizmoDragStartObjectPos;
+    MoonVector3 m_gizmoDragPlanePoint;
+    MoonVector3 m_gizmoDragPlaneNormal;
+    bool m_mouseButtonLeftDown = false;
 };
 
 #endif

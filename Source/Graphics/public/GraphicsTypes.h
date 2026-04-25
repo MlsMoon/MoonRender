@@ -49,6 +49,24 @@ enum class GraphicsCullMode
     Back
 };
 
+enum class GraphicsDepthWriteMask
+{
+    Zero,
+    All
+};
+
+enum class GraphicsComparisonFunc
+{
+    Never,
+    Less,
+    Equal,
+    LessEqual,
+    Greater,
+    NotEqual,
+    GreaterEqual,
+    Always
+};
+
 enum class GraphicsShaderStage
 {
     Vertex,
@@ -108,6 +126,15 @@ struct GraphicsRasterizerDesc
     GraphicsCullMode cullMode = GraphicsCullMode::Back;
     bool frontCounterClockwise = false;
     bool depthClipEnable = true;
+    std::string debugName;
+};
+
+struct GraphicsDepthStencilDesc
+{
+    bool depthEnable = true;
+    GraphicsDepthWriteMask depthWriteMask = GraphicsDepthWriteMask::All;
+    GraphicsComparisonFunc depthFunc = GraphicsComparisonFunc::Less;
+    bool stencilEnable = false;
     std::string debugName;
 };
 

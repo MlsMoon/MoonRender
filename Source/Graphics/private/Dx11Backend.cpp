@@ -63,6 +63,12 @@ namespace
         ComPtr<ID3D11RasterizerState> rasterizerState;
     };
 
+    class Dx11DepthStencilState final : public IGraphicsDepthStencilState
+    {
+    public:
+        ComPtr<ID3D11DepthStencilState> state;
+    };
+
     template <typename TTarget, typename TSource>
     TTarget* CheckedCast(TSource* source)
     {
@@ -150,6 +156,31 @@ namespace
         case GraphicsCullMode::Back:
         default:
             return D3D11_CULL_BACK;
+        }
+    }
+
+    D3D11_COMPARISON_FUNC ToD3D11ComparisonFunc(GraphicsComparisonFunc func)
+    {
+        switch (func)
+        {
+        case GraphicsComparisonFunc::Never:
+            return D3D11_COMPARISON_NEVER;
+        case GraphicsComparisonFunc::Less:
+            return D3D11_COMPARISON_LESS;
+        case GraphicsComparisonFunc::Equal:
+            return D3D11_COMPARISON_EQUAL;
+        case GraphicsComparisonFunc::LessEqual:
+            return D3D11_COMPARISON_LESS_EQUAL;
+        case GraphicsComparisonFunc::Greater:
+            return D3D11_COMPARISON_GREATER;
+        case GraphicsComparisonFunc::NotEqual:
+            return D3D11_COMPARISON_NOT_EQUAL;
+        case GraphicsComparisonFunc::GreaterEqual:
+            return D3D11_COMPARISON_GREATER_EQUAL;
+        case GraphicsComparisonFunc::Always:
+            return D3D11_COMPARISON_ALWAYS;
+        default:
+            return D3D11_COMPARISON_LESS;
         }
     }
 
@@ -504,6 +535,36 @@ namespace
             }
 
             return rasterizerState;
+        }
+
+        std::shared_ptr<IGraphicsDepthStencilState> CreateDepthStencilState(const GraphicsDepthStencilDesc& desc) override
+        {
+            D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+            dsDesc.DepthEnable = desc.depthEnable ? TRUE : FALSE;
+            dsDesc.DepthWriteMask = (desc.depthWriteMask == GraphicsDepthWriteMask::All) ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+            dsDesc.DepthFunc = ToD3D11ComparisonFunc(desc.depthFunc);
+            dsDesc.StencilEnable = desc.stencilEnable ? TRUE : FALSE;
+
+            auto depthStencilState = std::make_shared<Dx11DepthStencilState>();
+            if (FAILED(m_device->CreateDepthStencilState(&dsDesc, depthStencilState->state.GetAddressOf())))
+            {
+                return nullptr;
+            }
+
+            if (!desc.debugName.empty())
+            {
+                D3D11SetDebugObjectName(depthStencilState->state.Get(), desc.debugName);
+            }
+
+            return depthStencilState;
+        }
+
+        void SetDepthStencilState(const IGraphicsDepthStencilState* depthStencilState) override
+        {
+            const Dx11DepthStencilState* dx11DepthStencilState = CheckedCast<const Dx11DepthStencilState>(
+                const_cast<IGraphicsDepthStencilState*>(depthStencilState));
+            m_immediateContext->OMSetDepthStencilState(
+                dx11DepthStencilState != nullptr ? dx11DepthStencilState->state.Get() : nullptr, 0);
         }
 
         void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) override

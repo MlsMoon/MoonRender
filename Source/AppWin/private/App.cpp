@@ -10,6 +10,51 @@
 #include "Source/Object/TransformComponent.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
+namespace
+{
+    struct MoonRay
+    {
+        MoonVector3 origin;
+        MoonVector3 direction;
+    };
+
+    MoonRay ScreenPointToRay(float screenX, float screenY, int screenWidth, int screenHeight,
+                             const MoonMatrix4x4& view, const MoonMatrix4x4& proj)
+    {
+        float ndcX = (2.0f * screenX) / screenWidth - 1.0f;
+        float ndcY = 1.0f - (2.0f * screenY) / screenHeight;
+
+        MoonVector4 nearPoint(ndcX, ndcY, 0.0f, 1.0f);
+        MoonVector4 farPoint(ndcX, ndcY, 1.0f, 1.0f);
+
+        MoonMatrix4x4 invViewProj = (proj * view).Inverse();
+
+        MoonVector4 worldNear = invViewProj * nearPoint;
+        worldNear /= worldNear.w;
+        MoonVector4 worldFar = invViewProj * farPoint;
+        worldFar /= worldFar.w;
+
+        MoonVector3 origin(worldNear.x, worldNear.y, worldNear.z);
+        MoonVector3 direction = MoonNormalize(MoonVector3(worldFar.x, worldFar.y, worldFar.z) - origin);
+
+        return { origin, direction };
+    }
+
+    bool RayPlaneIntersect(const MoonRay& ray, const MoonVector3& planePoint, const MoonVector3& planeNormal, MoonVector3& outIntersection)
+    {
+        float denom = MoonDot(ray.direction, planeNormal);
+        if (MoonAbs(denom) < 1e-6f)
+            return false;
+
+        float t = MoonDot(planePoint - ray.origin, planeNormal) / denom;
+        if (t < 0.0f)
+            return false;
+
+        outIntersection = ray.origin + ray.direction * t;
+        return true;
+    }
+}
+
 App::App(
     const std::string& windowName,
     int initWidth,
@@ -127,6 +172,92 @@ void App::UpdateScene(float dt)
         graphics.UpdateBuffer(*m_ConstantBuffers[0], &m_cBuffer_MVP, sizeof(m_cBuffer_MVP));
         graphics.UpdateBuffer(*m_ConstantBuffers[1], &m_cBuffer_PS, sizeof(m_cBuffer_PS));
     }
+
+    // --- Gizmo interaction ---
+    if (m_selectedObject != nullptr)
+    {
+        auto* transform = m_selectedObject->GetComponent<Object::TransformComponent>();
+        if (transform != nullptr)
+        {
+            MoonVector3 gizmoPos = transform->position;
+            MoonMatrix4x4 gizmoWorldMatrix = MoonTranslate(gizmoPos) * MoonScale(MoonVector3(0.5f, 0.5f, 0.5f));
+
+            // Camera forward from view matrix (third column in left-handed lookAt)
+            MoonVector3 cameraForward = MoonNormalize(MoonVector3(view.m[2][0], view.m[2][1], view.m[2][2]));
+
+            if (!m_gizmoDragging)
+            {
+                // Raycast for hover
+                MoonRay ray = ScreenPointToRay(
+                    static_cast<float>(MouseX), static_cast<float>(MouseY),
+                    ClientWidth, ClientHeight, view, m_cBuffer_MVP.proj);
+
+                GizmoAxis newHover = m_gizmoRenderer.Raycast(ray.origin, ray.direction, gizmoWorldMatrix);
+                m_gizmoHoveredAxis = newHover;
+
+                // Start drag
+                if (MouseButtonLeft && !m_mouseButtonLeftDown && m_gizmoHoveredAxis != GizmoAxis::None)
+                {
+                    m_gizmoDragging = true;
+                    m_gizmoDragStartObjectPos = transform->position;
+
+                    MoonVector3 axisDir = GizmoRenderer::GetAxisDirection(m_gizmoHoveredAxis);
+                    m_gizmoDragPlaneNormal = cameraForward;
+                    if (MoonAbs(MoonDot(m_gizmoDragPlaneNormal, axisDir)) > 0.99f)
+                    {
+                        MoonVector3 right = MoonCross(axisDir, cameraForward);
+                        right = MoonNormalize(right);
+                        m_gizmoDragPlaneNormal = MoonNormalize(MoonCross(right, axisDir));
+                    }
+
+                    MoonRay startRay = ScreenPointToRay(
+                        static_cast<float>(MouseX), static_cast<float>(MouseY),
+                        ClientWidth, ClientHeight, view, m_cBuffer_MVP.proj);
+
+                    MoonVector3 intersection;
+                    if (RayPlaneIntersect(startRay, gizmoPos, m_gizmoDragPlaneNormal, intersection))
+                    {
+                        m_gizmoDragPlanePoint = intersection;
+                    }
+                    else
+                    {
+                        m_gizmoDragPlanePoint = gizmoPos;
+                    }
+                }
+            }
+            else
+            {
+                // Dragging
+                if (!MouseButtonLeft)
+                {
+                    m_gizmoDragging = false;
+                    m_gizmoHoveredAxis = GizmoAxis::None;
+                }
+                else
+                {
+                    MoonRay currentRay = ScreenPointToRay(
+                        static_cast<float>(MouseX), static_cast<float>(MouseY),
+                        ClientWidth, ClientHeight, view, m_cBuffer_MVP.proj);
+
+                    MoonVector3 currentIntersection;
+                    if (RayPlaneIntersect(currentRay, m_gizmoDragPlanePoint, m_gizmoDragPlaneNormal, currentIntersection))
+                    {
+                        MoonVector3 axisDir = GizmoRenderer::GetAxisDirection(m_gizmoHoveredAxis);
+                        float delta = MoonDot(currentIntersection - m_gizmoDragPlanePoint, axisDir);
+                        transform->position = m_gizmoDragStartObjectPos + axisDir * delta;
+                    }
+                }
+            }
+
+            m_mouseButtonLeftDown = MouseButtonLeft;
+        }
+    }
+    else
+    {
+        m_gizmoHoveredAxis = GizmoAxis::None;
+        m_gizmoDragging = false;
+        m_mouseButtonLeftDown = MouseButtonLeft;
+    }
 }
 
 void App::DrawScene()
@@ -135,10 +266,49 @@ void App::DrawScene()
 
     IGraphicsBackend& graphics = Graphics();
     graphics.Clear(clearColor, 1.0f, 0);
+
+    // 1. Draw Grid (normal depth)
+    BufferStruct::ConstantMVPBuffer gridMVP = m_cBuffer_MVP;
+    gridMVP.world = MoonMatrix4x4::Identity();
+    m_gridRenderer.Render(graphics, gridMVP);
+
+    // 2. Draw scene objects (normal depth)
+    graphics.SetDepthStencilState(m_defaultDepthStencilState.get());
     if (m_IndexCount > 0)
     {
+        // Re-bind scene resources because GridRenderer changed them
+        graphics.SetVertexBuffer(*m_VertexBuffer, sizeof(BufferStruct::VertexPosNormal), 0);
+        graphics.SetIndexBuffer(*m_IndexBuffer, GraphicsIndexFormat::UInt32, 0);
+        graphics.SetPrimitiveTopology(GraphicsPrimitiveTopology::TriangleList);
+        graphics.SetInputLayout(m_VertexLayout.get());
+        graphics.SetVertexShader(m_VertexShader.get());
+        graphics.SetPixelShader(m_PixelShader.get());
+        graphics.SetVertexConstantBuffer(0, m_ConstantBuffers[0].get());
+        graphics.SetPixelConstantBuffer(1, m_ConstantBuffers[1].get());
         graphics.DrawIndexed(m_IndexCount, 0, 0);
     }
+
+    // 3. Draw Gizmo (always on top)
+    if (m_selectedObject != nullptr)
+    {
+        graphics.SetDepthStencilState(m_gizmoDepthStencilState.get());
+
+        auto* transform = m_selectedObject->GetComponent<Object::TransformComponent>();
+        if (transform != nullptr)
+        {
+            MoonVector3 gizmoPos = transform->position;
+            MoonMatrix4x4 gizmoWorld = MoonTranslate(gizmoPos) * MoonScale(MoonVector3(0.5f, 0.5f, 0.5f));
+
+            BufferStruct::ConstantMVPBuffer gizmoMVP = m_cBuffer_MVP;
+            gizmoMVP.world = gizmoWorld;
+            gizmoMVP.worldInvTranspose = MoonInverseTranspose(gizmoWorld);
+
+            m_gizmoRenderer.Render(graphics, gizmoMVP, m_gizmoHoveredAxis);
+        }
+    }
+
+    // Restore default depth state for ImGui
+    graphics.SetDepthStencilState(m_defaultDepthStencilState.get());
 
     ImGui::Render();
     graphics.RenderImGuiDrawData();
@@ -261,6 +431,31 @@ bool App::InitResources()
     graphics.SetPixelShader(m_PixelShader.get());
     graphics.SetVertexConstantBuffer(0, m_ConstantBuffers[0].get());
     graphics.SetPixelConstantBuffer(1, m_ConstantBuffers[1].get());
+
+    // Create depth stencil states
+    GraphicsDepthStencilDesc defaultDepthDesc = {};
+    defaultDepthDesc.depthEnable = true;
+    defaultDepthDesc.depthWriteMask = GraphicsDepthWriteMask::All;
+    defaultDepthDesc.depthFunc = GraphicsComparisonFunc::Less;
+    m_defaultDepthStencilState = graphics.CreateDepthStencilState(defaultDepthDesc);
+
+    GraphicsDepthStencilDesc gizmoDepthDesc = {};
+    gizmoDepthDesc.depthEnable = false;
+    gizmoDepthDesc.depthWriteMask = GraphicsDepthWriteMask::Zero;
+    gizmoDepthDesc.depthFunc = GraphicsComparisonFunc::Always;
+    m_gizmoDepthStencilState = graphics.CreateDepthStencilState(gizmoDepthDesc);
+
+    if (!m_gridRenderer.Init(graphics))
+    {
+        MOON_LOG("Failed to init grid renderer");
+        return false;
+    }
+
+    if (!m_gizmoRenderer.Init(graphics))
+    {
+        MOON_LOG("Failed to init gizmo renderer");
+        return false;
+    }
 
     return m_VertexBuffer && m_IndexBuffer && m_ConstantBuffers[0] && m_ConstantBuffers[1];
 }

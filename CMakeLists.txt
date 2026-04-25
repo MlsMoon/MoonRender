@@ -80,6 +80,8 @@ set(MOONRENDER_SOURCES
     Source/AppWin/private/App.cpp
     Source/AppWin/private/MainEntry.cpp
     Source/ResourcesProcess/private/BufferStruct.cpp
+    Source/Gizmo/private/GizmoRenderer.cpp
+    Source/Gizmo/private/GridRenderer.cpp
 )
 
 if(WIN32)

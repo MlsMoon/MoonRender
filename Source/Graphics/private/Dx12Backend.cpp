@@ -90,6 +90,31 @@ namespace
         }
     }
 
+    D3D12_COMPARISON_FUNC ToD3D12ComparisonFunc(GraphicsComparisonFunc func)
+    {
+        switch (func)
+        {
+        case GraphicsComparisonFunc::Never:
+            return D3D12_COMPARISON_FUNC_NEVER;
+        case GraphicsComparisonFunc::Less:
+            return D3D12_COMPARISON_FUNC_LESS;
+        case GraphicsComparisonFunc::Equal:
+            return D3D12_COMPARISON_FUNC_EQUAL;
+        case GraphicsComparisonFunc::LessEqual:
+            return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+        case GraphicsComparisonFunc::Greater:
+            return D3D12_COMPARISON_FUNC_GREATER;
+        case GraphicsComparisonFunc::NotEqual:
+            return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+        case GraphicsComparisonFunc::GreaterEqual:
+            return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+        case GraphicsComparisonFunc::Always:
+            return D3D12_COMPARISON_FUNC_ALWAYS;
+        default:
+            return D3D12_COMPARISON_FUNC_LESS;
+        }
+    }
+
     DXGI_FORMAT ToDxgiIndexFormat(GraphicsIndexFormat format)
     {
         switch (format)
@@ -154,6 +179,12 @@ namespace
     {
     public:
         D3D12_RASTERIZER_DESC desc = {};
+    };
+
+    class Dx12DepthStencilState final : public IGraphicsDepthStencilState
+    {
+    public:
+        D3D12_DEPTH_STENCIL_DESC desc = {};
     };
 
     struct Dx12ImGuiFrameResources
@@ -605,6 +636,34 @@ namespace
             rasterizerState->desc.ForcedSampleCount = 0;
             rasterizerState->desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
             return rasterizerState;
+        }
+
+        std::shared_ptr<IGraphicsDepthStencilState> CreateDepthStencilState(const GraphicsDepthStencilDesc& desc) override
+        {
+            auto depthStencilState = std::make_shared<Dx12DepthStencilState>();
+            D3D12_DEPTH_STENCIL_DESC& dsDesc = depthStencilState->desc;
+            dsDesc.DepthEnable = desc.depthEnable ? TRUE : FALSE;
+            dsDesc.DepthWriteMask = (desc.depthWriteMask == GraphicsDepthWriteMask::All) ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+            dsDesc.DepthFunc = ToD3D12ComparisonFunc(desc.depthFunc);
+            dsDesc.StencilEnable = desc.stencilEnable ? TRUE : FALSE;
+            dsDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+            dsDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+            dsDesc.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+            dsDesc.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+            dsDesc.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+            dsDesc.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+            dsDesc.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+            dsDesc.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+            dsDesc.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+            dsDesc.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+            return depthStencilState;
+        }
+
+        void SetDepthStencilState(const IGraphicsDepthStencilState* depthStencilState) override
+        {
+            m_currentDepthStencilState = CheckedCast<const Dx12DepthStencilState>(
+                const_cast<IGraphicsDepthStencilState*>(depthStencilState));
+            m_pipelineDirty = true;
         }
 
         void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) override
@@ -1503,7 +1562,9 @@ namespace
             pipelineDesc.RasterizerState = m_currentRasterizerState != nullptr
                 ? m_currentRasterizerState->desc
                 : DefaultRasterizerDesc();
-            pipelineDesc.DepthStencilState = DefaultDepthStencilDesc();
+            pipelineDesc.DepthStencilState = m_currentDepthStencilState != nullptr
+                ? m_currentDepthStencilState->desc
+                : DefaultDepthStencilDesc();
             pipelineDesc.InputLayout = {
                 m_currentInputLayout->elements.data(),
                 static_cast<UINT>(m_currentInputLayout->elements.size())
@@ -1681,6 +1742,7 @@ namespace
         const Dx12VertexShader* m_currentVertexShader = nullptr;
         const Dx12PixelShader* m_currentPixelShader = nullptr;
         const Dx12RasterizerState* m_currentRasterizerState = nullptr;
+        const Dx12DepthStencilState* m_currentDepthStencilState = nullptr;
         GraphicsPrimitiveTopology m_currentTopology = GraphicsPrimitiveTopology::TriangleList;
         std::array<const Dx12GraphicsBuffer*, 8> m_vertexConstantBuffers = {};
         std::array<const Dx12GraphicsBuffer*, 8> m_pixelConstantBuffers = {};

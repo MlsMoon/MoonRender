@@ -64,6 +64,12 @@ namespace
         MTLTriangleFillMode fillMode = MTLTriangleFillModeFill;
     };
 
+    class MetalDepthStencilState final : public IGraphicsDepthStencilState
+    {
+    public:
+        id<MTLDepthStencilState> state = nil;
+    };
+
     template <typename TTarget, typename TSource>
     TTarget* CheckedCast(TSource* source)
     {
@@ -155,6 +161,31 @@ namespace
         case GraphicsCullMode::Back:
         default:
             return MTLCullModeBack;
+        }
+    }
+
+    MTLCompareFunction ToMetalComparisonFunc(GraphicsComparisonFunc func)
+    {
+        switch (func)
+        {
+        case GraphicsComparisonFunc::Never:
+            return MTLCompareFunctionNever;
+        case GraphicsComparisonFunc::Less:
+            return MTLCompareFunctionLess;
+        case GraphicsComparisonFunc::Equal:
+            return MTLCompareFunctionEqual;
+        case GraphicsComparisonFunc::LessEqual:
+            return MTLCompareFunctionLessEqual;
+        case GraphicsComparisonFunc::Greater:
+            return MTLCompareFunctionGreater;
+        case GraphicsComparisonFunc::NotEqual:
+            return MTLCompareFunctionNotEqual;
+        case GraphicsComparisonFunc::GreaterEqual:
+            return MTLCompareFunctionGreaterEqual;
+        case GraphicsComparisonFunc::Always:
+            return MTLCompareFunctionAlways;
+        default:
+            return MTLCompareFunctionLess;
         }
     }
 
@@ -270,7 +301,7 @@ namespace
             MTLDepthStencilDescriptor* depthStencilDesc = [[MTLDepthStencilDescriptor alloc] init];
             depthStencilDesc.depthCompareFunction = MTLCompareFunctionLess;
             depthStencilDesc.depthWriteEnabled = YES;
-            m_depthStencilState = [m_device newDepthStencilStateWithDescriptor:depthStencilDesc];
+            m_defaultDepthStencilState = [m_device newDepthStencilStateWithDescriptor:depthStencilDesc];
 
             return true;
         }
@@ -608,6 +639,30 @@ namespace
             return rasterizerState;
         }
 
+        std::shared_ptr<IGraphicsDepthStencilState> CreateDepthStencilState(const GraphicsDepthStencilDesc& desc) override
+        {
+            MTLDepthStencilDescriptor* depthStencilDesc = [[MTLDepthStencilDescriptor alloc] init];
+            depthStencilDesc.depthCompareFunction = desc.depthEnable ? ToMetalComparisonFunc(desc.depthFunc) : MTLCompareFunctionAlways;
+            depthStencilDesc.depthWriteEnabled = desc.depthEnable && (desc.depthWriteMask == GraphicsDepthWriteMask::All);
+
+            id<MTLDepthStencilState> state = [m_device newDepthStencilStateWithDescriptor:depthStencilDesc];
+            if (!state)
+            {
+                return nullptr;
+            }
+
+            auto depthStencilState = std::make_shared<MetalDepthStencilState>();
+            depthStencilState->state = state;
+            return depthStencilState;
+        }
+
+        void SetDepthStencilState(const IGraphicsDepthStencilState* depthStencilState) override
+        {
+            const MetalDepthStencilState* metalDepthStencilState = CheckedCast<const MetalDepthStencilState>(
+                const_cast<IGraphicsDepthStencilState*>(depthStencilState));
+            m_currentDepthStencilState = metalDepthStencilState != nullptr ? metalDepthStencilState->state : nil;
+        }
+
         void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) override
         {
             const MetalGraphicsBuffer* metalBuffer = CheckedCast<const MetalGraphicsBuffer>(const_cast<IGraphicsBuffer*>(&buffer));
@@ -694,9 +749,10 @@ namespace
             [m_currentEncoder setTriangleFillMode:m_fillMode];
             [m_currentEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
 
-            if (m_depthStencilState)
+            id<MTLDepthStencilState> activeDepthStencil = m_currentDepthStencilState != nil ? m_currentDepthStencilState : m_defaultDepthStencilState;
+            if (activeDepthStencil)
             {
-                [m_currentEncoder setDepthStencilState:m_depthStencilState];
+                [m_currentEncoder setDepthStencilState:activeDepthStencil];
             }
 
             [m_currentEncoder setVertexBuffer:m_vertexBuffer offset:m_vertexOffset atIndex:0];
@@ -805,7 +861,8 @@ namespace
         float m_clearDepth = 1.0f;
         std::uint8_t m_clearStencil = 0;
 
-        id<MTLDepthStencilState> m_depthStencilState = nil;
+        id<MTLDepthStencilState> m_defaultDepthStencilState = nil;
+        id<MTLDepthStencilState> m_currentDepthStencilState = nil;
     };
 }
 

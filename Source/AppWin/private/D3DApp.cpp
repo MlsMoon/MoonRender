@@ -181,6 +181,9 @@ int D3DApp::Run()
     {
         glfwPollEvents();
 
+        glfwGetCursorPos(m_window, &MouseX, &MouseY);
+        MouseButtonLeft = glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
         m_Timer.Tick();
 
         if (!m_AppPaused)
