@@ -12,7 +12,7 @@ namespace Object
         Spot
     };
 
-    class LightComponent final : public MoonComponent
+    class LightComponent final : public MoonToggleableComponent
     {
     public:
         explicit LightComponent(LightKind lightKind = LightKind::Directional)

@@ -8,7 +8,7 @@
 
 namespace Object
 {
-    class CameraComponent final : public MoonComponent
+    class CameraComponent final : public MoonToggleableComponent
     {
     public:
         static constexpr float MinFovDegrees = 10.0f;

@@ -7,7 +7,7 @@
 
 namespace Object
 {
-    class AutoRotateComponent final : public MoonComponent
+    class AutoRotateComponent final : public MoonToggleableComponent
     {
     public:
         AutoRotateComponent()

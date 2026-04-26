@@ -9,7 +9,7 @@
 
 namespace Object
 {
-    class MeshComponent final : public MoonComponent
+    class MeshComponent final : public MoonToggleableComponent
     {
     public:
         MeshComponent(std::string sourceFilePath, ResourcesProcess::MeshFileType fileType)

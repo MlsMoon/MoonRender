@@ -143,8 +143,27 @@ namespace MoonUI
         {
             component->Normalize();
             ImGui::PushID(componentIndex);
+
+            auto* toggleable = dynamic_cast<Object::MoonToggleableComponent*>(component.get());
+            const bool enabled = toggleable != nullptr ? toggleable->IsEnabled() : true;
+
+            if (toggleable != nullptr)
+            {
+                bool checkboxValue = enabled;
+                if (ImGui::Checkbox("##enabled", &checkboxValue))
+                {
+                    toggleable->SetEnabled(checkboxValue);
+                }
+                ImGui::SameLine();
+            }
+
             if (ImGui::CollapsingHeader(component->GetDisplayName(), ImGuiTreeNodeFlags_DefaultOpen))
             {
+                if (!enabled)
+                {
+                    ImGui::BeginDisabled();
+                }
+
                 std::vector<Object::ComponentProperty> properties = component->GetProperties();
                 if (ImGui::BeginTable("ComponentProperties", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV))
                 {
@@ -167,6 +186,11 @@ namespace MoonUI
                     }
 
                     ImGui::EndTable();
+                }
+
+                if (!enabled)
+                {
+                    ImGui::EndDisabled();
                 }
             }
             ImGui::PopID();

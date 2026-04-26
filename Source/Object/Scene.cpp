@@ -8,6 +8,24 @@
 
 namespace Object
 {
+    namespace
+    {
+        // Components that don't inherit from MoonToggleableComponent are
+        // always active. Toggleable components are active only when enabled.
+        bool IsActiveComponent(const MoonComponent* component)
+        {
+            if (component == nullptr)
+            {
+                return false;
+            }
+            if (const auto* toggleable = dynamic_cast<const MoonToggleableComponent*>(component))
+            {
+                return toggleable->IsEnabled();
+            }
+            return true;
+        }
+    }
+
     Scene::Scene() = default;
     Scene::~Scene() = default;
 
@@ -67,7 +85,10 @@ namespace Object
     {
         for (const auto& object : m_objects)
         {
-            if (object->HasComponent<TransformComponent>() && object->HasComponent<CameraComponent>())
+            const auto* cameraComponent = object->GetComponent<CameraComponent>();
+            if (object->HasComponent<TransformComponent>() &&
+                cameraComponent != nullptr &&
+                IsActiveComponent(cameraComponent))
             {
                 return object.get();
             }
@@ -82,7 +103,8 @@ namespace Object
             const auto* lightComponent = object->GetComponent<LightComponent>();
             if (object->HasComponent<TransformComponent>() &&
                 lightComponent != nullptr &&
-                lightComponent->GetLightKind() == LightKind::Directional)
+                lightComponent->GetLightKind() == LightKind::Directional &&
+                IsActiveComponent(lightComponent))
             {
                 return object.get();
             }
@@ -94,7 +116,10 @@ namespace Object
     {
         for (const auto& object : m_objects)
         {
-            if (object->HasComponent<TransformComponent>() && object->HasComponent<MeshComponent>())
+            const auto* meshComponent = object->GetComponent<MeshComponent>();
+            if (object->HasComponent<TransformComponent>() &&
+                meshComponent != nullptr &&
+                IsActiveComponent(meshComponent))
             {
                 return object.get();
             }
@@ -108,6 +133,10 @@ namespace Object
         {
             for (const auto& component : object->GetComponents())
             {
+                if (!IsActiveComponent(component.get()))
+                {
+                    continue;
+                }
                 component->Update(*object, dt);
             }
         }

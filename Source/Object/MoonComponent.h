@@ -92,6 +92,20 @@ namespace Object
         MoonObject* m_owner = nullptr;
     };
 
+    // Base class for components that can be enabled/disabled at runtime.
+    // Components inheriting from this base are skipped by Scene::Update and
+    // by the scene-wide Find* lookups when disabled, and the Inspector
+    // renders an enable/disable checkbox in front of their header.
+    class MoonToggleableComponent : public MoonComponent
+    {
+    public:
+        bool IsEnabled() const { return m_enabled; }
+        void SetEnabled(bool enabled) { m_enabled = enabled; }
+
+    private:
+        bool m_enabled = true;
+    };
+
     namespace MoonProp
     {
         // -- Float3 factories --
