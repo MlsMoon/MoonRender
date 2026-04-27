@@ -8,6 +8,7 @@
 #include "Source/Object/LightComponent.h"
 #include "Source/Object/MeshComponent.h"
 #include "Source/Object/TransformComponent.h"
+#include "Source/AssetSystem/public/MoonMeshAsset.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
 
 namespace
@@ -82,6 +83,18 @@ bool App::Init()
     MOON_LOG("Hello");
     MOON_LOG("Start Init");
     editor.BindLogSystem(&log_system);
+
+    // Initialize AssetManager
+    AssetSystem::AssetManager::Get().Initialize(MoonGetProjectRootPath());
+
+    // Register MeshAsset factory
+    AssetSystem::AssetManager::Get().RegisterAssetFactory(
+        AssetSystem::AssetType::Mesh,
+        []() -> std::unique_ptr<AssetSystem::IAsset>
+        {
+            return std::make_unique<AssetSystem::MeshAsset>();
+        });
+
     if (!D3DApp::Init())
     {
         return false;

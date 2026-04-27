@@ -6,37 +6,43 @@
 
 #include "Source/Object/MoonComponent.h"
 #include "Source/ResourcesProcess/public/Mesh.h"
+#include "Source/AssetSystem/public/MoonAssetHandle.h"
 
 namespace Object
 {
     class MeshComponent final : public MoonToggleableComponent
     {
     public:
-        MeshComponent(std::string sourceFilePath, ResourcesProcess::MeshFileType fileType)
-            : m_sourceFilePath(std::move(sourceFilePath)),
-              m_fileType(fileType),
-              m_mesh(std::make_unique<ResourcesProcess::Mesh>(m_sourceFilePath, m_fileType))
-        {
-            RegisterProperty(MoonProp::Text("Source Path", m_sourceFilePath));
-            RegisterProperty(MoonProp::Text("Vertex Count", [this]()
-            {
-                return m_mesh != nullptr ? std::to_string(m_mesh->VertexNum) : "0";
-            }));
-            RegisterProperty(MoonProp::Text("Byte Width", [this]()
-            {
-                return m_mesh != nullptr ? std::to_string(m_mesh->ByteWidth) : "0";
-            }));
-        }
+        // New constructor: AssetHandle-based
+        explicit MeshComponent(AssetSystem::AssetHandle assetHandle);
+
+        // Legacy constructor: path-based (kept for backward compatibility)
+        MeshComponent(std::string sourceFilePath, ResourcesProcess::MeshFileType fileType);
 
         MOON_COMPONENT(Mesh, "Mesh", Renderable)
 
-        ResourcesProcess::Mesh* GetMesh() { return m_mesh.get(); }
-        const ResourcesProcess::Mesh* GetMesh() const { return m_mesh.get(); }
-        const std::string& GetSourceFilePath() const { return m_sourceFilePath; }
+        ResourcesProcess::Mesh* GetMesh();
+        const ResourcesProcess::Mesh* GetMesh() const;
+        const std::string& GetSourceFilePath() const { return m_legacySourcePath; }
+
+        AssetSystem::AssetHandle GetAssetHandle() const { return m_assetHandle; }
+        void SetAssetHandle(AssetSystem::AssetHandle handle);
+
+        void Reimport();
 
     private:
-        std::string m_sourceFilePath;
-        ResourcesProcess::MeshFileType m_fileType;
-        std::unique_ptr<ResourcesProcess::Mesh> m_mesh;
+        void EnsureMeshLoaded() const;
+
+    private:
+        AssetSystem::AssetHandle m_assetHandle;
+
+        // Legacy fields (for backward compatibility)
+        std::string m_legacySourcePath;
+        ResourcesProcess::MeshFileType m_fileType = ResourcesProcess::OBJ;
+        std::unique_ptr<ResourcesProcess::Mesh> m_legacyMesh;
+
+        // Cached mesh from AssetManager
+        mutable std::unique_ptr<ResourcesProcess::Mesh> m_cachedMesh;
+        mutable bool m_cacheValid = false;
     };
 }

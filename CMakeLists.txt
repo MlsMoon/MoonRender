@@ -28,12 +28,18 @@ FetchContent_Declare(
     GIT_TAG 3.4
     GIT_SHALLOW TRUE
 )
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+    GIT_SHALLOW TRUE
+)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(glm glfw)
+FetchContent_MakeAvailable(glm glfw nlohmann_json)
 
 set(MOONRENDER_IMGUI_SOURCES
     Source/ThirdParty/ImGui/imgui.cpp
@@ -59,6 +65,7 @@ set(MOONRENDER_SOURCES
     Source/EventSystem/EventCenter.cpp
     Source/Object/MoonObject.cpp
     Source/Object/Scene.cpp
+    Source/Object/MeshComponent.cpp
     Source/Graphics/private/GraphicsBackendFactory.cpp
     Source/Logging/private/LogSystem.cpp
     Source/Math/private/MoonMath.cpp
@@ -82,6 +89,12 @@ set(MOONRENDER_SOURCES
     Source/ResourcesProcess/private/BufferStruct.cpp
     Source/Gizmo/private/GizmoRenderer.cpp
     Source/Gizmo/private/GridRenderer.cpp
+    Source/AssetSystem/private/MoonAssetFormat.cpp
+    Source/AssetSystem/private/MoonAssetRegistry.cpp
+    Source/AssetSystem/private/MoonAssetManager.cpp
+    Source/AssetSystem/private/MoonAssetDependencyGraph.cpp
+    Source/AssetSystem/private/MoonMeshAsset.cpp
+    Source/AssetSystem/private/MoonMeshImporter.cpp
 )
 
 if(WIN32)
@@ -128,6 +141,13 @@ set(MOONRENDER_HEADERS
     Source/Graphics/public/GraphicsBackendFactory.h
     Source/Graphics/public/GraphicsTypes.h
     Source/ResourcesProcess/public/BufferStruct.h
+    Source/AssetSystem/public/MoonAssetFormat.h
+    Source/AssetSystem/public/MoonAssetHandle.h
+    Source/AssetSystem/public/MoonAssetRegistry.h
+    Source/AssetSystem/public/MoonAssetManager.h
+    Source/AssetSystem/public/MoonAssetDependencyGraph.h
+    Source/AssetSystem/public/MoonAssetImporter.h
+    Source/AssetSystem/public/MoonMeshAsset.h
     Source/ThirdParty/ImGui/imconfig.h
     Source/ThirdParty/ImGui/imgui.h
     Source/ThirdParty/ImGui/imgui_internal.h
@@ -187,7 +207,7 @@ if(WIN32)
     target_compile_definitions(MoonRender PRIVATE UNICODE _UNICODE)
 endif()
 
-target_link_libraries(MoonRender PRIVATE imgui glm::glm glfw)
+target_link_libraries(MoonRender PRIVATE imgui glm::glm glfw nlohmann_json::nlohmann_json)
 
 if(WIN32)
     target_link_libraries(MoonRender PRIVATE

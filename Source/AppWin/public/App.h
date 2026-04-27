@@ -13,6 +13,7 @@
 #include "Source/UI/Editor.h"
 #include "Source/Gizmo/public/GizmoRenderer.h"
 #include "Source/Gizmo/public/GridRenderer.h"
+#include "Source/AssetSystem/public/MoonAssetManager.h"
 
 class App : public D3DApp
 {

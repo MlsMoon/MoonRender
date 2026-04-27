@@ -22,10 +22,11 @@ namespace ResourcesProcess
         std::uint32_t ByteWidth = 0;
         //TODO:支持VertexColor
         std::vector<BufferStruct::VertexPosNormal> VertexBufferData;
-        
-        
+
+
     public:
         //Construction
+        Mesh() = default;
         Mesh(std::string SourceFilePath,MeshFileType FileType);
         ~Mesh();
         void* get_sys_mem();
