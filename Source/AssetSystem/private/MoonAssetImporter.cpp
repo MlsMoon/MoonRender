@@ -1,5 +1,6 @@
 #include "Source/AssetSystem/public/MoonAssetImporter.h"
 
+#include "Source/AssetSystem/public/MoonMeshAsset.h"
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/ResourcesProcess/public/MoonMeshLoader.h"
 #include "Source/ResourcesProcess/public/Mesh.h"
@@ -8,6 +9,8 @@
 #include <filesystem>
 #include <fstream>
 #include <chrono>
+
+#include <nlohmann/json.hpp>
 
 namespace AssetSystem
 {

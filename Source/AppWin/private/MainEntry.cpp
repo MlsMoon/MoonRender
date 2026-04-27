@@ -2,6 +2,10 @@
 
 #include <string>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 namespace
 {
     GraphicsBackendType SelectGraphicsBackend(int argc, char** argv, bool& confirmed)
@@ -40,8 +44,15 @@ namespace
     }
 }
 
+#ifdef _WIN32
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+    int argc = __argc;
+    char** argv = __argv;
+#else
 int main(int argc, char** argv)
 {
+#endif
 #if defined(DEBUG) || defined(_DEBUG) && defined(_WIN32)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif

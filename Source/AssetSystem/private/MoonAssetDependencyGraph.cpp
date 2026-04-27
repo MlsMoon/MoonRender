@@ -1,5 +1,7 @@
 #include "Source/AssetSystem/public/MoonAssetDependencyGraph.h"
 
+#include <functional>
+
 namespace AssetSystem
 {
     void AssetDependencyGraph::AddDependency(MoonAssetGUID asset, MoonAssetGUID dependency)

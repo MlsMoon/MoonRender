@@ -139,6 +139,7 @@ namespace AssetSystem
     // ============================================================
     // 文件头 - 固定 64 字节
     // ============================================================
+#pragma pack(push, 1)
     struct MoonAssetFileHeader
     {
         uint32_t magic = kMoonAssetMagic;                    // [0-3]
@@ -167,6 +168,7 @@ namespace AssetSystem
         bool IsValidMagic() const { return magic == kMoonAssetMagic; }
         bool IsValidVersion() const { return fileFormatVersion <= kMoonAssetFileFormatVersion; }
     };
+#pragma pack(pop)
     static_assert(sizeof(MoonAssetFileHeader) == 64, "Header must be exactly 64 bytes");
 
     // ============================================================

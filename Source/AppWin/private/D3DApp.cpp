@@ -6,19 +6,17 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Source/ThirdParty/ImGui/imgui_impl_glfw.h"
+
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#endif
+
 #include "../public/D3DUtil.h"
 #include "Source/Graphics/public/GraphicsBackendFactory.h"
 #include "Source/Logging/public/LogSystem.h"
 #include "Source/ThirdParty/ImGui/imgui.h"
-
-#ifdef _WIN32
-#include "Source/ThirdParty/ImGui/imgui_impl_win32.h"
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-#endif
-
-#ifdef __APPLE__
-#include "Source/ThirdParty/ImGui/imgui_impl_glfw.h"
-#endif
 
 namespace
 {
@@ -133,12 +131,7 @@ D3DApp::~D3DApp()
             m_GraphicsBackend->ShutdownImGui();
         }
 
-#ifdef _WIN32
-        ImGui_ImplWin32_Shutdown();
-#endif
-#ifdef __APPLE__
         ImGui_ImplGlfw_Shutdown();
-#endif
         ImGui::DestroyContext();
     }
 
@@ -191,13 +184,7 @@ int D3DApp::Run()
             CalculateFrameStats();
 
             Graphics().BeginImGuiFrame();
-
-#ifdef _WIN32
-            ImGui_ImplWin32_NewFrame();
-#endif
-#ifdef __APPLE__
             ImGui_ImplGlfw_NewFrame();
-#endif
             ImGui::NewFrame();
 
             DrawUI();
@@ -336,9 +323,9 @@ bool D3DApp::InitImGui()
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     float dpiScale = 1.0f;
-#ifdef _WIN32
-    dpiScale = ImGui_ImplWin32_GetDpiScaleForHwnd(glfwGetWin32Window(m_window));
-#endif
+    float xscale = 1.0f, yscale = 1.0f;
+    glfwGetWindowContentScale(m_window, &xscale, &yscale);
+    dpiScale = xscale;
 
     ApplyMoonEditorStyle(dpiScale);
     io.FontGlobalScale = 1.0f;
@@ -347,18 +334,10 @@ bool D3DApp::InitImGui()
     static std::string imguiIniPath = MoonGetAssetPath("Builds/Runtime/imgui.ini");
     io.IniFilename = imguiIniPath.c_str();
 
-#ifdef _WIN32
-    if (!ImGui_ImplWin32_Init(glfwGetWin32Window(m_window)))
-    {
-        return false;
-    }
-#endif
-#ifdef __APPLE__
     if (!ImGui_ImplGlfw_InitForOther(m_window, true))
     {
         return false;
     }
-#endif
 
     const std::string fontPath = MoonGetAssetPath("Resources/Fonts/hanyiyingsong45jian.ttf");
     ImFontConfig fontConfig = {};

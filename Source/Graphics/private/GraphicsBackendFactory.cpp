@@ -4,7 +4,9 @@
 std::unique_ptr<IGraphicsBackend> CreateDx11Backend();
 std::unique_ptr<IGraphicsBackend> CreateDx12Backend();
 #endif
+#ifdef __APPLE__
 std::unique_ptr<IGraphicsBackend> CreateMetalBackend();
+#endif
 
 std::unique_ptr<IGraphicsBackend> CreateGraphicsBackend(GraphicsBackendType backendType)
 {
@@ -16,8 +18,10 @@ std::unique_ptr<IGraphicsBackend> CreateGraphicsBackend(GraphicsBackendType back
     case GraphicsBackendType::DX12:
         return CreateDx12Backend();
 #endif
+#ifdef __APPLE__
     case GraphicsBackendType::Metal:
         return CreateMetalBackend();
+#endif
     default:
         return nullptr;
     }

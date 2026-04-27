@@ -51,7 +51,7 @@ set(MOONRENDER_IMGUI_SOURCES
 
 if(WIN32)
     list(APPEND MOONRENDER_IMGUI_SOURCES
-        Source/ThirdParty/ImGui/imgui_impl_win32.cpp
+        Source/ThirdParty/ImGui/imgui_impl_glfw.cpp
         Source/ThirdParty/ImGui/imgui_impl_dx11.cpp
     )
 elseif(APPLE)
@@ -94,7 +94,7 @@ set(MOONRENDER_SOURCES
     Source/AssetSystem/private/MoonAssetManager.cpp
     Source/AssetSystem/private/MoonAssetDependencyGraph.cpp
     Source/AssetSystem/private/MoonMeshAsset.cpp
-    Source/AssetSystem/private/MoonMeshImporter.cpp
+    Source/AssetSystem/private/MoonAssetImporter.cpp
 )
 
 if(WIN32)
@@ -161,7 +161,7 @@ set(MOONRENDER_HEADERS
 if(WIN32)
     list(APPEND MOONRENDER_HEADERS
         Source/ThirdParty/ImGui/imgui_impl_dx11.h
-        Source/ThirdParty/ImGui/imgui_impl_win32.h
+        Source/ThirdParty/ImGui/imgui_impl_glfw.h
         Source/AppWin/public/WinMin.h
     )
 elseif(APPLE)
