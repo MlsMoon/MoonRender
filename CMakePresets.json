@@ -7,10 +7,10 @@
   },
   "configurePresets": [
     {
-      "name": "vs-debug-x64",
-      "displayName": "VS 2026 Debug x64",
+      "name": "vs2022-debug-x64",
+      "displayName": "VS 2022 Debug x64",
       "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/Builds/CMake/vs-debug-x64",
+      "binaryDir": "${sourceDir}/Builds/CMake/vs2022-debug-x64",
       "toolset": "v143",
       "architecture": {
         "value": "x64",
@@ -21,10 +21,10 @@
       }
     },
     {
-      "name": "vs-release-x64",
-      "displayName": "VS 2026 Release x64",
+      "name": "vs2022-release-x64",
+      "displayName": "VS 2022 Release x64",
       "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/Builds/CMake/vs-release-x64",
+      "binaryDir": "${sourceDir}/Builds/CMake/vs2022-release-x64",
       "toolset": "v143",
       "architecture": {
         "value": "x64",
@@ -33,9 +33,65 @@
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Release"
       }
+    },
+    {
+      "name": "vs2026-debug-x64",
+      "displayName": "VS 2026 Debug x64",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/Builds/CMake/vs2026-debug-x64",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug"
+      }
+    },
+    {
+      "name": "vs2026-release-x64",
+      "displayName": "VS 2026 Release x64",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/Builds/CMake/vs2026-release-x64",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Release"
+      }
+    },
+    {
+      "name": "vs-debug-x64",
+      "inherits": "vs2026-debug-x64",
+      "displayName": "VS Debug x64 (default: VS 2026)"
+    },
+    {
+      "name": "vs-release-x64",
+      "inherits": "vs2026-release-x64",
+      "displayName": "VS Release x64 (default: VS 2026)"
     }
   ],
   "buildPresets": [
+    {
+      "name": "build-vs2022-debug-x64",
+      "configurePreset": "vs2022-debug-x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "build-vs2022-release-x64",
+      "configurePreset": "vs2022-release-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-vs2026-debug-x64",
+      "configurePreset": "vs2026-debug-x64",
+      "configuration": "Debug"
+    },
+    {
+      "name": "build-vs2026-release-x64",
+      "configurePreset": "vs2026-release-x64",
+      "configuration": "Release"
+    },
     {
       "name": "build-vs-debug-x64",
       "configurePreset": "vs-debug-x64",

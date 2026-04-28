@@ -281,12 +281,14 @@ void App::DrawScene()
     graphics.Clear(clearColor, 1.0f, 0);
 
     // 1. Draw Grid (normal depth)
+    graphics.SetRasterizerState(m_DefaultRasterizerState.get());
     BufferStruct::ConstantMVPBuffer gridMVP = m_cBuffer_MVP;
     gridMVP.world = MoonMatrix4x4::Identity();
     m_gridRenderer.Render(graphics, gridMVP);
 
     // 2. Draw scene objects (normal depth)
     graphics.SetDepthStencilState(m_defaultDepthStencilState.get());
+    graphics.SetRasterizerState(m_DefaultRasterizerState.get());
     if (m_IndexCount > 0)
     {
         // Re-bind scene resources because GridRenderer changed them
@@ -305,6 +307,7 @@ void App::DrawScene()
     if (m_selectedObject != nullptr)
     {
         graphics.SetDepthStencilState(m_gizmoDepthStencilState.get());
+        graphics.SetRasterizerState(m_DefaultRasterizerState.get());
 
         auto* transform = m_selectedObject->GetComponent<Object::TransformComponent>();
         if (transform != nullptr)
@@ -428,6 +431,13 @@ bool App::InitResources()
     m_cBuffer_MVP.proj = MoonMatrix4x4::Identity();
 
     m_cBuffer_PS.directionalLightDirW = MoonVector4(-0.577f, -0.577f, 0.577f, 1.0f);
+
+    GraphicsRasterizerDesc defaultRasterizerDesc = {};
+    defaultRasterizerDesc.fillMode = GraphicsFillMode::Solid;
+    defaultRasterizerDesc.cullMode = GraphicsCullMode::None;
+    defaultRasterizerDesc.depthClipEnable = true;
+    defaultRasterizerDesc.debugName = "DefaultRasterizer";
+    m_DefaultRasterizerState = graphics.CreateRasterizerState(defaultRasterizerDesc);
 
     GraphicsRasterizerDesc rasterizerDesc = {};
     rasterizerDesc.fillMode = GraphicsFillMode::Wireframe;

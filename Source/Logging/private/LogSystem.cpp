@@ -34,5 +34,3 @@ namespace Logging
         return log_content;
     }
 }
-
-

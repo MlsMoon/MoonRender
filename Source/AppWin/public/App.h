@@ -59,6 +59,7 @@ private:
     std::shared_ptr<IGraphicsVertexShader> m_VertexShader;
     std::shared_ptr<IGraphicsPixelShader> m_PixelShader;
 
+    std::shared_ptr<IGraphicsRasterizerState> m_DefaultRasterizerState;
     std::shared_ptr<IGraphicsRasterizerState> m_WireframeRasterizerState;
     bool m_IsWireframeMode;
 

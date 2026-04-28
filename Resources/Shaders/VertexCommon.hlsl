@@ -9,6 +9,6 @@ VertexOut VS(VertexIn vIn)
     vOut.posH = mul(posW, viewProj);
     vOut.posW = posW.xyz;
     vOut.normalW = mul(vIn.normalL, (float3x3) g_WorldInvTranspose);
-    vOut.color = float4(1.0f,1.0f,1.0f,1.0f); 
+    vOut.color = float4(1.0f,1.0f,1.0f,1.0f);
     return vOut;
 } 

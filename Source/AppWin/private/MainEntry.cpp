@@ -57,6 +57,9 @@ int main(int argc, char** argv)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+    freopen("Builds/Runtime/render_log.txt", "w", stdout);
+    setvbuf(stdout, NULL, _IONBF, 0);
+
     bool confirmed = false;
     const GraphicsBackendType backendType = SelectGraphicsBackend(argc, argv, confirmed);
     if (!confirmed)
@@ -67,8 +70,13 @@ int main(int argc, char** argv)
     App theApp("MoonRender", 1280, 720, backendType);
     if (!theApp.Init())
     {
+        printf("Init failed\n");
+        system("pause");
         return 0;
     }
 
-    return theApp.Run();
+    int ret = theApp.Run();
+    printf("Run finished: %d\n", ret);
+    system("pause");
+    return ret;
 }
