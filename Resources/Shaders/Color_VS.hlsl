@@ -21,9 +21,9 @@ struct VertexOut
 VertexOut VS(VertexIn vIn)
 {
     VertexOut vOut;
-    matrix viewProj = mul(g_View, g_Proj);
-    float4 posW = mul(float4(vIn.posL, 1.0f), g_World);
-    vOut.posH = mul(posW, viewProj);
+    matrix viewProj = mul(g_Proj, g_View);
+    float4 posW = mul(g_World, float4(vIn.posL, 1.0f));
+    vOut.posH = mul(viewProj, posW);
     vOut.color = vIn.color;
     return vOut;
 }

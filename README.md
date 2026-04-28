@@ -36,7 +36,8 @@ Builds/Intermediate/MSBuild/x64/Debug/
 The repository includes `CMakePresets.json` so CMake build trees also stay under `Builds/`.
 
 ```powershell
-Scripts\Build_CMake_VS_Debug_x64.bat
+Scripts\build_debug.bat
+Scripts\build_release.bat
 ```
 
 The direct command used during development is:
@@ -60,11 +61,11 @@ Builds/CMakeOutput/
 
 ## Utility Scripts
 
-- `Scripts\Build_MSBuild_Debug_x64.bat`: build the legacy solution with MSBuild
-- `Scripts\Build_CMake_VS_Debug_x64.bat`: configure and build the CMake Visual Studio preset
-- `Scripts\Clean_ShaderCache.bat`: remove generated shader cache from `Builds/Cache/CSO`
-- `Scripts\Clean_LegacyRootOutputs.bat`: remove old root-level build folders after closing Rider/MSBuild
-- `Scripts\Run_RenderDoc_Debug.bat`: launch the MSBuild debug executable through RenderDoc
+- `Scripts\build_debug.bat` / `Scripts\build_release.bat`: build via CMake Visual Studio preset
+- `Scripts\run_debug.bat` / `Scripts\run_release.bat`: launch the executable
+- `Scripts\renderdoc_debug.bat` / `Scripts\renderdoc_release.bat`: launch through RenderDoc
+- `Scripts\clean_shaders.bat`: remove generated shader cache from `Builds/Cache/CSO`
+- `Scripts\clean_legacy.bat`: remove old root-level build folders after closing Rider/MSBuild
 
 ## Notes
 

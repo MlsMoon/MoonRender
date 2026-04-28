@@ -14,18 +14,19 @@ cmake --build --preset build-vs-debug-x64
 ```
 
 Or use the wrapper scripts in `Scripts/`:
-- `Scripts\Build_CMake_VS_Debug_x64.bat`
-- `Scripts\Build_MSBuild_Debug_x64.bat` (legacy solution)
+- `Scripts\build_debug.bat` / `Scripts\build_release.bat` — build
+- `Scripts\run_debug.bat` / `Scripts\run_release.bat` — run
+- `Scripts\renderdoc_debug.bat` / `Scripts\renderdoc_release.bat` — RenderDoc capture
+- `Scripts\clean_shaders.bat` — clear shader cache
 
 **Outputs**
-- CMake binaries: `Builds/CMakeOutput/Bin/Debug/MoonRender.exe`
-- MSBuild binaries: `Builds/MSBuild/x64/Debug/`
+- CMake binaries: `Builds/CMakeOutput/Bin/[Debug|Release]/MoonRender.exe`
 - Shader cache: `Builds/Cache/CSO/`
 - ImGui layout state: `Builds/Runtime/imgui.ini`
 
 **Clean shader cache**
 ```powershell
-Scripts\Clean_ShaderCache.bat
+Scripts\clean_shaders.bat
 ```
 
 ## Architecture

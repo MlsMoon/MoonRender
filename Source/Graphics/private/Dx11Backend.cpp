@@ -193,6 +193,7 @@ namespace
             if (m_immediateContext)
             {
                 m_immediateContext->ClearState();
+                m_immediateContext->Flush();
             }
         }
 

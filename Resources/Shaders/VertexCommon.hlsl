@@ -3,12 +3,12 @@
 VertexOut VS(VertexIn vIn)
 {
     VertexOut vOut;
-    matrix viewProj = mul(g_View, g_Proj);
-    float4 posW = mul(float4(vIn.posL, 1.0f), g_World);
+    matrix viewProj = mul(g_Proj, g_View);
+    float4 posW = mul(g_World, float4(vIn.posL, 1.0f));
 
-    vOut.posH = mul(posW, viewProj);
+    vOut.posH = mul(viewProj, posW);
     vOut.posW = posW.xyz;
-    vOut.normalW = mul(vIn.normalL, (float3x3) g_WorldInvTranspose);
+    vOut.normalW = mul((float3x3) g_WorldInvTranspose, vIn.normalL);
     vOut.color = float4(1.0f,1.0f,1.0f,1.0f);
     return vOut;
 } 

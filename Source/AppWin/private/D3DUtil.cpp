@@ -1,7 +1,11 @@
 #include "../public/D3DUtil.h"
 
+#include <cstdio>
+#include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <string>
+#include <unordered_set>
 
 #ifdef _WIN32
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = nullptr; } }
@@ -18,6 +22,71 @@ namespace
         return currentFilePath.parent_path().parent_path().parent_path().parent_path();
 #endif
     }
+
+#ifdef _WIN32
+    bool AnyIncludeNewer(const std::filesystem::path& sourcePath,
+                         std::filesystem::file_time_type csoTime,
+                         std::unordered_set<std::filesystem::path>& visited)
+    {
+        if (!visited.insert(sourcePath).second)
+            return false;
+
+        if (std::filesystem::last_write_time(sourcePath) > csoTime)
+            return true;
+
+        std::ifstream file(sourcePath);
+        if (!file.is_open())
+            return false;
+
+        std::string line;
+        while (std::getline(file, line))
+        {
+            const char* p = line.c_str();
+            while (*p == ' ' || *p == '\t') ++p;
+            if (*p != '#') continue;
+            ++p;
+            while (*p == ' ' || *p == '\t') ++p;
+            if (std::strncmp(p, "include", 7) != 0) continue;
+            p += 7;
+            while (*p == ' ' || *p == '\t') ++p;
+            if (*p != '"' && *p != '<') continue;
+            const char delim = (*p == '"') ? '"' : '>';
+            ++p;
+            const char* start = p;
+            while (*p != '\0' && *p != delim) ++p;
+            if (*p == '\0') continue;
+
+            std::filesystem::path includePath = sourcePath.parent_path() / std::string(start, p - start);
+            if (std::filesystem::exists(includePath))
+            {
+                if (AnyIncludeNewer(includePath, csoTime, visited))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool IsShaderCacheFresh(const WCHAR* csoFileName, const WCHAR* hlslFileName)
+    {
+        if (csoFileName == nullptr || hlslFileName == nullptr)
+            return false;
+
+        const std::filesystem::path csoPath(csoFileName);
+        const std::filesystem::path hlslPath(hlslFileName);
+        if (!std::filesystem::exists(csoPath) || !std::filesystem::exists(hlslPath))
+            return false;
+
+        auto csoTime = std::filesystem::last_write_time(csoPath);
+
+        if (std::filesystem::last_write_time(hlslPath) > csoTime)
+            return false;
+
+        std::unordered_set<std::filesystem::path> visited;
+        visited.insert(csoPath);
+        return !AnyIncludeNewer(hlslPath, csoTime, visited);
+    }
+#endif
 }
 
 #ifdef _WIN32
@@ -31,7 +100,8 @@ HRESULT CreateShaderFromFile(
 {
     HRESULT hr = S_OK;
 
-    if (csoFileNameInOut && D3DReadFileToBlob(csoFileNameInOut, ppBlobOut) == S_OK)
+    if (IsShaderCacheFresh(csoFileNameInOut, hlslFileName) &&
+        D3DReadFileToBlob(csoFileNameInOut, ppBlobOut) == S_OK)
     {
         return hr;
     }
@@ -60,6 +130,11 @@ HRESULT CreateShaderFromFile(
         {
             const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
             OutputDebugStringA(errorMsg);
+            printf("%s\n", errorMsg);
+        }
+        else
+        {
+            printf("D3DCompileFromFile failed: 0x%08X\n", static_cast<unsigned int>(hr));
         }
         SAFE_RELEASE(errorBlob);
         return hr;
@@ -67,7 +142,7 @@ HRESULT CreateShaderFromFile(
 
     if (csoFileNameInOut)
     {
-        return D3DWriteBlobToFile(*ppBlobOut, csoFileNameInOut, FALSE);
+        return D3DWriteBlobToFile(*ppBlobOut, csoFileNameInOut, TRUE);
     }
 
     return hr;

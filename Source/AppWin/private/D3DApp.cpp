@@ -1,6 +1,7 @@
 #include "../public/D3DApp.h"
 
 #include <cassert>
+#include <cstdio>
 #include <sstream>
 #include <string>
 
@@ -200,6 +201,7 @@ bool D3DApp::Init()
 {
     if (!glfwInit())
     {
+        printf("glfwInit failed\n");
         return false;
     }
 
@@ -208,6 +210,7 @@ bool D3DApp::Init()
 
     if (!InitMainWindow())
     {
+        printf("InitMainWindow failed\n");
         return false;
     }
 
@@ -216,11 +219,13 @@ bool D3DApp::Init()
 
     if (!InitGraphicsBackend())
     {
+        printf("InitGraphicsBackend failed\n");
         return false;
     }
 
     if (!InitImGui())
     {
+        printf("InitImGui failed\n");
         return false;
     }
 
@@ -240,6 +245,7 @@ bool D3DApp::InitMainWindow()
     m_window = glfwCreateWindow(ClientWidth, ClientHeight, m_MainWndCaption.c_str(), nullptr, nullptr);
     if (!m_window)
     {
+        printf("glfwCreateWindow failed\n");
         return false;
     }
 
@@ -278,11 +284,13 @@ bool D3DApp::InitGraphicsBackend()
     m_GraphicsBackend = CreateGraphicsBackend(m_GraphicsBackendType);
     if (!m_GraphicsBackend)
     {
+        printf("CreateGraphicsBackend failed\n");
         return false;
     }
 
     if (!m_GraphicsBackend->Initialize(m_window, FramebufferWidth, FramebufferHeight, m_Enable4xMsaa))
     {
+        printf("GraphicsBackend Initialize failed\n");
         return false;
     }
 
@@ -336,6 +344,7 @@ bool D3DApp::InitImGui()
 
     if (!ImGui_ImplGlfw_InitForOther(m_window, true))
     {
+        printf("ImGui_ImplGlfw_InitForOther failed\n");
         return false;
     }
 

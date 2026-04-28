@@ -1,5 +1,6 @@
 #include "../public/App.h"
 
+#include <cstdio>
 #include <vector>
 
 #include "Source/Logging/public/LogSystem.h"
@@ -97,11 +98,13 @@ bool App::Init()
 
     if (!D3DApp::Init())
     {
+        printf("D3DApp::Init failed\n");
         return false;
     }
 
     if (!InitResources())
     {
+        printf("InitResources failed\n");
         return false;
     }
 
@@ -343,6 +346,7 @@ bool App::InitResources()
 {
     if (!InitShaders())
     {
+        printf("InitShaders failed\n");
         return false;
     }
 
@@ -379,12 +383,14 @@ bool App::InitResources()
     Object::MoonObject* renderObject = m_scene->FindFirstRenderable();
     if (renderObject == nullptr)
     {
+        printf("No renderable object found\n");
         return false;
     }
 
     Object::MeshComponent* meshComponent = renderObject->GetComponent<Object::MeshComponent>();
     if (meshComponent == nullptr || meshComponent->GetMesh() == nullptr || meshComponent->GetMesh()->VertexNum == 0)
     {
+        printf("Default mesh is empty\n");
         return false;
     }
 
@@ -471,12 +477,14 @@ bool App::InitResources()
     if (!m_gridRenderer.Init(graphics))
     {
         MOON_LOG("Failed to init grid renderer");
+        printf("Failed to init grid renderer\n");
         return false;
     }
 
     if (!m_gizmoRenderer.Init(graphics))
     {
         MOON_LOG("Failed to init gizmo renderer");
+        printf("Failed to init gizmo renderer\n");
         return false;
     }
 
@@ -503,6 +511,7 @@ bool App::InitShaders()
     std::shared_ptr<IGraphicsShaderBytecode> pixelBytecode = graphics.CompileShader(pixelShaderDesc);
     if (!vertexBytecode || !pixelBytecode)
     {
+        printf("Failed to compile main shaders\n");
         return false;
     }
 
