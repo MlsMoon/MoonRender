@@ -78,6 +78,7 @@ set(MOONRENDER_SOURCES
     Source/UI/InspectorWindow.cpp
     Source/UI/GlobalSettingWindow.cpp
     Source/UI/OutputLogWindow.cpp
+    Source/UI/ViewportWindow.cpp
     Source/UI/Popups/PopupBase.cpp
     Source/UI/Popups/DeleteCameraWarningPopup.cpp
     Source/AppWin/private/CpuTimer.cpp
@@ -131,6 +132,7 @@ set(MOONRENDER_HEADERS
     Source/UI/InspectorWindow.h
     Source/UI/GlobalSettingWindow.h
     Source/UI/OutputLogWindow.h
+    Source/UI/ViewportWindow.h
     Source/AppWin/public/CpuTimer.h
     Source/AppWin/public/D3DApp.h
     Source/AppWin/public/D3DUtil.h

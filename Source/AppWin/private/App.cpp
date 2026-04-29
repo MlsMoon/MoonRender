@@ -190,7 +190,7 @@ void App::UpdateScene(float dt)
     }
 
     // --- Gizmo interaction ---
-    if (m_selectedObject != nullptr)
+    if (m_selectedObject != nullptr && m_viewportInfo.width > 0.0f && m_viewportInfo.height > 0.0f)
     {
         auto* transform = m_selectedObject->GetComponent<Object::TransformComponent>();
         if (transform != nullptr)
@@ -198,20 +198,26 @@ void App::UpdateScene(float dt)
             MoonVector3 gizmoPos = transform->position;
             MoonMatrix4x4 gizmoWorldMatrix = MoonTranslate(gizmoPos) * MoonScale(MoonVector3(0.5f, 0.5f, 0.5f));
 
-            // Camera forward from view matrix (third column in left-handed lookAt)
             MoonVector3 cameraForward = MoonNormalize(MoonVector3(view.m[2][0], view.m[2][1], view.m[2][2]));
+
+            float localMouseX = static_cast<float>(MouseX) - m_viewportInfo.posX;
+            float localMouseY = static_cast<float>(MouseY) - m_viewportInfo.posY;
+            int vpWidth = static_cast<int>(m_viewportInfo.width);
+            int vpHeight = static_cast<int>(m_viewportInfo.height);
 
             if (!m_gizmoDragging)
             {
-                // Raycast for hover
-                MoonRay ray = ScreenPointToRay(
-                    static_cast<float>(MouseX), static_cast<float>(MouseY),
-                    ClientWidth, ClientHeight, view, m_cBuffer_MVP.proj);
+                // Only raycast when mouse is over the viewport
+                if (m_viewportInfo.hovered)
+                {
+                    MoonRay ray = ScreenPointToRay(localMouseX, localMouseY, vpWidth, vpHeight, view, m_cBuffer_MVP.proj);
+                    m_gizmoHoveredAxis = m_gizmoRenderer.Raycast(ray.origin, ray.direction, gizmoWorldMatrix);
+                }
+                else
+                {
+                    m_gizmoHoveredAxis = GizmoAxis::None;
+                }
 
-                GizmoAxis newHover = m_gizmoRenderer.Raycast(ray.origin, ray.direction, gizmoWorldMatrix);
-                m_gizmoHoveredAxis = newHover;
-
-                // Start drag
                 if (MouseButtonLeft && !m_mouseButtonLeftDown && m_gizmoHoveredAxis != GizmoAxis::None)
                 {
                     m_gizmoDragging = true;
@@ -226,9 +232,7 @@ void App::UpdateScene(float dt)
                         m_gizmoDragPlaneNormal = MoonNormalize(MoonCross(right, axisDir));
                     }
 
-                    MoonRay startRay = ScreenPointToRay(
-                        static_cast<float>(MouseX), static_cast<float>(MouseY),
-                        ClientWidth, ClientHeight, view, m_cBuffer_MVP.proj);
+                    MoonRay startRay = ScreenPointToRay(localMouseX, localMouseY, vpWidth, vpHeight, view, m_cBuffer_MVP.proj);
 
                     MoonVector3 intersection;
                     if (RayPlaneIntersect(startRay, gizmoPos, m_gizmoDragPlaneNormal, intersection))
@@ -243,7 +247,6 @@ void App::UpdateScene(float dt)
             }
             else
             {
-                // Dragging
                 if (!MouseButtonLeft)
                 {
                     m_gizmoDragging = false;
@@ -251,9 +254,7 @@ void App::UpdateScene(float dt)
                 }
                 else
                 {
-                    MoonRay currentRay = ScreenPointToRay(
-                        static_cast<float>(MouseX), static_cast<float>(MouseY),
-                        ClientWidth, ClientHeight, view, m_cBuffer_MVP.proj);
+                    MoonRay currentRay = ScreenPointToRay(localMouseX, localMouseY, vpWidth, vpHeight, view, m_cBuffer_MVP.proj);
 
                     MoonVector3 currentIntersection;
                     if (RayPlaneIntersect(currentRay, m_gizmoDragPlanePoint, m_gizmoDragPlaneNormal, currentIntersection))
@@ -276,25 +277,37 @@ void App::UpdateScene(float dt)
     }
 }
 
-void App::DrawScene()
+void App::RenderViewport()
 {
     static const float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 
-    IGraphicsBackend& graphics = Graphics();
-    graphics.Clear(clearColor, 1.0f, 0);
+    int vpW = static_cast<int>(m_viewportInfo.width);
+    int vpH = static_cast<int>(m_viewportInfo.height);
+    if (vpW <= 0 || vpH <= 0) return;
 
-    // 1. Draw Grid (normal depth)
+    IGraphicsBackend& graphics = Graphics();
+
+    if (!m_viewportRT || m_viewportRT->GetWidth() != vpW || m_viewportRT->GetHeight() != vpH)
+    {
+        m_viewportRT = graphics.CreateRenderTarget(vpW, vpH);
+    }
+
+    if (!m_viewportRT) return;
+
+    graphics.SetViewportRenderTarget(m_viewportRT.get());
+    graphics.ClearViewportRenderTarget(m_viewportRT.get(), clearColor, 1.0f, 0);
+
+    // 1. Draw Grid
     graphics.SetRasterizerState(m_DefaultRasterizerState.get());
     BufferStruct::ConstantMVPBuffer gridMVP = m_cBuffer_MVP;
     gridMVP.world = MoonMatrix4x4::Identity();
     m_gridRenderer.Render(graphics, gridMVP);
 
-    // 2. Draw scene objects (normal depth)
+    // 2. Draw scene objects
     graphics.SetDepthStencilState(m_defaultDepthStencilState.get());
     graphics.SetRasterizerState(m_DefaultRasterizerState.get());
     if (m_IndexCount > 0)
     {
-        // Re-bind scene resources because GridRenderer changed them
         graphics.SetVertexBuffer(*m_VertexBuffer, sizeof(BufferStruct::VertexPosNormal), 0);
         graphics.SetIndexBuffer(*m_IndexBuffer, GraphicsIndexFormat::UInt32, 0);
         graphics.SetPrimitiveTopology(GraphicsPrimitiveTopology::TriangleList);
@@ -306,7 +319,7 @@ void App::DrawScene()
         graphics.DrawIndexed(m_IndexCount, 0, 0);
     }
 
-    // 3. Draw Gizmo (always on top)
+    // 3. Draw Gizmo
     if (m_selectedObject != nullptr)
     {
         graphics.SetDepthStencilState(m_gizmoDepthStencilState.get());
@@ -326,19 +339,19 @@ void App::DrawScene()
         }
     }
 
-    // Restore default depth state for ImGui
-    graphics.SetDepthStencilState(m_defaultDepthStencilState.get());
+    graphics.SetViewportRenderTarget(nullptr);
+}
 
-    ImGui::Render();
-    graphics.RenderImGuiDrawData();
-    graphics.Present();
+void App::DrawScene()
+{
 }
 
 void App::DrawUI()
 {
     if (m_scene != nullptr)
     {
-        editor.Draw(*m_scene, m_selectedObject, GetGraphicsBackendType());
+        void* texId = m_viewportRT ? m_viewportRT->GetImGuiTextureId() : nullptr;
+        editor.Draw(*m_scene, m_selectedObject, GetGraphicsBackendType(), texId, m_viewportInfo);
     }
 }
 

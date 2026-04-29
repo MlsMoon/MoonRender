@@ -48,6 +48,15 @@ public:
     virtual ~IGraphicsDepthStencilState() = default;
 };
 
+class IGraphicsRenderTarget
+{
+public:
+    virtual ~IGraphicsRenderTarget() = default;
+    virtual void* GetImGuiTextureId() const = 0;
+    virtual int GetWidth() const = 0;
+    virtual int GetHeight() const = 0;
+};
+
 class IGraphicsBackend
 {
 public:
@@ -83,6 +92,10 @@ public:
     virtual std::shared_ptr<IGraphicsRasterizerState> CreateRasterizerState(const GraphicsRasterizerDesc& desc) = 0;
     virtual std::shared_ptr<IGraphicsDepthStencilState> CreateDepthStencilState(const GraphicsDepthStencilDesc& desc) = 0;
     virtual void SetDepthStencilState(const IGraphicsDepthStencilState* depthStencilState) = 0;
+
+    virtual std::shared_ptr<IGraphicsRenderTarget> CreateRenderTarget(int width, int height) = 0;
+    virtual void SetViewportRenderTarget(IGraphicsRenderTarget* rt) = 0;
+    virtual void ClearViewportRenderTarget(IGraphicsRenderTarget* rt, const float color[4], float depth, std::uint8_t stencil) = 0;
 
     virtual void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) = 0;
     virtual void SetIndexBuffer(const IGraphicsBuffer& buffer, GraphicsIndexFormat format, std::uint32_t offset) = 0;

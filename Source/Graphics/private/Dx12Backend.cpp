@@ -188,6 +188,26 @@ namespace
         D3D12_DEPTH_STENCIL_DESC desc = {};
     };
 
+    class Dx12RenderTarget final : public IGraphicsRenderTarget
+    {
+    public:
+        ComPtr<ID3D12Resource> colorTexture;
+        ComPtr<ID3D12Resource> depthTexture;
+        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = {};
+        int width = 0;
+        int height = 0;
+
+        void* GetImGuiTextureId() const override
+        {
+            return reinterpret_cast<void*>(static_cast<std::uintptr_t>(srvHandle.ptr));
+        }
+
+        int GetWidth() const override { return width; }
+        int GetHeight() const override { return height; }
+    };
+
     struct Dx12ImGuiFrameResources
     {
         // ImGui 每帧都会重新生成顶点/索引数据。
@@ -665,6 +685,135 @@ namespace
             m_currentDepthStencilState = CheckedCast<const Dx12DepthStencilState>(
                 const_cast<IGraphicsDepthStencilState*>(depthStencilState));
             m_pipelineDirty = true;
+        }
+
+        std::shared_ptr<IGraphicsRenderTarget> CreateRenderTarget(int width, int height) override
+        {
+            if (width <= 0 || height <= 0 || !m_device)
+                return nullptr;
+
+            auto rt = std::make_shared<Dx12RenderTarget>();
+            rt->width = width;
+            rt->height = height;
+
+            // Allocate RTV/SRV/DSV descriptors from the existing heaps
+            const UINT rtvIncrement = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+            const UINT dsvIncrement = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+            const UINT cbvSrvIncrement = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+            // Extend RTV heap: use a slot after the current kFrameCount
+            // We'll use slot kFrameCount for the viewport RT
+            rt->rtvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+            rt->rtvHandle.ptr += static_cast<SIZE_T>(kFrameCount) * rtvIncrement;
+            rt->dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+            rt->dsvHandle.ptr += static_cast<SIZE_T>(1) * dsvIncrement;  // slot 1 (slot 0 is main depth)
+
+            // SRV: use a dedicated descriptor in the CBV/SRV heap
+            // We'll use a slot at a high offset to avoid collision
+            rt->srvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+            // Actually, SRV needs to come from a shader-visible heap. Use the ImGui SRV heap.
+            // For simplicity, allocate from the existing CBV/SRV heap used by ImGui.
+            // We'll store the SRV in the main RTV heap's extra slot for now - this is a placeholder.
+            // Proper implementation needs a shader-visible descriptor heap for SRV.
+            rt->srvHandle = m_rtvHeap->GetCPUDescriptorHandleForHeapStart();
+            rt->srvHandle.ptr += static_cast<SIZE_T>(kFrameCount + 1) * rtvIncrement;
+
+            // Color texture
+            D3D12_RESOURCE_DESC texDesc = {};
+            texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+            texDesc.Width = static_cast<UINT>(width);
+            texDesc.Height = height;
+            texDesc.DepthOrArraySize = 1;
+            texDesc.MipLevels = 1;
+            texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            texDesc.SampleDesc.Count = 1;
+            texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+            D3D12_HEAP_PROPERTIES heapProps = {};
+            heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+            D3D12_CLEAR_VALUE clearValue = {};
+            clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            clearValue.Color[0] = 0.1f;
+            clearValue.Color[1] = 0.1f;
+            clearValue.Color[2] = 0.1f;
+            clearValue.Color[3] = 1.0f;
+
+            if (FAILED(m_device->CreateCommittedResource(
+                &heapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
+                D3D12_RESOURCE_STATE_RENDER_TARGET, &clearValue,
+                IID_PPV_ARGS(&rt->colorTexture))))
+                return nullptr;
+
+            D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+            rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+            m_device->CreateRenderTargetView(rt->colorTexture.Get(), &rtvDesc, rt->rtvHandle);
+
+            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+            srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            srvDesc.Texture2D.MipLevels = 1;
+            m_device->CreateShaderResourceView(rt->colorTexture.Get(), &srvDesc, rt->srvHandle);
+
+            // Depth texture
+            texDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+            texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+            clearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+            clearValue.DepthStencil.Depth = 1.0f;
+            clearValue.DepthStencil.Stencil = 0;
+
+            if (FAILED(m_device->CreateCommittedResource(
+                &heapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
+                D3D12_RESOURCE_STATE_DEPTH_WRITE, &clearValue,
+                IID_PPV_ARGS(&rt->depthTexture))))
+                return nullptr;
+
+            D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+            dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+            dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+            m_device->CreateDepthStencilView(rt->depthTexture.Get(), &dsvDesc, rt->dsvHandle);
+
+            return rt;
+        }
+
+        void SetViewportRenderTarget(IGraphicsRenderTarget* rt) override
+        {
+            if (!m_hasOpenCommandList)
+                BeginFrameRecording();
+
+            if (rt == nullptr)
+            {
+                const D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = GetCurrentRtvHandle();
+                const D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+                m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+                m_commandList->RSSetViewports(1, &m_viewport);
+                m_currentViewportRT = nullptr;
+            }
+            else
+            {
+                Dx12RenderTarget* dxrt = CheckedCast<Dx12RenderTarget>(rt);
+                m_commandList->OMSetRenderTargets(
+                    1, &dxrt->rtvHandle, FALSE, &dxrt->dsvHandle);
+                D3D12_VIEWPORT vp = {};
+                vp.Width = static_cast<float>(dxrt->width);
+                vp.Height = static_cast<float>(dxrt->height);
+                vp.MinDepth = 0.0f;
+                vp.MaxDepth = 1.0f;
+                m_commandList->RSSetViewports(1, &vp);
+                m_currentViewportRT = dxrt;
+            }
+        }
+
+        void ClearViewportRenderTarget(IGraphicsRenderTarget* rt, const float color[4], float depth, std::uint8_t stencil) override
+        {
+            Dx12RenderTarget* dxrt = CheckedCast<Dx12RenderTarget>(rt);
+            if (dxrt->rtvHandle.ptr != 0)
+                m_commandList->ClearRenderTargetView(dxrt->rtvHandle, color, 0, nullptr);
+            if (dxrt->dsvHandle.ptr != 0)
+                m_commandList->ClearDepthStencilView(
+                    dxrt->dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, depth, stencil, 0, nullptr);
         }
 
         void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) override
@@ -1744,6 +1893,7 @@ namespace
         const Dx12PixelShader* m_currentPixelShader = nullptr;
         const Dx12RasterizerState* m_currentRasterizerState = nullptr;
         const Dx12DepthStencilState* m_currentDepthStencilState = nullptr;
+        Dx12RenderTarget* m_currentViewportRT = nullptr;
         GraphicsPrimitiveTopology m_currentTopology = GraphicsPrimitiveTopology::TriangleList;
         std::array<const Dx12GraphicsBuffer*, 8> m_vertexConstantBuffers = {};
         std::array<const Dx12GraphicsBuffer*, 8> m_pixelConstantBuffers = {};

@@ -184,13 +184,15 @@ int D3DApp::Run()
         {
             CalculateFrameStats();
 
+            UpdateScene(m_Timer.DeltaTime());
+            RenderViewport();
+
             Graphics().BeginImGuiFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
             DrawUI();
-            UpdateScene(m_Timer.DeltaTime());
-            DrawScene();
+            RenderImGui();
         }
     }
 
@@ -362,6 +364,15 @@ bool D3DApp::InitImGui()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
     return Graphics().InitializeImGui(m_window);
+}
+
+void D3DApp::RenderImGui()
+{
+    static const float clearColor[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
+    Graphics().Clear(clearColor, 1.0f, 0);
+    ImGui::Render();
+    Graphics().RenderImGuiDrawData();
+    Graphics().Present();
 }
 
 void D3DApp::DrawUI()

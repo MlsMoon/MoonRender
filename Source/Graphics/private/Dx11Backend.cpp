@@ -69,6 +69,26 @@ namespace
         ComPtr<ID3D11DepthStencilState> state;
     };
 
+    class Dx11RenderTarget final : public IGraphicsRenderTarget
+    {
+    public:
+        ComPtr<ID3D11Texture2D> colorTexture;
+        ComPtr<ID3D11RenderTargetView> rtv;
+        ComPtr<ID3D11ShaderResourceView> srv;
+        ComPtr<ID3D11Texture2D> depthTexture;
+        ComPtr<ID3D11DepthStencilView> dsv;
+        int width = 0;
+        int height = 0;
+
+        void* GetImGuiTextureId() const override
+        {
+            return srv.Get();
+        }
+
+        int GetWidth() const override { return width; }
+        int GetHeight() const override { return height; }
+    };
+
     template <typename TTarget, typename TSource>
     TTarget* CheckedCast(TSource* source)
     {
@@ -566,6 +586,88 @@ namespace
                 const_cast<IGraphicsDepthStencilState*>(depthStencilState));
             m_immediateContext->OMSetDepthStencilState(
                 dx11DepthStencilState != nullptr ? dx11DepthStencilState->state.Get() : nullptr, 0);
+        }
+
+        std::shared_ptr<IGraphicsRenderTarget> CreateRenderTarget(int width, int height) override
+        {
+            if (width <= 0 || height <= 0 || !m_device)
+                return nullptr;
+
+            auto rt = std::make_shared<Dx11RenderTarget>();
+            rt->width = width;
+            rt->height = height;
+
+            D3D11_TEXTURE2D_DESC texDesc = {};
+            texDesc.Width = static_cast<UINT>(width);
+            texDesc.Height = static_cast<UINT>(height);
+            texDesc.MipLevels = 1;
+            texDesc.ArraySize = 1;
+            texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            texDesc.SampleDesc.Count = 1;
+            texDesc.Usage = D3D11_USAGE_DEFAULT;
+            texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+            if (FAILED(m_device->CreateTexture2D(&texDesc, nullptr, rt->colorTexture.GetAddressOf())))
+                return nullptr;
+
+            if (FAILED(m_device->CreateRenderTargetView(rt->colorTexture.Get(), nullptr, rt->rtv.GetAddressOf())))
+                return nullptr;
+
+            if (FAILED(m_device->CreateShaderResourceView(rt->colorTexture.Get(), nullptr, rt->srv.GetAddressOf())))
+                return nullptr;
+
+            D3D11_TEXTURE2D_DESC depthDesc = {};
+            depthDesc.Width = static_cast<UINT>(width);
+            depthDesc.Height = static_cast<UINT>(height);
+            depthDesc.MipLevels = 1;
+            depthDesc.ArraySize = 1;
+            depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+            depthDesc.SampleDesc.Count = 1;
+            depthDesc.Usage = D3D11_USAGE_DEFAULT;
+            depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+            if (FAILED(m_device->CreateTexture2D(&depthDesc, nullptr, rt->depthTexture.GetAddressOf())))
+                return nullptr;
+
+            if (FAILED(m_device->CreateDepthStencilView(rt->depthTexture.Get(), nullptr, rt->dsv.GetAddressOf())))
+                return nullptr;
+
+            D3D11SetDebugObjectName(rt->colorTexture.Get(), "ViewportColorTexture");
+            D3D11SetDebugObjectName(rt->depthTexture.Get(), "ViewportDepthTexture");
+
+            return rt;
+        }
+
+        void SetViewportRenderTarget(IGraphicsRenderTarget* rt) override
+        {
+            if (rt == nullptr)
+            {
+                m_immediateContext->OMSetRenderTargets(
+                    1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+                m_immediateContext->RSSetViewports(1, &m_screenViewport);
+            }
+            else
+            {
+                Dx11RenderTarget* dxrt = CheckedCast<Dx11RenderTarget>(rt);
+                m_immediateContext->OMSetRenderTargets(
+                    1, dxrt->rtv.GetAddressOf(), dxrt->dsv.Get());
+                D3D11_VIEWPORT vp = {};
+                vp.Width = static_cast<float>(dxrt->width);
+                vp.Height = static_cast<float>(dxrt->height);
+                vp.MinDepth = 0.0f;
+                vp.MaxDepth = 1.0f;
+                m_immediateContext->RSSetViewports(1, &vp);
+            }
+        }
+
+        void ClearViewportRenderTarget(IGraphicsRenderTarget* rt, const float color[4], float depth, std::uint8_t stencil) override
+        {
+            Dx11RenderTarget* dxrt = CheckedCast<Dx11RenderTarget>(rt);
+            if (dxrt->rtv)
+                m_immediateContext->ClearRenderTargetView(dxrt->rtv.Get(), color);
+            if (dxrt->dsv)
+                m_immediateContext->ClearDepthStencilView(
+                    dxrt->dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depth, stencil);
         }
 
         void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) override

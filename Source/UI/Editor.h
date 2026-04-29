@@ -10,6 +10,7 @@
 #include "Source/UI/MainMenuBar.h"
 #include "Source/UI/OutlineWindow.h"
 #include "Source/UI/OutputLogWindow.h"
+#include "Source/UI/ViewportWindow.h"
 
 namespace Object
 {
@@ -27,7 +28,9 @@ namespace MoonUI
         bool Draw(
             Object::Scene& scene,
             Object::MoonObject*& selectedObject,
-            GraphicsBackendType graphicsBackendType);
+            GraphicsBackendType graphicsBackendType,
+            void* viewportTextureId,
+            ViewportInfo& outViewportInfo);
 
         bool BindLogSystem(Logging::LogSystem* log_system);
 
@@ -39,5 +42,6 @@ namespace MoonUI
         InspectorWindow m_inspectorWindow;
         GlobalSettingWindow m_globalSettingWindow;
         OutputLogWindow m_outputLogWindow;
+        ViewportWindow m_viewportWindow;
     };
 }

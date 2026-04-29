@@ -31,7 +31,10 @@ public:
 
     void UpdateFramebufferSize();
     virtual void UpdateScene(float dt) = 0;
+    virtual void RenderViewport() = 0;
     virtual void DrawScene() = 0;
+
+    void RenderImGui();
 
     int ClientWidth;
     int ClientHeight;

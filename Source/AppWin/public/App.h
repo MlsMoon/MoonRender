@@ -14,6 +14,7 @@
 #include "Source/Gizmo/public/GizmoRenderer.h"
 #include "Source/Gizmo/public/GridRenderer.h"
 #include "Source/AssetSystem/public/MoonAssetManager.h"
+#include "Source/UI/ViewportWindow.h"
 
 class App : public D3DApp
 {
@@ -34,6 +35,7 @@ public:
     bool Init() override;
     void OnResize() override;
     void UpdateScene(float dt) override;
+    void RenderViewport() override;
     void DrawScene() override;
     void DrawUI() override;
 
@@ -68,6 +70,10 @@ private:
     GizmoRenderer m_gizmoRenderer;
     std::shared_ptr<IGraphicsDepthStencilState> m_defaultDepthStencilState;
     std::shared_ptr<IGraphicsDepthStencilState> m_gizmoDepthStencilState;
+
+    // Viewport render-to-texture
+    std::shared_ptr<IGraphicsRenderTarget> m_viewportRT;
+    MoonUI::ViewportInfo m_viewportInfo;
 
     // Gizmo interaction state
     GizmoAxis m_gizmoHoveredAxis = GizmoAxis::None;

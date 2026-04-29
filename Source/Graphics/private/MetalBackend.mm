@@ -70,6 +70,19 @@ namespace
         id<MTLDepthStencilState> state = nil;
     };
 
+    class MetalRenderTarget final : public IGraphicsRenderTarget
+    {
+    public:
+        id<MTLTexture> colorTexture = nil;
+        id<MTLTexture> depthTexture = nil;
+        int width = 0;
+        int height = 0;
+
+        void* GetImGuiTextureId() const override { return (__bridge void*)colorTexture; }
+        int GetWidth() const override { return width; }
+        int GetHeight() const override { return height; }
+    };
+
     template <typename TTarget, typename TSource>
     TTarget* CheckedCast(TSource* source)
     {
@@ -661,6 +674,38 @@ namespace
             const MetalDepthStencilState* metalDepthStencilState = CheckedCast<const MetalDepthStencilState>(
                 const_cast<IGraphicsDepthStencilState*>(depthStencilState));
             m_currentDepthStencilState = metalDepthStencilState != nullptr ? metalDepthStencilState->state : nil;
+        }
+
+        std::shared_ptr<IGraphicsRenderTarget> CreateRenderTarget(int width, int height) override
+        {
+            auto rt = std::make_shared<MetalRenderTarget>();
+            rt->width = width;
+            rt->height = height;
+
+            MTLTextureDescriptor* desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                                            width:static_cast<NSUInteger>(width)
+                                                                                           height:static_cast<NSUInteger>(height)
+                                                                                        mipmapped:NO];
+            desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+            rt->colorTexture = [m_device newTextureWithDescriptor:desc];
+
+            desc.pixelFormat = MTLPixelFormatDepth32Float_Stencil8;
+            desc.usage = MTLTextureUsageRenderTarget;
+            rt->depthTexture = [m_device newTextureWithDescriptor:desc];
+
+            return rt->colorTexture != nil && rt->depthTexture != nil ? rt : nullptr;
+        }
+
+        void SetViewportRenderTarget(IGraphicsRenderTarget* rt) override
+        {
+            // Metal render pass is configured per-frame in DrawScene; this is a no-op
+            // Actual render target switching is handled by the render pass descriptor.
+        }
+
+        void ClearViewportRenderTarget(IGraphicsRenderTarget* rt, const float color[4], float depth, std::uint8_t) override
+        {
+            // Clearing is handled inside a Metal render pass; no-op at this level.
+            (void)rt; (void)color; (void)depth;
         }
 
         void SetVertexBuffer(const IGraphicsBuffer& buffer, std::uint32_t stride, std::uint32_t offset) override

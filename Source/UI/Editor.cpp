@@ -8,21 +8,34 @@ namespace MoonUI
     bool Editor::Draw(
         Object::Scene& scene,
         Object::MoonObject*& selectedObject,
-        GraphicsBackendType graphicsBackendType)
+        GraphicsBackendType graphicsBackendType,
+        void* viewportTextureId,
+        ViewportInfo& outViewportInfo)
     {
+        bool showViewport = m_viewportWindow.IsOpen();
         bool showOutline = m_outlineWindow.IsOpen();
         bool showInspector = m_inspectorWindow.IsOpen();
         bool showGlobalSetting = m_globalSettingWindow.IsOpen();
         bool showOutputLog = m_outputLogWindow.IsOpen();
 
-        m_mainMenuBar.Draw(&showOutline, &showInspector, &showGlobalSetting, &showOutputLog);
+        m_mainMenuBar.Draw(&showOutline, &showInspector, &showGlobalSetting, &showOutputLog, &showViewport);
 
+        m_viewportWindow.SetOpen(showViewport);
         m_outlineWindow.SetOpen(showOutline);
         m_inspectorWindow.SetOpen(showInspector);
         m_globalSettingWindow.SetOpen(showGlobalSetting);
         m_outputLogWindow.SetOpen(showOutputLog);
 
         DrawDockSpace();
+
+        if (m_viewportWindow.IsOpen())
+        {
+            m_viewportWindow.Draw(viewportTextureId, outViewportInfo);
+        }
+        else
+        {
+            outViewportInfo = {};
+        }
 
         if (m_outlineWindow.IsOpen())
         {
